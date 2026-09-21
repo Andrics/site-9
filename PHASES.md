@@ -45,16 +45,21 @@ just building on top of it.
   at bar scale.
 - Bar shape: full-width, flush to the screen edge, no floating rounded
   pill — reads more like an institutional control panel.
+- Module framing & state color (2026-09-21): bracketed-HUD boxes per
+  module + HEV-style state coloring, SCP influence via `FIELD: value`
+  labeling only. Full detail in `BUILD_SPEC.md` §3. Not yet implemented
+  or seen live — see Still open.
 - Applied to waybar (`waybar/.config/waybar/`) — needs to be seen live on
   the actual screen and confirmed before calling this phase done.
 
 **Still open:**
-- Confirm the palette actually looks right on-screen (colors read
-  differently on the real display than in a spec doc). Now unblocked —
-  scale is fixed to 1x and the restyle is actually deployed live (see
-  Log). This is the last item before Phase 1 can be marked done, and
-  it's a user call (UNIT-1 can't see the physical screen).
-- Font rendering check at bar-scale text size — same, do this now.
+- Module framing/state-color restyle pass (decided above, not yet
+  built): needs a UNIT-1 implementation plan — which waybar CSS classes,
+  how state thresholds get wired up — reviewed before executing, same
+  plan → review → go loop as any non-trivial change.
+- Once built: on-screen confirm of the new framing/color AND the
+  original palette/font-at-bar-scale check that was already pending —
+  do both together, this is the real gate before Phase 1 closes.
 
 **Resolved:**
 - Fractional-scale conflict (scale was 1.5, `BUILD_SPEC.md` §2 requires
@@ -82,6 +87,34 @@ scoping this at all — user may be starting Hyprland by hand from a TTY.
 
 _(newest first, short entries)_
 
+- 2026-09-21 — **Module framing & state-color direction decided.**
+  Response to the on-screen check below: user picked a mix leaning
+  bracketed-HUD + HEV combat-glow, SCP kept to label styling only.
+  Locked in `BUILD_SPEC.md` §3. Not yet built — needs a UNIT-1 plan
+  (CSS + threshold wiring) reviewed before execution, then on-screen
+  confirm together with the original palette/font check.
+- 2026-09-21 — **On-screen check: restyle doesn't read as Half-Life/SCP
+  yet.** First live look at the deployed bar (scale 1x, correct symlink).
+  Palette is visibly applied (green accent on active workspace) but the
+  overall bar reads as an ordinary dark-mode status bar, not Black Mesa/
+  SCP. Identified two gaps: (1) no visible module borders/dividers,
+  which `BUILD_SPEC.md` §3 already requires regardless of palette — a
+  spec gap, not an open style question; (2) accent color only used on
+  one element, no state-based color logic on the HUD values. Phase 1
+  stays "In progress." Style direction for the framing/color fix is
+  being decided with the user before this goes back to UNIT-1 as a new
+  scoped plan.
+- 2026-09-21 — **Correction: `vfr` doesn't belong in waybar's config.**
+  Two entries below describe adding `"vfr": true` to
+  `waybar/.config/waybar/config.jsonc` as resolving the §2 vfr constraint —
+  that's wrong. Waybar has no `vfr` config key (its top-level options are
+  things like `layer`, `position`, `modules-*`, `margin`, `spacing`); the
+  line is silently ignored and does nothing. `vfr` is a **Hyprland**
+  setting, under `misc { vfr = true }` in `hyprland.lua`, where it already
+  defaults to `true`. **Done 2026-09-21:** removed the line from waybar's
+  `config.jsonc`. When Phase 4 populates `hyprland.lua`, set
+  `misc { vfr = true }` there explicitly (documents the already-locked
+  constraint — not a behavior change, since it's on by default).
 - 2026-09-21 — **Phase 1 restyle actually deployed live** (it wasn't
   before — see below). Backed up the pre-existing
   `~/.config/waybar/{config.jsonc,style.css}` to `*.pre-stow.bak`, then
