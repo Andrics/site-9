@@ -24,7 +24,7 @@ window#waybar {
     margin: 4px 2px;
     background: transparent;
     color: #8f8a76;
-    border: 1px solid transparent;
+    border: 1px solid #3a3626;
 }
 
 #workspaces button.active {
@@ -39,7 +39,9 @@ window#waybar {
 
 #clock {
     padding: 0 12px;
+    margin: 4px 2px;
     color: #d6d0bd;
+    border: 1px solid #3a3626;
 }
 
 #pulseaudio,
@@ -49,6 +51,16 @@ window#waybar {
     padding: 0 10px;
     margin: 4px 2px;
     border: 1px solid #3a3626;
+}
+
+#pulseaudio.muted {
+    color: #8f8a76;
+    border-color: #8f8a76;
+}
+
+#network.disconnected {
+    color: #b8452e;
+    border-color: #b8452e;
 }
 
 #battery.warning {
