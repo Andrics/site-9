@@ -45,7 +45,10 @@
         // Label hardcoded to --text-dim (#8f8a76) — same reason as above.
         "format-muted": " <span color='#8f8a76'>VOL:</span> MUTE",
         "format-icons": { "default": ["", "", ""] },
-        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+        // Moved off on-click: the group's click-to-reveal needs left-click
+        // free on the leader module, or its own on-click swallows the
+        // click first and the slider never opens.
+        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
     },
 
     "network": {
