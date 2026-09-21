@@ -44,11 +44,12 @@
         "format": "{icon} <span color='#8f8a76'>VOL:</span> {volume}%",
         // Label hardcoded to --text-dim (#8f8a76) — same reason as above.
         "format-muted": " <span color='#8f8a76'>VOL:</span> MUTE",
-        "format-icons": { "default": ["", "", ""] },
-        // Moved off on-click: the group's click-to-reveal needs left-click
-        // free on the leader module, or its own on-click swallows the
-        // click first and the slider never opens.
-        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+        "format-icons": { "default": ["", "", ""] }
+        // on-click-right (mute) removed for a diagnostic test per THE
+        // OVERSEER: checking whether the leader swallows the reveal click
+        // just by having *any* on-click-* bound, not only on left-click.
+        // Mute is temporarily unreachable via click — restore once this
+        // test reports back. See PHASES.md Phase 1 "Still open".
     },
 
     "network": {
