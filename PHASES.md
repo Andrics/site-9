@@ -54,13 +54,23 @@ just building on top of it.
   the actual screen and confirmed before calling this phase done.
 - Module framing & state-color pass (2026-09-21): built and deployed,
   per plan reviewed and approved by THE OVERSEER. See Log for detail.
-- Volume dropdown/slider (2026-09-21): built, deployed, and had a real
-  bug — leader's own on-click was swallowing the reveal click, see Log.
-  Fixed, but still needs the user's own click to confirm the reveal
-  actually looks right (trough/highlight/hidden handle) — this agent
-  has no way to simulate a click to verify that part itself.
+- Volume dropdown/slider (2026-09-21): built and deployed. Right-click
+  mute now works (moved off the leader's default on-click). Left-click
+  reveal still doesn't fire — see Still open, this isn't resolved yet.
 
 **Still open:**
+- Volume slider reveal still doesn't fire on left-click (2026-09-21,
+  live-tested by user). Right-click mute works now, so moving mute off
+  the default `on-click` helped, but didn't fully fix it. Likely cause,
+  per waybar's own `click-to-reveal` docs ("grouped modules may still
+  process their own on-click events"): the leader module may swallow
+  *all* button-press events once *any* `on-click-*` is bound to it,
+  regardless of which button — not just the one it's bound to. Next
+  test: remove `on-click-right` (mute) from the `pulseaudio` leader
+  entirely and see if left-click reveal starts working; if it does,
+  mute needs to live somewhere that isn't the leader's own on-click
+  (the slider module itself, a keybind, etc.) rather than back on the
+  group.
 - On-screen confirm of the new framing/color AND the palette/font-at-
   bar-scale check (now Departure Mono, see above) — do both together,
   this is the real gate before Phase 1 closes. Not yet done.
@@ -138,6 +148,18 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
+- 2026-09-21 — **Volume slider reveal: right-click mute confirmed fixed,
+  left-click reveal still broken.** User tested live after the
+  mute-to-right-click change below: right-click mutes correctly now,
+  but left-clicking VOL shows no dropdown at all — the "fixed" framing
+  in the entry below was premature. Re-diagnosed against waybar's own
+  `click-to-reveal` man page note ("grouped modules may still process
+  their own on-click events") — the leader having *any* `on-click-*`
+  bound, not just the one matching the button actually pressed, may be
+  enough to stop the group's reveal handler from ever seeing the click.
+  Next test logged under Phase 1 "Still open": drop `on-click-right`
+  from the leader entirely and see if reveal starts working; if so,
+  mute needs to live somewhere other than the leader's own on-click.
 - 2026-09-21 — **Volume slider click conflict: fixed.** User rebooted,
   tested the build, and reported clicking VOL just toggled mute — no
   slider appeared. Root cause: `pulseaudio`'s own `"on-click": "wpctl
