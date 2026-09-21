@@ -11,7 +11,22 @@
 
     "modules-left": ["hyprland/workspaces"],
     "modules-center": ["clock"],
-    "modules-right": ["pulseaudio", "network", "battery", "tray"],
+    "modules-right": ["group/volume", "network", "battery", "tray"],
+
+    "group/volume": {
+        "orientation": "horizontal",
+        "drawer": {
+            "click-to-reveal": true,
+            "transition-duration": 150
+        },
+        "modules": ["pulseaudio", "pulseaudio/slider"]
+    },
+
+    "pulseaudio/slider": {
+        "min": 0,
+        "max": 100,
+        "orientation": "vertical"
+    },
 
     "hyprland/workspaces": {
         "format": "{icon}",
