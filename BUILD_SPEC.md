@@ -27,6 +27,10 @@ guess these — pull them from the actual machine.
   eDP-1, 15.6" panel — 290x170mm), 48.04Hz mode also available
 - Arch kernel version (`uname -a`): 6.18.52-1-lts
 - Hyprland version (`hyprctl version`): 0.56.2
+- Display scale: **1x (native)** — locked 2026-09-21. `scale = "auto"` in
+  `hyprland.lua` was defaulting to a fractional 1.5, conflicting with §2's
+  integer-only rule; changed to `scale = "1"`, confirmed via `hyprctl
+  monitors` (`1920x1080@60Hz`, `scale: 1`). See `PHASES.md` Phase 1 log.
 
 ## 2. Non-negotiable performance constraints
 
@@ -78,6 +82,36 @@ institutional olive/tan as the structural base.
 
 Font: JetBrains Mono Nerd Font. Applied so far: waybar only — carry these
 exact tokens into every later phase rather than re-deciding per app.
+
+### Locked module framing & state color (decided Phase 1 — 2026-09-21)
+
+First on-screen pass read as a generic dark-mode bar with one green accent,
+not Half-Life/SCP — traced to missing module separation and no
+state-driven color use. Direction chosen: primarily bracketed-HUD framing
++ HEV-style state color, with SCP report influence kept to labeling only
+(not structural — the module boxes already provide separation a hairline
+treatment would have given).
+
+- **Framing:** every module (workspace group, clock, VOL, NET, PWR) gets
+  its own thin `--border` box, small gap between boxes so they read as
+  discrete panel segments rather than one continuous strip. Workspace
+  numbers become individually boxed tabs, not plain numbers with a
+  highlight.
+- **State color:** values default to `--text` (label in `--text-dim`,
+  uppercase, e.g. `PWR:`), box border/value shifts to `--warning` or
+  `--critical` when the module is in a flagged state, `--accent` marks
+  the active workspace. Suggested starting thresholds (adjustable once
+  seen live): PWR `--warning` <30%, `--critical` <15%; NET `--critical`
+  on disconnect. Not yet confirmed on-screen.
+- **Labels:** `FIELD: value` formatting inside each box — uppercase
+  dimmed label, value in state color — carries the SCP report influence
+  without adding separate hairline dividers.
+- Outer bar getting a top/bottom hairline rule (echoing a report-page
+  header) is a nice-to-have, not required.
+
+Still needs: a UNIT-1 implementation plan (waybar CSS + module config for
+the state thresholds) reviewed before executing, then an on-screen
+confirm same as the palette got.
 
 ### What IS fixed regardless of which palette gets picked
 
