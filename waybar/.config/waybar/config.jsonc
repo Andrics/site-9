@@ -1,0 +1,51 @@
+// waybar/.config/waybar/config.jsonc
+// Half-Life / Black Mesa readout style — icons + HUD-style text labels.
+{
+    "layer": "top",
+    "position": "top",
+    "height": 30,
+    "vfr": true,
+    "spacing": 0,
+    "margin-top": 0,
+    "margin-left": 0,
+    "margin-right": 0,
+
+    "modules-left": ["hyprland/workspaces"],
+    "modules-center": ["clock"],
+    "modules-right": ["pulseaudio", "network", "battery", "tray"],
+
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "on-click": "activate"
+    },
+
+    "clock": {
+        "format": "{:%a %d %b  %H:%M}",
+        "tooltip-format": "{:%Y-%m-%d %H:%M:%S}"
+    },
+
+    "pulseaudio": {
+        "format": "{icon} VOL {volume}%",
+        "format-muted": " VOL MUTE",
+        "format-icons": { "default": ["", "", ""] },
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+    },
+
+    "network": {
+        "format-wifi": " NET {signalStrength}%",
+        "format-ethernet": " NET LINK",
+        "format-disconnected": " NET OFFLINE",
+        "tooltip-format": "{ifname}: {ipaddr}"
+    },
+
+    "battery": {
+        "format": "{icon} PWR {capacity}%",
+        "format-icons": ["", "", "", "", ""],
+        "states": { "warning": 25, "critical": 10 }
+    },
+
+    "tray": {
+        "spacing": 8
+    }
+}
+

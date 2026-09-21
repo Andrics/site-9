@@ -1,0 +1,12 @@
+# Machine-specific / local-only
+*.local
+.DS_Store
+
+# Never commit secrets, tokens, or keys if any config ever needs one
+*secret*
+*.key
+*.pem
+
+# Editor cruft
+*.swp
+*~

@@ -1,0 +1,67 @@
+/* waybar/.config/waybar/style.css
+   Half-Life / Black Mesa control-room readout.
+   Palette + shape decisions locked in BUILD_SPEC.md §3 / PHASES.md Phase 1. */
+
+* {
+    font-family: "JetBrains Mono Nerd Font";
+    font-size: 13px;
+    min-height: 0;
+    border-radius: 0;
+}
+
+window#waybar {
+    background: #15140f;
+    color: #d6d0bd;
+    border-bottom: 1px solid #3a3626;
+}
+
+#workspaces {
+    padding: 0 4px;
+}
+
+#workspaces button {
+    padding: 0 10px;
+    margin: 4px 2px;
+    background: transparent;
+    color: #8f8a76;
+    border: 1px solid transparent;
+}
+
+#workspaces button.active {
+    color: #5fae5a;
+    border: 1px solid #5fae5a;
+}
+
+#workspaces button:hover {
+    color: #d6d0bd;
+    border: 1px solid #3a3626;
+}
+
+#clock {
+    padding: 0 12px;
+    color: #d6d0bd;
+}
+
+#pulseaudio,
+#network,
+#battery,
+#tray {
+    padding: 0 10px;
+    margin: 4px 2px;
+    border: 1px solid #3a3626;
+}
+
+#battery.warning {
+    color: #c98a3c;
+    border-color: #c98a3c;
+}
+
+#battery.critical {
+    color: #b8452e;
+    border-color: #b8452e;
+}
+
+#tray {
+    padding: 0 8px;
+}
+
