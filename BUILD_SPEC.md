@@ -80,8 +80,11 @@ institutional olive/tan as the structural base.
 | `--warning` | `#c98a3c` | warning state |
 | `--critical` | `#b8452e` | critical state |
 
-Font: JetBrains Mono Nerd Font. Applied so far: waybar only — carry these
-exact tokens into every later phase rather than re-deciding per app.
+Font: Departure Mono Nerd Font (`otf-departure-mono-nerd`, AUR — not
+`[extra]`, Nerd Fonts patch v3.4.0) — swapped 2026-09-21 from JetBrains
+Mono Nerd Font per Overseer direction, applied to waybar. Carry this font
+into every later phase rather than re-deciding per app. Not yet confirmed
+on-screen by the user — see `PHASES.md` Phase 1.
 
 ### Locked module framing & state color (decided Phase 1 — 2026-09-21)
 
@@ -123,10 +126,10 @@ confirm same as the palette got.
 
 **Typography**
 - Monospace, everywhere, no exceptions — this is a stated requirement,
-  not a default. Specific font is still an open question (Phase 1) — but
+  not a default. Font: Departure Mono Nerd Font (see §3 locked palette) —
   whatever's picked, verify actual glyph rendering at bar-scale text size
   looks right on this specific screen before finalizing, don't just trust
-  it on name recognition.
+  it on name recognition. Not yet confirmed on-screen.
 
 **Motion**
 - Short, linear/snap transitions. No easing flourishes, no bounce, no

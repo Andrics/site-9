@@ -26,6 +26,7 @@ work only starts once that review comes back with a go-ahead.
 | 3 | Shell polish (fuzzel/mako/hyprlock) | Not started |
 | 4 | Motion (Hyprland animations/window rules) | Not started |
 | 5 | Login screen (optional — gated on whether a display manager exists) | Not started |
+| 6 | Sidebar | Not started |
 
 ## Phase 1 — Waybar restyle
 
@@ -40,9 +41,9 @@ just building on top of it.
 - Corners/borders: fully sharp, 0px radius, hard 1px borders throughout.
 - Module display: icons + short HUD-style text labels (e.g. `VOL 45%`,
   `NET 82%`, `PWR 100%`), not icon-only.
-- Font: JetBrains Mono Nerd Font (already installed) — open to swapping
-  for something grittier (Departure Mono) later if it doesn't read well
-  at bar scale.
+- Font: Departure Mono Nerd Font (2026-09-21) — swapped from JetBrains
+  Mono Nerd Font per Overseer direction. Installed from AUR
+  (`otf-departure-mono-nerd`). Not yet confirmed on-screen.
 - Bar shape: full-width, flush to the screen edge, no floating rounded
   pill — reads more like an institutional control panel.
 - Module framing & state color (2026-09-21): bracketed-HUD boxes per
@@ -55,9 +56,20 @@ just building on top of it.
   per plan reviewed and approved by THE OVERSEER. See Log for detail.
 
 **Still open:**
-- On-screen confirm of the new framing/color AND the original
-  palette/font-at-bar-scale check that was already pending — do both
-  together, this is the real gate before Phase 1 closes. Not yet done.
+- On-screen confirm of the new framing/color AND the palette/font-at-
+  bar-scale check (now Departure Mono, see above) — do both together,
+  this is the real gate before Phase 1 closes. Not yet done.
+- Module icons (VOL/NET/PWR) discovered blank (2026-09-21) — empty
+  `format-icons`/missing glyphs since the initial baseline commit, not
+  something recent edits caused. `BUILD_SPEC.md`'s "icons + short
+  HUD-style text labels" decision isn't actually built yet. Iconography
+  is an ask-first item per `AGENTS.md` — needs the user/Overseer to pick
+  actual glyphs before this gets filled in.
+- Workspace click-to-switch diagnosed dead (2026-09-21): upstream
+  Waybar/Hyprland Lua-dispatch incompatibility, not a config bug. Fix
+  exists (`aur/waybar-git`) but means swapping the installed `waybar`
+  package from `extra` to an AUR git build — needs a go/no-go decision,
+  not something to do unprompted. See Log for full detail.
 
 **Resolved:**
 - Fractional-scale conflict (scale was 1.5, `BUILD_SPEC.md` §2 requires
@@ -81,10 +93,48 @@ whatever gets decided here.
 Gated: confirm a display manager is actually installed/wanted before
 scoping this at all — user may be starting Hyprland by hand from a TTY.
 
+## Phase 6 — Sidebar
+Not scoped. Ask what "sidebar" should actually cover — content, trigger,
+placement, all of it — before proposing anything; don't assume it carries
+over from waybar's decisions.
+
 ## Log
 
 _(newest first, short entries)_
 
+- 2026-09-21 — **Workspace click diagnosed: upstream Waybar/Hyprland
+  incompatibility, not a config bug.** Overseer asked to verify
+  `"on-click": "activate"` is present (it is) and, if still dead, check
+  `waybar --version` against known regressions. Root cause: installed
+  `waybar` (`extra`, 0.15.0-3) still sends Hyprland's old text-based
+  dispatch commands (`dispatch workspace N`); Hyprland 0.54+ (this
+  machine runs 0.56.2, Lua config) replaced that socket protocol with a
+  Lua-based one, so old-style dispatches are silently invalid and clicks
+  do nothing. Fixed upstream in Waybar PR #5013 (merged to `main`,
+  routes through the new `hl.dsp` Lua API) but **no official Waybar
+  release has shipped since**, so `extra/waybar` doesn't have the fix.
+  `aur/waybar-git` (currently `0.15.0.r822.g4e76d73-1`) does, since it
+  tracks git HEAD, but it **conflicts with and replaces** the `extra`
+  `waybar` package. Not installed — this is a package-source swap
+  (stable repo → AUR git build), which needs a decision, not something
+  to do silently. Left as-is pending that call.
+- 2026-09-21 — **Font swapped to Departure Mono Nerd Font; discovered
+  the module icons have never actually rendered.** Built and installed
+  `otf-departure-mono-nerd` (AUR, not `[extra]` as expected — verified
+  with `pacman -Ss`/`yay -Ss`, package matches the version the Overseer
+  named). Swapped `font-family` in `style.css`, restarted waybar, no
+  errors. Screenshot showed VOL/NET/PWR with no icon glyph at all before
+  the label — traced with `od -c` to the actual config bytes (not a
+  rendering/font issue): pulseaudio/battery's `format-icons` arrays are
+  literally `["", "", ""]` (empty strings) and network's format strings
+  have a bare space where an icon glyph should be. Confirmed via
+  `git show` on the initial commit that this has been true since the
+  very first baseline — not something this session's edits caused.
+  Leaving as-is: `BUILD_SPEC.md`/`AGENTS.md` both call out iconography
+  as a personal-taste, ask-first decision, not something to fill in
+  unprompted. `BUILD_SPEC.md` §3 updated with the new font. Screenshot
+  taken for the Overseer; on-screen confirm still pending (see Phase 1
+  "Still open").
 - 2026-09-21 — **Module framing & state-color pass built and deployed.**
   Plan reviewed and approved by THE OVERSEER. Changes to
   `waybar/.config/waybar/{config.jsonc,style.css}`:
