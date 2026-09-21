@@ -51,15 +51,13 @@ just building on top of it.
   or seen live — see Still open.
 - Applied to waybar (`waybar/.config/waybar/`) — needs to be seen live on
   the actual screen and confirmed before calling this phase done.
+- Module framing & state-color pass (2026-09-21): built and deployed,
+  per plan reviewed and approved by THE OVERSEER. See Log for detail.
 
 **Still open:**
-- Module framing/state-color restyle pass (decided above, not yet
-  built): needs a UNIT-1 implementation plan — which waybar CSS classes,
-  how state thresholds get wired up — reviewed before executing, same
-  plan → review → go loop as any non-trivial change.
-- Once built: on-screen confirm of the new framing/color AND the
-  original palette/font-at-bar-scale check that was already pending —
-  do both together, this is the real gate before Phase 1 closes.
+- On-screen confirm of the new framing/color AND the original
+  palette/font-at-bar-scale check that was already pending — do both
+  together, this is the real gate before Phase 1 closes. Not yet done.
 
 **Resolved:**
 - Fractional-scale conflict (scale was 1.5, `BUILD_SPEC.md` §2 requires
@@ -87,6 +85,28 @@ scoping this at all — user may be starting Hyprland by hand from a TTY.
 
 _(newest first, short entries)_
 
+- 2026-09-21 — **Module framing & state-color pass built and deployed.**
+  Plan reviewed and approved by THE OVERSEER. Changes to
+  `waybar/.config/waybar/{config.jsonc,style.css}`:
+  - Every module now has a persistent `--border` box: workspace numbers
+    are individually boxed tabs (was only on hover/active before), clock
+    got a box too (no `TIME:` label — a clock doesn't need
+    disambiguating the way VOL/NET/PWR do).
+  - `FIELD: value` labeling added to pulseaudio/network/battery formats.
+    The dimmed uppercase label is a pango `<span color='...'>` hardcoded
+    directly in the format string, with a comment above each occurrence
+    noting which `style.css` token the hex mirrors (`--text-dim` for the
+    normal case, `--critical` for network's disconnected label) — GTK
+    CSS can't reach inside a pango span, so this is the only way to
+    color the label independent of the module's state-driven text
+    color, and it needs a comment so the two don't silently drift apart.
+  - Added the two state-color CSS rules the spec called for but that
+    weren't actually written yet: `#network.disconnected` (critical) and
+    `#pulseaudio.muted` (dim, distinct from warning/critical — a one-
+    liner since the format-muted variant was already there).
+  - Deployed live: `killall waybar` + relaunch, confirmed via its log
+    it's reading the symlinked config/style with no errors.
+  - Not yet on-screen confirmed by the user — see Phase 1 "Still open."
 - 2026-09-21 — **Module framing & state-color direction decided.**
   Response to the on-screen check below: user picked a mix leaning
   bracketed-HUD + HEV combat-glow, SCP kept to label styling only.
