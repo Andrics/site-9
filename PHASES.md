@@ -54,11 +54,20 @@ just building on top of it.
   the actual screen and confirmed before calling this phase done.
 - Module framing & state-color pass (2026-09-21): built and deployed,
   per plan reviewed and approved by THE OVERSEER. See Log for detail.
+- Volume dropdown/slider (2026-09-21): built and deployed, per plan
+  reviewed and approved by THE OVERSEER. See Log for detail. Reveal
+  itself not yet verified — no synthetic-input tool on this machine to
+  trigger the click-to-reveal, so it needs the user's own click.
 
 **Still open:**
 - On-screen confirm of the new framing/color AND the palette/font-at-
   bar-scale check (now Departure Mono, see above) — do both together,
   this is the real gate before Phase 1 closes. Not yet done.
+- Bar height auto-bumped 30px → 32px (2026-09-21) when the volume
+  slider was added — waybar expanded it to fit the 20px trough plus
+  border/margin, not something explicitly requested. Cosmetic (2px),
+  but flagging rather than absorbing silently; revisit if it reads as
+  off once seen live.
 - Module icons (VOL/NET/PWR) discovered blank (2026-09-21) — empty
   `format-icons`/missing glyphs since the initial baseline commit, not
   something recent edits caused. `BUILD_SPEC.md`'s "icons + short
@@ -82,6 +91,32 @@ Not scoped. Once Phase 1's palette is locked, ask what "system theme"
 should actually cover before proposing anything — don't assume GTK/icon
 theme scope carries over automatically.
 
+**Reference found for the terminal (2026-09-21):**
+[suchipi/half-life-vox-console](https://github.com/suchipi/half-life-vox-console)
+— a real Black Mesa VOX announcer web console, source added to project
+context (`index.css`, `App.js`, etc.), actual CSS reviewed, not just
+screenshots. Key technique: two-tone beveled borders (light top/left +
+dark bottom/right = raised, reversed = recessed), built from plain
+`border-*-color` — no `box-shadow`, no gradient anywhere in the file, so
+it's naturally compatible with §2's no-blur/no-shadow rule without
+adaptation. Also present: monospace throughout, zero `border-radius`
+anywhere, a single-hue olive-green tonal palette (mid-tone bg, no black —
+different structure from SITE-9's near-black `--bg` + selective `--accent`),
+and substring-match highlighting via a plain `mark` background, no
+special effects.
+
+Two open questions for when Phase 2 actually starts, not now:
+- Bring the beveled-border technique in as a new element for the
+  terminal specifically (distinguishing "terminal" from "HUD" within the
+  same family), or keep it on the flat uniform-border look already built
+  for waybar?
+- The reference sits on a mid-tone olive background throughout, no
+  black — keep the terminal on SITE-9's locked near-black `--bg`
+  structure, or let it run a different, lighter tonal register since
+  it's a distinct surface from the HUD bar?
+
+Not scoped further than this — still gated behind Phase 1 closing first.
+
 ## Phase 3 — Shell polish
 Not scoped.
 
@@ -102,6 +137,42 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
+- 2026-09-21 — **Volume dropdown/slider built and deployed.** Plan
+  reviewed and approved by THE OVERSEER (confirmed a second time after
+  the thread moved on before the first go-ahead got acted on). Verified
+  syntax against the installed waybar's own man pages
+  (`waybar-pulseaudio-slider.5`, group/drawer section of `waybar.5`)
+  rather than assuming. `group/volume` wraps the existing `pulseaudio`
+  module (leader, stays always visible) with `pulseaudio/slider`,
+  revealed via `click-to-reveal`. `orientation: "horizontal"` set
+  explicitly on the group — groups default to stacking vertically
+  regardless of bar position, which would've broken the 30px bar.
+  150ms reveal, drag handle hidden (`opacity: 0`), trough → `--border`,
+  highlight → `--accent`, 0px radius throughout, matching the shared
+  module-box framing. Restarted waybar, no errors, **but**: it logged
+  `Requested height: 30 is less than the minimum height: 32 required by
+  the modules` and auto-bumped the bar to 32px — see Phase 1 "Still
+  open." Screenshot taken (see below) — shows the collapsed default
+  state only; the slider reveal itself needs the user's own click to
+  confirm, no synthetic-input tool available here to trigger it.
+- 2026-09-21 — **Screenshot method corrected: cropped + upscaled, not
+  full-desktop.** Overseer flagged the earlier full-screen `grim`
+  capture as unusable for design review (bar reduced to a thin sliver).
+  No `slurp` available in this context (needs interactive mouse drag,
+  which isn't something this agent can drive) — used the bar's known
+  fixed geometry instead (`grim -g "0,0 1920x32"`), then upscaled 3x
+  with `ffmpeg`'s nearest-neighbor filter (`flags=neighbor`) to keep the
+  pixel font crisp rather than blurring it, producing a large enough
+  image to actually check font weight, module boxes, and the icon gap.
+- 2026-09-21 — **Terminal reference found and logged: half-life-vox-console.**
+  User found an existing Black Mesa VOX web console project and added its
+  source to project context. Reviewed the actual `index.css`/`App.js`,
+  not just the screenshot. Notable: it already respects §2's no-blur/
+  no-shadow rule throughout (its 3D look comes entirely from two-tone
+  border coloring, not shadows), so nothing to fight there. Logged under
+  Phase 2 with two open questions (bevel technique scope, background
+  tone) for whenever that phase actually starts. Phase 1 is still open —
+  this is reference capture, not a green light to build Phase 2.
 - 2026-09-21 — **Workspace click diagnosed: upstream Waybar/Hyprland
   incompatibility, not a config bug.** Overseer asked to verify
   `"on-click": "activate"` is present (it is) and, if still dead, check
