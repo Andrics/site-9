@@ -65,24 +65,43 @@ just building on top of it.
   the Lua-dispatch fix) per Overseer go-ahead. Installed, waybar
   restarted on the new binary, no errors. Not yet click-tested live by
   the user — see Still open.
+- Mute location (2026-09-21, decided by THE OVERSEER): moves to a
+  Hyprland keybind (`XF86AudioMute` → `wpctl set-mute @DEFAULT_AUDIO_SINK@
+  toggle` or equivalent), not back onto waybar. Reasoning: real mute is
+  a separate boolean from volume level — drag-to-zero loses "restore to
+  previous volume" on unmute, and `pulseaudio/slider`'s documented
+  config (`min`/`max`/`orientation`/`expand`) shows no `on-click`
+  option, so binding it there isn't confirmed possible. A dedicated key
+  is also the more standard pattern (status widget for glanceable
+  state + fine adjustment, discrete toggle lives at the compositor
+  level) and sidesteps the group/leader click-conflict entirely.
+  **Already satisfied (2026-09-21):** checked the live
+  `~/.config/hypr/hyprland.lua` before building anything — it's still
+  Hyprland's stock example config, which already binds
+  `XF86AudioMute` to `wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle`
+  (`locked = true, repeating = true`), word-for-word the target above.
+  No edit needed. `hypr/` in this repo is still just `.gitkeep` —
+  importing the rest of `hyprland.lua` into tracked config is Phase 4
+  scope, not started, per the one-phase-at-a-time rule (Phase 1 still
+  open).
+- Content-density direction approved (2026-09-21) — user reacted
+  positively to all of the Overseer's brainstormed additions from the
+  "too simple" feedback round: more modules (CPU/RAM/uptime formatted
+  as a mission clock, a static `SITE-9` tag), segmented value bars
+  (block-character gauges like `▮▮▮▯▯` next to the percentage),
+  corner-tick framing instead of full-rectangle module boxes, and
+  boxing the tray icons for consistency. Approved in direction, not yet
+  scoped into a concrete plan — needs a UNIT-1 plan (which modules,
+  exact glyphs, layout) reviewed same as any non-trivial pass, once the
+  current open items below clear.
 
 **Still open:**
-- Mute needs a new permanent home (2026-09-21) — diagnostic test
-  confirmed the hypothesis: the `pulseaudio` leader swallows the
-  group's reveal click as long as *any* `on-click-*` is bound to it,
-  not just the one matching the pressed button. With `on-click-right`
-  removed entirely, left-click reveal now works (user confirmed with a
-  screenshot). Reported back to Overseer per instruction, not decided
-  here — three options on the table: bind it on `pulseaudio/slider`
-  itself if that module supports a click action, drop click-to-mute in
-  favor of drag-to-zero, or move it out of waybar entirely onto a
-  Hyprland keybind.
 - Bar height auto-bumped again, 32px → 36px (2026-09-21) — enlarging
   the slider gauge (14px/24px, up from 6px/20px) to address the "too
   small" feedback grew waybar's computed minimum further. Total drift
-  from the original spec is now +6px (30px → 36px). Stopped here
-  rather than iterating blind — flagging for a look before pushing the
-  gauge any bigger.
+  from the original spec is now +6px (30px → 36px). Deferred rather
+  than tuned further right now — folding into the content-density
+  rework below rather than chasing gauge size in isolation.
 - Workspace click fix needs live confirmation — package is swapped and
   waybar's restarted clean, but this agent has no way to simulate a
   click to verify the fix actually works end-to-end.
@@ -153,6 +172,31 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
+- 2026-09-21 — **Mute keybind: already satisfied, no build needed.**
+  Overseer relayed the mute-to-keybind decision as small enough to
+  build without a separate plan. Checked the live
+  `~/.config/hypr/hyprland.lua` first rather than assuming a blank
+  slate — it's still Hyprland's unmodified stock example config, and
+  the exact binding asked for (`XF86AudioMute` →
+  `wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle`) is already in there
+  from the template. Nothing to change. Left `hypr/` in this repo
+  untouched (still just `.gitkeep`) — bringing the live config under
+  this repo's tracking is Phase 4 work, not in scope while Phase 1 is
+  still open. Also relayed: workspace-click live test is on the user
+  now that `waybar-git` is installed (not something this agent can
+  simulate); content-density plan stays deferred until the Phase 1
+  "Still open" items clear, per Overseer's instruction not to start
+  scoping it from the idea list alone.
+- 2026-09-21 — **Session handoff: continuing in a new Overseer chat.**
+  Wrap-up of this session: mute-location decided (Hyprland keybind, see
+  Phase 1 "Decided so far"), content-density direction approved (same
+  section), bar-height drift deferred into that future pass rather than
+  tuned in isolation. Still open going in: workspace-click live test
+  (package is swapped, unverified), the framing/font on-screen confirm,
+  module icons, and the content-density plan itself once UNIT-1 scopes
+  it. This file is the handoff — a fresh Overseer chat reads this plus
+  `BUILD_SPEC.md`/`AGENTS.md` same as session one did, nothing here
+  depends on this specific chat's history.
 - 2026-09-21 — **Volume slider reveal: diagnostic test confirmed the
   hypothesis, reveal works.** Removed `on-click-right` (mute) from the
   `pulseaudio` leader entirely per Overseer's instruction. Restarted
