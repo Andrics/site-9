@@ -49,20 +49,18 @@ just building on top of it.
   the actual screen and confirmed before calling this phase done.
 
 **Still open:**
-- **Blocker found 2026-09-21:** live monitor is running at scale 1.5
-  (fractional) — conflicts with `BUILD_SPEC.md` §2's integer-scale-only
-  rule. User decided: switch to scale 1 (native 1920x1080). Not yet
-  applied — the live `~/.config/hypr/hyprland.lua` that sets this isn't
-  part of this repo yet (hypr/ package hasn't started, per "one phase at
-  a time"). One-line change needed there: `scale = "auto"` →
-  `scale = 1` in the `hl.monitor({...})` block, then `hyprctl reload`.
-  User needs to apply this (edit denied to UNIT-1 as an out-of-repo
-  system-file change) before the items below can be checked at final
-  scale.
 - Confirm the palette actually looks right on-screen (colors read
-  differently on the real display than in a spec doc) — do this *after*
-  scale is fixed to 1x, not before.
-- Font rendering check at bar-scale text size — same, after scale fix.
+  differently on the real display than in a spec doc). Now unblocked —
+  scale is fixed to 1x and the restyle is actually deployed live (see
+  Log). This is the last item before Phase 1 can be marked done, and
+  it's a user call (UNIT-1 can't see the physical screen).
+- Font rendering check at bar-scale text size — same, do this now.
+
+**Resolved:**
+- Fractional-scale conflict (scale was 1.5, `BUILD_SPEC.md` §2 requires
+  integer only): user fixed directly, `scale = "auto"` → `scale = "1"`
+  in `~/.config/hypr/hyprland.lua`, confirmed live via `hyprctl monitors`
+  (`1920x1080@60Hz`, `scale: 1`).
 
 ## Phase 2 — System theme
 Not scoped. Once Phase 1's palette is locked, ask what "system theme"
@@ -84,6 +82,24 @@ scoping this at all — user may be starting Hyprland by hand from a TTY.
 
 _(newest first, short entries)_
 
+- 2026-09-21 — **Phase 1 restyle actually deployed live** (it wasn't
+  before — see below). Backed up the pre-existing
+  `~/.config/waybar/{config.jsonc,style.css}` to `*.pre-stow.bak`, then
+  `stow waybar`. First attempt used the default target and silently
+  linked to `~/Development/.config` instead of `~/.config`, because this
+  repo lives at `~/Development/site-9`, not `~/site-9` as the README's
+  quickstart example assumes — parent-dir-as-target only works from the
+  latter. Corrected with `stow -t ~ waybar`; symlinks now land correctly
+  in `~/.config/waybar/`. **Note for next stow invocation (hypr package,
+  etc.): use `stow -t ~ <package>` from this repo's actual location, not
+  bare `stow <package>`.** Restarted waybar to load the new config —
+  confirmed via its log it's reading from the symlinked path, no errors.
+  Also confirmed user's own fix for the scale-1.5 blocker is live
+  (`hyprctl monitors` shows `scale: 1`). Phase 1's restyle (palette,
+  shape, `VOL`/`NET`/`PWR` labels, `vfr: true`) is now genuinely visible
+  on-screen for the first time — before this, the repo had the new
+  styling but the live bar was still running the old placeholder config
+  since it was never stowed.
 - 2026-09-21 — Repo pushed to GitHub: `github.com/Andrics/site-9` (public).
   SSH key generated and added to the GitHub account; repo scanned for
   secrets before going public (clean — only `.gitignore` rules and the
