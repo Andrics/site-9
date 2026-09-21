@@ -49,9 +49,20 @@ just building on top of it.
   the actual screen and confirmed before calling this phase done.
 
 **Still open:**
+- **Blocker found 2026-09-21:** live monitor is running at scale 1.5
+  (fractional) — conflicts with `BUILD_SPEC.md` §2's integer-scale-only
+  rule. User decided: switch to scale 1 (native 1920x1080). Not yet
+  applied — the live `~/.config/hypr/hyprland.lua` that sets this isn't
+  part of this repo yet (hypr/ package hasn't started, per "one phase at
+  a time"). One-line change needed there: `scale = "auto"` →
+  `scale = 1` in the `hl.monitor({...})` block, then `hyprctl reload`.
+  User needs to apply this (edit denied to UNIT-1 as an out-of-repo
+  system-file change) before the items below can be checked at final
+  scale.
 - Confirm the palette actually looks right on-screen (colors read
-  differently on the real display than in a spec doc).
-- Font rendering check at bar-scale text size.
+  differently on the real display than in a spec doc) — do this *after*
+  scale is fixed to 1x, not before.
+- Font rendering check at bar-scale text size — same, after scale fix.
 
 ## Phase 2 — System theme
 Not scoped. Once Phase 1's palette is locked, ask what "system theme"
@@ -73,6 +84,14 @@ scoping this at all — user may be starting Hyprland by hand from a TTY.
 
 _(newest first, short entries)_
 
+- 2026-09-21 — Repo git-initialized (was a plain directory until now,
+  despite AGENTS.md/README assuming commit-as-you-go) and initial commit
+  made capturing existing state. `BUILD_SPEC.md` §1 hardware section
+  filled in with verified values (i7-8650U, UHD 620, 15Gi RAM,
+  1920x1080@60Hz, kernel 6.18.52-1-lts, Hyprland 0.56.2). Added missing
+  `"vfr": true` to waybar config (restates already-locked constraint).
+  Found live scale=1.5 conflict with the integer-scale rule — user chose
+  scale 1x; not yet applied, see Phase 1 "Still open."
 - 2026-09-20 — Phase 1 palette/shape/font decided (see Phase 1 section
   above) and applied to waybar. Not yet confirmed live on-screen.
 - 2026-09-20 — Consolidated `PHASES.md` + `phases/*.md` into this single
