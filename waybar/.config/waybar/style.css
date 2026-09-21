@@ -64,14 +64,14 @@ window#waybar {
 }
 
 #pulseaudio-slider trough {
-    min-width: 6px;
-    min-height: 20px;
+    min-width: 14px;
+    min-height: 24px;
     border-radius: 0;
     background: #3a3626;
 }
 
 #pulseaudio-slider highlight {
-    min-width: 6px;
+    min-width: 14px;
     border-radius: 0;
     background: #5fae5a;
 }

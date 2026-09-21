@@ -54,42 +54,47 @@ just building on top of it.
   the actual screen and confirmed before calling this phase done.
 - Module framing & state-color pass (2026-09-21): built and deployed,
   per plan reviewed and approved by THE OVERSEER. See Log for detail.
-- Volume dropdown/slider (2026-09-21): built and deployed. Right-click
-  mute now works (moved off the leader's default on-click). Left-click
-  reveal still doesn't fire — see Still open, this isn't resolved yet.
+- Volume dropdown/slider (2026-09-21): built and deployed. Reveal
+  confirmed working (see Log) — user screenshotted it live. Mute is
+  temporarily unreachable via click (removed for the diagnostic test)
+  pending an Overseer decision on where it lives now — see Still open.
+  Slider gauge enlarged (14px/24px) per user feedback that it was too
+  small to see.
+- Workspace click-to-switch (2026-09-21): package swapped
+  `extra/waybar` → `aur/waybar-git` (0.15.0.r1019.g3672eee-1, includes
+  the Lua-dispatch fix) per Overseer go-ahead. Installed, waybar
+  restarted on the new binary, no errors. Not yet click-tested live by
+  the user — see Still open.
 
 **Still open:**
-- Volume slider reveal still doesn't fire on left-click (2026-09-21,
-  live-tested by user). Right-click mute works now, so moving mute off
-  the default `on-click` helped, but didn't fully fix it. Likely cause,
-  per waybar's own `click-to-reveal` docs ("grouped modules may still
-  process their own on-click events"): the leader module may swallow
-  *all* button-press events once *any* `on-click-*` is bound to it,
-  regardless of which button — not just the one it's bound to. Next
-  test: remove `on-click-right` (mute) from the `pulseaudio` leader
-  entirely and see if left-click reveal starts working; if it does,
-  mute needs to live somewhere that isn't the leader's own on-click
-  (the slider module itself, a keybind, etc.) rather than back on the
-  group.
+- Mute needs a new permanent home (2026-09-21) — diagnostic test
+  confirmed the hypothesis: the `pulseaudio` leader swallows the
+  group's reveal click as long as *any* `on-click-*` is bound to it,
+  not just the one matching the pressed button. With `on-click-right`
+  removed entirely, left-click reveal now works (user confirmed with a
+  screenshot). Reported back to Overseer per instruction, not decided
+  here — three options on the table: bind it on `pulseaudio/slider`
+  itself if that module supports a click action, drop click-to-mute in
+  favor of drag-to-zero, or move it out of waybar entirely onto a
+  Hyprland keybind.
+- Bar height auto-bumped again, 32px → 36px (2026-09-21) — enlarging
+  the slider gauge (14px/24px, up from 6px/20px) to address the "too
+  small" feedback grew waybar's computed minimum further. Total drift
+  from the original spec is now +6px (30px → 36px). Stopped here
+  rather than iterating blind — flagging for a look before pushing the
+  gauge any bigger.
+- Workspace click fix needs live confirmation — package is swapped and
+  waybar's restarted clean, but this agent has no way to simulate a
+  click to verify the fix actually works end-to-end.
 - On-screen confirm of the new framing/color AND the palette/font-at-
   bar-scale check (now Departure Mono, see above) — do both together,
   this is the real gate before Phase 1 closes. Not yet done.
-- Bar height auto-bumped 30px → 32px (2026-09-21) when the volume
-  slider was added — waybar expanded it to fit the 20px trough plus
-  border/margin, not something explicitly requested. Cosmetic (2px),
-  but flagging rather than absorbing silently; revisit if it reads as
-  off once seen live.
 - Module icons (VOL/NET/PWR) discovered blank (2026-09-21) — empty
   `format-icons`/missing glyphs since the initial baseline commit, not
   something recent edits caused. `BUILD_SPEC.md`'s "icons + short
   HUD-style text labels" decision isn't actually built yet. Iconography
   is an ask-first item per `AGENTS.md` — needs the user/Overseer to pick
   actual glyphs before this gets filled in.
-- Workspace click-to-switch diagnosed dead (2026-09-21): upstream
-  Waybar/Hyprland Lua-dispatch incompatibility, not a config bug. Fix
-  exists (`aur/waybar-git`) but means swapping the installed `waybar`
-  package from `extra` to an AUR git build — needs a go/no-go decision,
-  not something to do unprompted. See Log for full detail.
 
 **Resolved:**
 - Fractional-scale conflict (scale was 1.5, `BUILD_SPEC.md` §2 requires
@@ -148,6 +153,33 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
+- 2026-09-21 — **Volume slider reveal: diagnostic test confirmed the
+  hypothesis, reveal works.** Removed `on-click-right` (mute) from the
+  `pulseaudio` leader entirely per Overseer's instruction. Restarted
+  waybar, no errors. User tested live and screenshotted the revealed
+  slider (small green gauge next to `VOL: 55%`) — reveal fires on
+  left-click now. Confirms: the leader swallows the group's reveal
+  click as long as it has *any* `on-click-*` handler bound, not just
+  one matching the pressed button. Per Overseer's instruction this is a
+  real design choice (where mute lives now), not just a bug fix —
+  reported back rather than picking one unprompted. User also flagged
+  the slider as too small to see; bumped the gauge from 6px/20px to
+  14px/24px (trough/highlight `min-width`/`min-height`). Restarted
+  again — bar height auto-grew further, 32px → 36px this time. Stopped
+  there rather than pushing the size up again blind; flagged under
+  Phase 1 "Still open" for a look before any further enlarging.
+- 2026-09-21 — **Workspace click fixed: swapped to `aur/waybar-git`.**
+  Overseer's call, documented in the prior entry: reversible, fixes
+  real broken behavior (upstream Lua-dispatch incompatibility, not a
+  config issue), only cost is manual rebuilds going forward instead of
+  official releases. User ran `yay -S waybar-git` themselves (needed
+  sudo for build deps this time, not just the final install, unlike the
+  font package). Installed `waybar-git 0.15.0.r1019.g3672eee-1`
+  (includes PR #5013's fix), conflict with `extra/waybar` resolved by
+  replacing it as expected. Restarted waybar on the new binary, no
+  errors, `waybar --version` confirms it's running the git build. Not
+  yet click-tested live — this agent can't simulate a click to verify
+  end-to-end, needs the user to actually try switching workspaces.
 - 2026-09-21 — **Volume slider reveal: right-click mute confirmed fixed,
   left-click reveal still broken.** User tested live after the
   mute-to-right-click change below: right-click mutes correctly now,
