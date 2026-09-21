@@ -54,10 +54,11 @@ just building on top of it.
   the actual screen and confirmed before calling this phase done.
 - Module framing & state-color pass (2026-09-21): built and deployed,
   per plan reviewed and approved by THE OVERSEER. See Log for detail.
-- Volume dropdown/slider (2026-09-21): built and deployed, per plan
-  reviewed and approved by THE OVERSEER. See Log for detail. Reveal
-  itself not yet verified — no synthetic-input tool on this machine to
-  trigger the click-to-reveal, so it needs the user's own click.
+- Volume dropdown/slider (2026-09-21): built, deployed, and had a real
+  bug — leader's own on-click was swallowing the reveal click, see Log.
+  Fixed, but still needs the user's own click to confirm the reveal
+  actually looks right (trough/highlight/hidden handle) — this agent
+  has no way to simulate a click to verify that part itself.
 
 **Still open:**
 - On-screen confirm of the new framing/color AND the palette/font-at-
@@ -137,6 +138,20 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
+- 2026-09-21 — **Volume slider click conflict: fixed.** User rebooted,
+  tested the build, and reported clicking VOL just toggled mute — no
+  slider appeared. Root cause: `pulseaudio`'s own `"on-click": "wpctl
+  set-mute ..."` was still bound on the group leader, and it swallows
+  the click before the group's `click-to-reveal` gets a chance — the
+  waybar man page had actually warned about this ("grouped modules may
+  still process their own on-click events") when this was researched
+  for the original plan, and it should have been caught then instead of
+  only surfacing after a live test. Fix: moved mute to `on-click-right`
+  (documented, valid option for the pulseaudio module), leaving
+  left-click free to trigger the reveal. Left-click now reveals the
+  slider, right-click mutes. Restarted waybar, no errors. Still can't
+  verify the reveal itself renders correctly (no synthetic-input tool
+  here) — needs the user's own click to confirm.
 - 2026-09-21 — **Volume dropdown/slider built and deployed.** Plan
   reviewed and approved by THE OVERSEER (confirmed a second time after
   the thread moved on before the first go-ahead got acted on). Verified
