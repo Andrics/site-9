@@ -84,6 +84,11 @@ scoping this at all — user may be starting Hyprland by hand from a TTY.
 
 _(newest first, short entries)_
 
+- 2026-09-21 — Repo pushed to GitHub: `github.com/Andrics/site-9` (public).
+  SSH key generated and added to the GitHub account; repo scanned for
+  secrets before going public (clean — only `.gitignore` rules and the
+  word "token" in a design-tokens table). `origin` remote set, both
+  commits pushed, `main` tracks `origin/main`.
 - 2026-09-21 — Repo git-initialized (was a plain directory until now,
   despite AGENTS.md/README assuming commit-as-you-go) and initial commit
   made capturing existing state. `BUILD_SPEC.md` §1 hardware section
