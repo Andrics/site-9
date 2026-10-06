@@ -97,9 +97,19 @@ into every later phase rather than re-deciding per app.
   11px (11, 22, …). Other sizes (e.g. the current 13px) give uneven
   strokes. Pick sizes on the grid unless a deliberate exception is
   decided and recorded here.
-- **Weight:** only a Regular style is known to ship (UNIT-1 confirming
-  with `fc-list`). Any bolder look has to be produced another way —
-  options under test in `PHASES.md`.
+- **Weight:** only Regular is installed (confirmed with `fc-list`
+  2026-10-06: Regular in the Nerd Font, Nerd Font Mono, and Nerd Font
+  Propo variants). Tested ways to look bolder, at 11px:
+  - Synthetic bold (`font-weight: bold`): bolder but smeared, with gray
+    fringe pixels. Fails the pixel-crisp standard.
+  - Double-strike (`text-shadow: 1px 0 0 currentColor`): crisp 2px
+    strokes, no layout change. **But in GTK3 the doubled copy is always
+    drawn in the widget's CSS color and ignores pango span colors**, so
+    anything colored by a span (the dim `FIELD:` labels, dim bar parts)
+    gets a bright extra column. Also uses the `text-shadow` property,
+    which §2 rules out unless an exception is decided.
+  - 22px: an exact 2× of 11px — bigger, not bolder.
+  Weight decision is in `PHASES.md` (Phase 1 plan review).
 
 ### Locked module framing & state color (decided Phase 1 — 2026-09-21)
 
@@ -127,11 +137,21 @@ treatment would have given).
 - Outer bar getting a top/bottom hairline rule (echoing a report-page
   header) is a nice-to-have, not required.
 
-Status: built and deployed 2026-09-21 (see `PHASES.md` Log). Still needs
-the user's on-screen confirm. Note: the approved content-density
-direction swaps full-rectangle boxes for **corner-tick framing** — that
-change is being scoped in the combined plan (`PHASES.md` "Next up for
-UNIT-1"), so the full-box treatment above is current-but-provisional.
+Status: built and deployed 2026-09-21 (see `PHASES.md` Log). The approved
+content-density direction swaps full-rectangle boxes for **corner-tick
+framing**, so the full-box treatment above is current-but-provisional.
+
+**Corner ticks — proven feasible (probe, 2026-10-06):** 9-slice
+`border-image` from an 11×11 SVG with 1px L-shaped corners and
+transparent edges: `border: 1px solid transparent`,
+`border-image-slice: 5`, `border-image-width: 5px`,
+`border-image-repeat: stretch`. Ticks measured 5px long, 1px thick,
+exact color, and add **0px** to the bar height. State colors via one
+SVG named `*-symbolic.svg` and `-gtk-recolor(url("…"), success <hex>)`
+(amber swap tested). Fallback if recoloring ever breaks: one plain SVG
+per state with the color hard-coded. Relies on gdk-pixbuf's SVG loader
+(present: glycin-svg 2.1.5 with librsvg 2.62.4). Static, nothing
+animated — §2-clean.
 
 ### Icon direction (decided Phase 1 — 2026-10-06)
 
@@ -147,11 +167,18 @@ glyphs and over going icon-less.
   `pango-view` renders): all Box Drawing (128/128) and Block Elements
   (32/32) characters, all Nerd Font MD and FA icons, progress-bar glyphs
   U+EE00–EE0B. **Not** in the font: `▮ ▯ ▰ ▱ ■ □` — don't use them,
-  they'd only render via a fallback font. Block and box characters
-  render pixel-sharp at 11px; Nerd Font icons render soft-edged and
-  slightly small next to the pixel text.
+  they'd only render via a fallback font. Nerd Font icons render
+  soft-edged and slightly small next to the pixel text.
+- **Crispness at 11px (measured 2026-10-06 by counting partial
+  pixels):** only `█` (full block) is pixel-sharp among the bar
+  glyphs. `▌`, the other partial blocks `▏`–`▉`, and `┃` land on half
+  pixels and come out soft-edged (`▌` is 3.5px wide). `░` is a soft dot
+  texture at every size tested (11/22/33px). Letter-spacing tweaks push
+  glyphs onto fractional pixels — avoid them.
 - Watch emoji-default codepoints (e.g. `⚡` U+26A1): Pango can draw them
-  from a color emoji font. Pin them with U+FE0E or avoid them.
+  from a color emoji font. Pin them with U+FE0E or avoid them. (No color
+  emoji font is installed as of 2026-10-06, so `⚡` currently renders as
+  Departure's own small, thin text glyph.)
 - Exact glyphs are not chosen yet. Candidates must be confirmed present
   in the installed Departure Mono Nerd Font build (check the font
   itself, not a generic Nerd Fonts cheat-sheet — coverage varies by
@@ -213,8 +240,9 @@ now — no audio dependencies, no hooks, until it's an actual phase.
   `PHASES.md`.
 - **hypr** — not stowed from this repo yet. The only change so far is
   `scale = "1"`, made directly in the live `~/.config/hypr/hyprland.lua`
-  (Phase 1 fix). The live file also has the stock `XF86AudioMute` →
-  `wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle` bind (around line 308),
-  which is where mute lives now. When `hypr` is first stowed, back up
+  (Phase 1 fix); otherwise it's Hyprland's stock example config. It
+  includes the stock `XF86AudioMute` → `wpctl set-mute
+  @DEFAULT_AUDIO_SINK@ toggle` bind (around line 308, `locked = true,
+  repeating = true`), which is where mute lives now. When `hypr` is first stowed, back up
   the live file and carry both over.
 - Everything else starts from scratch.

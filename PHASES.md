@@ -38,55 +38,27 @@ work only starts once that review comes back with a go-ahead.
 
 _Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Task (2026-10-06, #2): tests and recovery only. No changes to the live
-config.** Your combined plan was reviewed and is sound (Phase 1 →
-"Combined plan review"). The build waits on the user's choices, and two
-of those need evidence first. Do these, then report:
+**Status (2026-10-06, #3): test round done and reviewed. No build yet —
+waiting on the user's choices** (Phase 1 → "Choices pending"). The
+build plan will be sent as soon as they're in.
 
-1. **Recover f78a3e7.** The 2026-10-06 doc sync dropped that commit's
-   content. Run `git show f78a3e7` and put everything it added or changed
-   in the docs into your report, so THE OVERSEER can restore what's
-   still missing. The mute-bind fact is already restored. Don't edit the
-   docs yourself.
-2. **Weight test.** Confirm with `fc-list | grep -i departure` which
-   styles are installed (expected: Regular only). Then show the bar's
-   real content at **11px** in four variants:
-   - W0: Regular, as is.
-   - W1: synthetic bold (`font-weight: bold`; fontconfig/FreeType
-     emboldens since there's no Bold file).
-   - W2: double-strike: `text-shadow: 1px 0 0 currentColor` (zero blur,
-     same color = every stroke 1px wider). **Test only.** It uses the
-     shadow property, so it needs the user's explicit OK as a §2
-     exception before it can ship. Include a module with a dimmed
-     pango label (`VOL:`) in this variant: the doubled copy may come
-     out in the module's color instead of the label's.
-   - W3: 22px Regular, reference only (true 2px strokes, too tall to
-     ship).
-   W1 can be checked with `pango-view`; W2 needs GTK, so render it in
-   the probe bar below.
-3. **Corner-tick probe: approved.** Run the throwaway second waybar from
-   the scratchpad as you described. Include: the 9-slice SVG ticks, one
-   state swap via `-gtk-recolor`, and W0 vs W2 side by side so the user
-   sees ticks and weight together. Confirm the SVG pixbuf loader is
-   installed as part of it. Close the probe bar when done; the live bar
-   and repo config stay untouched.
-4. **⚡ check (S1's charging glyph).** U+26A1 defaults to emoji
-   presentation, so Pango can draw it from a color emoji font, if one is
-   installed now or later. Check `fc-list ':charset=26a1'`, and render
-   `⚡︎` (U+26A1 + U+FE0E text selector). If it can't be pinned to the
-   text glyph reliably, propose a different charging glyph from the
-   font.
-
-5. **Add a DOS-fill bar to the probe.** Next to S1's `▌` segments,
-   show one bar as `█` fill with `░` empty, but draw the `░` in
-   `--text-dim` instead of `--border` (in the first mocks it nearly
-   disappeared). This is the classic DOS installer/defrag look, and the
-   user wants a more MS-DOS feel.
-6. **Glyph sheet row E** rendered empty. Say what it was meant to show,
-   and whether it's missing from the font or just not rendering.
-
-Deliver: cropped, upscaled screenshots (method in `AGENTS.md`), file
-paths in your report.
+**One desk check meanwhile (no probe, no live changes):** option W2-d.
+If the user picks double-strike weight, the only way to keep the dim
+`FIELD:` labels dim is to give each label its own static module
+(`custom/…`, `"interval": "once"`, no exec — same as the `SITE-9` tag),
+colored `--text-dim` in CSS, so its doubled copy is dim too. Check
+against the waybar-git source/man pages and report:
+1. Can a label module sit inside a `group/…` next to its value module,
+   with the corner ticks drawn around the group rather than each
+   module?
+2. `group/volume` is a drawer with `pulseaudio` as leader and
+   `click-to-reveal`. Does adding a label module break the reveal or
+   change which module leads? What arrangement keeps it working?
+3. The DOS fill's empty part is inside the value string, so under W2 it
+   takes the module color. Under W2, does a `█` dark-trough empty part
+   (instead of `░`) leave only a 1px bright overhang at the bar's right
+   end, as THE OVERSEER expects? Reason it through from the render
+   order, no probe needed.
 
 ## Phase 1 — Waybar restyle
 
@@ -141,7 +113,8 @@ just building on top of it.
   level) and sidesteps the group/leader click-conflict entirely.
   **Already in place:** the live `~/.config/hypr/hyprland.lua` has the
   stock bind (around line 308) `XF86AudioMute` → `wpctl set-mute
-  @DEFAULT_AUDIO_SINK@ toggle`. Nothing to add. (UNIT-1 recorded this in
+  @DEFAULT_AUDIO_SINK@ toggle`, `locked = true, repeating = true`.
+  Nothing to add. (UNIT-1 recorded this in
   commit f78a3e7; the 2026-10-06 doc sync dropped it, restored here.)
   Carry the bind over when `hypr` is first stowed. The stale
   "diagnostic test / restore mute" comment in `config.jsonc` gets
@@ -243,13 +216,48 @@ just building on top of it.
     bigger. The uneven strokes UNIT-1 measured need the upscaled crops
     to judge.
 
+  Test round reviewed 2026-10-06 (probe bar + pango renders,
+  screenshots via the user). Findings that change the options:
+  - Corner ticks work, crisp and recolorable, +0px height. Technique in
+    `BUILD_SPEC.md` §3. Fallbacks (a)/(b) no longer needed unless the
+    user prefers full boxes after seeing both side by side.
+  - Weight: W1 smears (out). W3 is just bigger (out). W2 is crisp bold
+    but its doubled copy ignores span colors, so dim labels and dim bar
+    parts get a bright column. W2 variants: (a) accept that — not
+    recommended, it reads as a glitch; (b) W2 only on elements with no
+    dim spans (`SITE-9`, clock, MET, workspace tabs), data modules stay
+    light; (c) drop dim labels, everything one color per module —
+    changes the locked `FIELD: value` rule in `BUILD_SPEC.md` §3;
+    (d) give each label its own static module so it can be dim *and*
+    double-struck — keeps the locked rule, more config, feasibility
+    desk-checked in "Next up".
+  - `▌` segments are soft at 11px (3.5px wide); only `█` is crisp. That
+    rules out S1's segment bars and favors the DOS fill. This replaces
+    the approved "segmented value bars" idea with a fill bar — needs the
+    user's OK. Empty part: `░` dither (soft texture, authentic DOS, gets
+    brighter and busier under W2) or `█` in a dark tone (crisp trough).
+  - `⚡` is small and thin next to the text. Charging options: keep
+    `⚡︎`; Nerd bolt U+F0E7 (soft like the other Nerd icons); or text —
+    the `PWR:` label swaps to `CHG:` while charging (battery's
+    `format-charging`).
+  - Probe height: 24px with ticks and 11px text but no slider. The live
+    36px comes from the slider alone, so H1 could land well under 30px.
+
   Choices pending from the user (THE OVERSEER's lean in brackets):
-  F size [F1 11px, on-grid — get weight from W, not from size], W
-  weight [after the test; W2 if the user accepts the §2 exception],
-  S icon system [S1], bar style [`▌` segments vs `█░` DOS fill — after
-  the probe], NET bar [none, S1 steps carry it], L layout [L2],
-  MET format [`T+DDD:HH:MM`], framing [corner ticks if the probe
-  passes, else (a)], T tray [T1], H height [H2], segments [10].
+  - F size [F1 11px — settled by the evidence, just confirm]
+  - W weight [W2-d if the user accepts the §2 exception and the desk
+    check passes; else W0. Not W1]
+  - §2 exception for W2 [user's explicit yes/no]
+  - Bar style [DOS fill `█`]; empty part [`░` with W0, `█` trough with
+    W2]
+  - S icons [S1 `◄` / `▂▄▆█` / `⏻`, without its `▌` bars]
+  - Charging [`CHG:` label swap]
+  - Framing [corner ticks]
+  - L layout [L2], MET format [`T+DDD:HH:MM`], T tray [T1], H height
+    [H2 keeps the bigger slider; H1 if the user would rather have a
+    slimmer bar]
+  - NET bar [none — the `▂▄▆█` steps carry signal]
+  - Bar width [10 cells]
 
 **Still open:**
 - Bar height auto-bumped again, 32px → 36px (2026-09-21) — enlarging
@@ -257,13 +265,12 @@ just building on top of it.
   small" feedback grew waybar's computed minimum further. Total drift
   from the original spec is now +6px (30px → 36px). Deferred rather
   than tuned further right now — now choice H1/H2 in the plan review.
-- Font: family confirmed 2026-10-06; **size (F) and weight (W) still
-  open**, W waiting on the weight test. Framing/palette on-screen
-  confirm also still open — it now happens on the corner-tick probe
-  screenshots, since the framing is about to change anyway. Both gate
-  locking the glyphs and closing Phase 1.
-- User choices from the plan review (S, NET bar, L, MET format, T, H,
-  segments) — needed before the build gets a go.
+- Font: family confirmed 2026-10-06; size and weight are choices F and
+  W (test results in the plan review). Framing/palette confirm: the
+  user has now seen corner ticks vs a full box on the probe — their
+  framing pick counts as the confirm.
+- All choices listed under "Choices pending" in the plan review —
+  needed before the build gets a go.
 - Module icons (VOL/NET/PWR) still blank — empty `format-icons` /
   missing glyphs since the initial baseline commit (found 2026-09-21),
   not caused by later edits. **Direction decided** 2026-10-06
@@ -329,6 +336,21 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
+- 2026-10-06 — **Test round reviewed: corner ticks proven, weight
+  options narrowed, DOS fill favored; f78a3e7 recovered.** UNIT-1 synced
+  docs (ba56d94; checked removed lines, nothing of its own dropped) and
+  ran the round: weight W0–W3, corner-tick probe (second waybar from the
+  scratchpad, bottom of screen, 90s auto-kill — exited cleanly, live bar
+  untouched), DOS fill, `⚡` check. Results and the updated choice list
+  are in Phase 1's plan review; the measured facts (crispness, W2's span
+  color limit, tick technique, installed weights) are in `BUILD_SPEC.md`
+  §3. Row E on the earlier glyph sheet was a test-script bug: the
+  progress-bar glyphs U+EE00–EE0B are in the font and render as one
+  outlined continuous bar, not segments. `git show f78a3e7`: everything
+  survived except one Log entry (restored below, under 2026-09-21) and
+  the bind's `locked = true, repeating = true` (now in `BUILD_SPEC.md`
+  §5 and the Mute location bullet). Next: user's choices, plus a W2-d
+  desk check by UNIT-1.
 - 2026-10-06 — **Combined plan reviewed; workspace click confirmed; font
   family confirmed with a bolder ask; doc-sync slip found and fixed.**
   UNIT-1 synced the docs (commit 0608fc0) and delivered the combined
@@ -369,6 +391,19 @@ _(newest first, short entries)_
   this session. Still pending from the user: workspace-click test and
   the font/framing on-screen confirm.
 
+- 2026-09-21 — **Mute keybind: already satisfied, no build needed.**
+  _(Restored 2026-10-06 from commit f78a3e7 after a doc sync dropped
+  it. The relayed copy was partly cut off; gaps marked […].)_ Overseer
+  relayed the mute-to-keybind decision as small enough to build without
+  a separate plan. Checked the live `~/.config/hypr/hyprland.lua` first
+  rather than assuming a blank slate — it's still Hyprland's unmodified
+  stock example config, and the exact binding asked for
+  (`XF86AudioMute` → `wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle`) is
+  already in there from the template. Nothing to change. Left `hypr/`
+  in this repo untouched […] Phase 4 work, not in scope while Phase 1
+  is still open. Also relayed: workspace-click live test is on the user
+  now that waybar-git is ins[talled …]; content-density plan stays
+  deferred until the Phase 1 "Still open" items clear […].
 - 2026-09-21 — **Session handoff: continuing in a new Overseer chat.**
   Wrap-up of this session: mute-location decided (Hyprland keybind, see
   Phase 1 "Decided so far"), content-density direction approved (same
