@@ -1,7 +1,13 @@
 # SITE-9 — Phases
 
-One file. UNIT-1 and the Project agent (THE OVERSEER) both read and update
-this directly — don't split status/tasks back out into separate files.
+One file — don't split status/tasks back out into separate files.
+
+**Maintained by THE OVERSEER** (since 2026-10-06). UNIT-1 reads this but
+doesn't edit it: it reports work in a "Report for THE OVERSEER" block
+(see `AGENTS.md`), the user relays that to the Project chat, and THE
+OVERSEER folds it in here and hands back an updated file for the user to
+drop into the repo. Log entries before 2026-10-06 were written by both
+agents directly.
 
 ## How this actually works
 
@@ -27,6 +33,58 @@ work only starts once that review comes back with a go-ahead.
 | 4 | Motion (Hyprland animations/window rules) | Not started |
 | 5 | Login screen (optional — gated on whether a display manager exists) | Not started |
 | 6 | Sidebar | Not started |
+
+## Next up for UNIT-1
+
+_Written by THE OVERSEER; replaced whenever there's a new task. **Plan
+only** — don't build anything until the plan is reviewed and approved._
+
+**Task (2026-10-06): one combined plan for Phase 1's remaining waybar
+work** — icon glyphs + content-density rework + where bar height lands.
+These touch the same modules and share one glyph vocabulary, so they get
+planned together (see Phase 1 "Decided so far" → Combined pass).
+
+The plan should cover:
+
+1. **Icon glyphs (VOL / NET / PWR).** 2–3 candidates per module in the
+   HUD/gauge direction (`BUILD_SPEC.md` §3 Icon direction). For each:
+   codepoint, a plain description of what it looks like, and proof it's
+   present in the installed Departure Mono Nerd Font — check the font
+   itself (e.g. `fc-query` on the installed file, or render a test
+   string at bar size), not a cheat-sheet. Say if network/battery icons
+   should change with state (signal level, charge level) and how.
+2. **Segmented value bars.** Filled/empty glyph pair options (e.g.
+   `▮`/`▯` plus alternatives), segment count, which modules get one.
+   Prefer a native approach — e.g. a `format-icons` array of prebuilt
+   bar strings, which waybar already indexes by level for modules that
+   support it — over a polling script. Verify per module against the
+   installed man pages which ones support level-indexed icons.
+3. **New modules.** Which of CPU / RAM / uptime-as-mission-clock /
+   static `SITE-9` tag go in, where each sits (left/center/right), and
+   update intervals. Keep intervals as slow as is still useful. If
+   uptime needs a `custom/` module, say so and give its interval and
+   exact command.
+4. **Corner-tick framing.** How it would actually be built in waybar's
+   GTK CSS within §2 (no `box-shadow`, no gradients, nothing animated).
+   Feasibility is the real open question here — if clean corner ticks
+   aren't achievable without a hack, say so and propose the closest
+   clean fallback rather than forcing it.
+5. **Tray boxing.** Same `--border` box (or corner-tick) treatment as
+   the other modules.
+6. **Bar height.** Expected final height after all of the above,
+   compared to the original 30px (currently 36px), and what's driving
+   it.
+7. **Mute keybind (optional).** Whether to add the `XF86AudioMute`
+   keybind now or leave it for Phase 4 — your call, just state it. Note
+   `hypr` isn't stowed yet (see `BUILD_SPEC.md` §5).
+
+Format: short, concrete, options rather than picks for anything
+design-related, list of every file the plan would touch, and what you
+verified each version-specific config key against.
+
+Gating: draft now. Glyph choices can't be **locked** until the user
+confirms Departure Mono on-screen (Phase 1 "Still open") — the icons
+will be drawn in it.
 
 ## Phase 1 — Waybar restyle
 
@@ -74,26 +132,33 @@ just building on top of it.
   option, so binding it there isn't confirmed possible. A dedicated key
   is also the more standard pattern (status widget for glanceable
   state + fine adjustment, discrete toggle lives at the compositor
-  level) and sidesteps the group/leader click-conflict entirely.
-  **Already satisfied (2026-09-21):** checked the live
-  `~/.config/hypr/hyprland.lua` before building anything — it's still
-  Hyprland's stock example config, which already binds
-  `XF86AudioMute` to `wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle`
-  (`locked = true, repeating = true`), word-for-word the target above.
-  No edit needed. `hypr/` in this repo is still just `.gitkeep` —
-  importing the rest of `hyprland.lua` into tracked config is Phase 4
-  scope, not started, per the one-phase-at-a-time rule (Phase 1 still
-  open).
+  level) and sidesteps the group/leader click-conflict entirely. Not
+  yet built — this is Phase 4 (Motion/Hyprland config) territory once
+  hypr/ is actually touched, or can be done now as a small aside since
+  it's just one keybind line; UNIT-1's call on timing.
 - Content-density direction approved (2026-09-21) — user reacted
   positively to all of the Overseer's brainstormed additions from the
   "too simple" feedback round: more modules (CPU/RAM/uptime formatted
   as a mission clock, a static `SITE-9` tag), segmented value bars
   (block-character gauges like `▮▮▮▯▯` next to the percentage),
   corner-tick framing instead of full-rectangle module boxes, and
-  boxing the tray icons for consistency. Approved in direction, not yet
-  scoped into a concrete plan — needs a UNIT-1 plan (which modules,
-  exact glyphs, layout) reviewed same as any non-trivial pass, once the
-  current open items below clear.
+  boxing the tray icons for consistency. Approved in direction. Now
+  being scoped together with the icon glyphs — see Combined pass below.
+- Icon direction (2026-10-06, user's pick): HUD/gauge-style glyphs for
+  VOL/NET/PWR — boxy, segmented/bracket forms, not the default rounded
+  icon-font look. Chosen over minimal outline glyphs and icon-less.
+  Full detail in `BUILD_SPEC.md` §3. Exact glyphs not chosen yet.
+- Combined pass (2026-10-06, THE OVERSEER): icon glyphs, the
+  content-density rework, and the bar-height drift get scoped as **one**
+  UNIT-1 plan instead of separate passes. Same modules, same blocky
+  glyph vocabulary — planning them apart risks two visual systems on one
+  bar. This replaces the earlier "wait until the open items clear"
+  sequencing; only glyph *locking* waits on the font confirm. Brief is
+  in "Next up for UNIT-1" above.
+- Keep `waybar-git` (2026-10-06 check): latest tagged Waybar release is
+  still 0.15.0, without the PR #5013 Lua-dispatch fix. Recheck at each
+  phase start; return to `extra/waybar` once a tagged release has it.
+  Recorded in `BUILD_SPEC.md` §4.
 
 **Still open:**
 - Bar height auto-bumped again, 32px → 36px (2026-09-21) — enlarging
@@ -103,17 +168,20 @@ just building on top of it.
   than tuned further right now — folding into the content-density
   rework below rather than chasing gauge size in isolation.
 - Workspace click fix needs live confirmation — package is swapped and
-  waybar's restarted clean, but this agent has no way to simulate a
-  click to verify the fix actually works end-to-end.
+  waybar's restarted clean, but UNIT-1 can't simulate a click. **User
+  action:** click a few workspace tabs and report whether they switch.
+  Still pending as of 2026-10-06.
 - On-screen confirm of the new framing/color AND the palette/font-at-
   bar-scale check (now Departure Mono, see above) — do both together,
-  this is the real gate before Phase 1 closes. Not yet done.
-- Module icons (VOL/NET/PWR) discovered blank (2026-09-21) — empty
-  `format-icons`/missing glyphs since the initial baseline commit, not
-  something recent edits caused. `BUILD_SPEC.md`'s "icons + short
-  HUD-style text labels" decision isn't actually built yet. Iconography
-  is an ask-first item per `AGENTS.md` — needs the user/Overseer to pick
-  actual glyphs before this gets filled in.
+  this is the real gate before Phase 1 closes. **User action**, still
+  pending as of 2026-10-06. Also gates locking the icon glyphs (they'll
+  be drawn in this font).
+- Module icons (VOL/NET/PWR) still blank — empty `format-icons` /
+  missing glyphs since the initial baseline commit (found 2026-09-21),
+  not caused by later edits. **Direction decided** 2026-10-06
+  (HUD/gauge-style, see "Decided so far"); what's left is choosing the
+  actual glyphs, which is item 1 of the combined plan. Still ask-first:
+  UNIT-1 proposes candidates, doesn't pick.
 
 **Resolved:**
 - Fractional-scale conflict (scale was 1.5, `BUILD_SPEC.md` §2 requires
@@ -172,21 +240,25 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
-- 2026-09-21 — **Mute keybind: already satisfied, no build needed.**
-  Overseer relayed the mute-to-keybind decision as small enough to
-  build without a separate plan. Checked the live
-  `~/.config/hypr/hyprland.lua` first rather than assuming a blank
-  slate — it's still Hyprland's unmodified stock example config, and
-  the exact binding asked for (`XF86AudioMute` →
-  `wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle`) is already in there
-  from the template. Nothing to change. Left `hypr/` in this repo
-  untouched (still just `.gitkeep`) — bringing the live config under
-  this repo's tracking is Phase 4 work, not in scope while Phase 1 is
-  still open. Also relayed: workspace-click live test is on the user
-  now that `waybar-git` is installed (not something this agent can
-  simulate); content-density plan stays deferred until the Phase 1
-  "Still open" items clear, per Overseer's instruction not to start
-  scoping it from the idea list alone.
+- 2026-10-06 — **New Overseer chat: icon direction decided, combined
+  plan briefed, doc ownership moved to THE OVERSEER.** Picked up from
+  the 2026-09-21 handoff. User chose HUD/gauge-style icon glyphs (over
+  minimal outline or icon-less); recorded in `BUILD_SPEC.md` §3 as one
+  visual system with the segmented value bars. THE OVERSEER folded the
+  icon work, the content-density rework, and the bar-height drift into
+  a single UNIT-1 plan — brief written into the new "Next up for
+  UNIT-1" section. Workflow change: THE OVERSEER now maintains
+  `BUILD_SPEC.md`, `PHASES.md`, and `AGENTS.md`; the user downloads and
+  drops them into the repo; UNIT-1 stops editing docs and reports via a
+  "Report for THE OVERSEER" block instead (rules in `AGENTS.md`). Also
+  added the cropped/upscaled screenshot method to `AGENTS.md` as a
+  standing rule. Checked Waybar releases: latest tag still 0.15.0, so
+  `waybar-git` stays (now noted in `BUILD_SPEC.md` §4). Fixed stale
+  `BUILD_SPEC.md` §5, which still described waybar as the unstyled
+  placeholder and didn't note `hypr` is unstowed. No machine changes
+  this session. Still pending from the user: workspace-click test and
+  the font/framing on-screen confirm.
+
 - 2026-09-21 — **Session handoff: continuing in a new Overseer chat.**
   Wrap-up of this session: mute-location decided (Hyprland keybind, see
   Phase 1 "Decided so far"), content-density direction approved (same

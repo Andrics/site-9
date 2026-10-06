@@ -13,7 +13,36 @@ before touching anything.
 
 Don't start work without having read both. If `PHASES.md` says a phase is
 in progress, read its notes and open questions before assuming what state
-it's in.
+it's in. Your current task is always in `PHASES.md` → "Next up for
+UNIT-1".
+
+## Docs ownership (from 2026-10-06)
+
+`BUILD_SPEC.md`, `PHASES.md`, and this file are **maintained by THE
+OVERSEER**. The user downloads updated versions from the Project chat and
+drops them into the repo. So:
+
+- **Don't edit these three files.** If something in them is wrong or out
+  of date against the actual machine, say so in your report — don't fix
+  it in place. Your edits would be overwritten on the next drop-in.
+- **When the user drops in new versions**, check `git diff` on them
+  first. If it shows only the incoming changes, commit as
+  `docs: sync from Overseer (YYYY-MM-DD)`. If it shows local edits you
+  didn't expect, stop and ask — don't merge or discard them yourself.
+- **End every reply that did real work with a report block**, so the
+  user can carry it back for THE OVERSEER to fold into the docs:
+
+```
+## Report for THE OVERSEER
+- Done: what changed — files, commits (hash + message)
+- Verified: facts checked, and against what (man page, pacman -Si,
+  hyprctl version, waybar --version, actual font file, etc.)
+- Found: anything unexpected, including docs that don't match the machine
+- Needs a decision: open questions, with options if you have them
+- Proposed doc changes: anything you think BUILD_SPEC/PHASES should say
+```
+
+Plans (see Workflow below) don't need this block — just the plan.
 
 ## Workflow: plan → review → go
 
@@ -53,8 +82,15 @@ over, not sprawling.
   changed — not one giant commit per phase. This is a personal dotfiles
   repo, not a team project: clarity over ceremony, no need for PRs/branches
   unless the user asks for them.
-- **Update `PHASES.md`** when you finish a phase (or a meaningful chunk of
-  one) — status, and a short note for the next session.
+- **Report, don't update docs.** When you finish a phase or a meaningful
+  chunk of one, put status and notes for the next session in your
+  "Report for THE OVERSEER" block — THE OVERSEER writes them into
+  `PHASES.md`. (Before 2026-10-06 you edited `PHASES.md` directly; that's
+  no longer the process.)
+- **Screenshots for review:** crop to the bar and upscale with
+  nearest-neighbor (`grim -g "0,0 1920x<bar height>"` then `ffmpeg`
+  with `flags=neighbor`, ~3x) — a full-desktop capture is too small to
+  judge font weight or framing.
 - **Ask before big or destructive changes** — anything that would be
   annoying to undo (repartitioning config structure, removing a working
   tool in favor of another, touching files outside this repo's scope).

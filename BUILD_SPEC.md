@@ -3,6 +3,8 @@
 > Personal workstation configuration. Arch Linux / Hyprland.
 > This is the source of truth for constraints and design decisions.
 > Read this before touching styling on anything.
+> Maintained by THE OVERSEER (since 2026-10-06). UNIT-1 reads, doesn't
+> edit — see `AGENTS.md` "Docs ownership".
 
 ---
 
@@ -112,9 +114,28 @@ treatment would have given).
 - Outer bar getting a top/bottom hairline rule (echoing a report-page
   header) is a nice-to-have, not required.
 
-Still needs: a UNIT-1 implementation plan (waybar CSS + module config for
-the state thresholds) reviewed before executing, then an on-screen
-confirm same as the palette got.
+Status: built and deployed 2026-09-21 (see `PHASES.md` Log). Still needs
+the user's on-screen confirm. Note: the approved content-density
+direction swaps full-rectangle boxes for **corner-tick framing** — that
+change is being scoped in the combined plan (`PHASES.md` "Next up for
+UNIT-1"), so the full-box treatment above is current-but-provisional.
+
+### Icon direction (decided Phase 1 — 2026-10-06)
+
+HUD/gauge-style glyphs for the VOL/NET/PWR modules: boxy, segmented or
+bracket-like forms that lean into the HEV HUD — **not** the default
+rounded, Font-Awesome-style icon-font look. Chosen over minimal outline
+glyphs and over going icon-less.
+
+- Icons and the segmented value bars (`▮▮▮▯▯`-style, content-density
+  pass) are **one visual system**: same blocky, geometric register.
+  Don't pick them independently.
+- Exact glyphs are not chosen yet. Candidates must be confirmed present
+  in the installed Departure Mono Nerd Font build (check the font
+  itself, not a generic Nerd Fonts cheat-sheet — coverage varies by
+  patch set) and proposed as options, not picked.
+- If a good glyph only exists via a fallback font, that's a design
+  question to raise, not something to quietly wire in.
 
 ### What IS fixed regardless of which palette gets picked
 
@@ -144,7 +165,12 @@ now — no audio dependencies, no hooks, until it's an actual phase.
 ## 4. Stack (current, confirm nothing here has gone stale)
 
 - Compositor: Hyprland
-- Bar: waybar
+- Bar: waybar — installed as **`aur/waybar-git`**, not `extra/waybar`.
+  The fix for Hyprland's Lua dispatch (Waybar PR #5013) isn't in a
+  tagged release yet: latest tag is still 0.15.0 (checked 2026-10-06).
+  Recheck at each phase start; switch back to `extra/waybar` once a
+  tagged release includes the fix. Background in `PHASES.md` Log
+  (2026-09-21).
 - Launcher: fuzzel
 - Notifications: mako
 - Idle/lock: hypridle + hyprlock
@@ -155,9 +181,15 @@ now — no audio dependencies, no hooks, until it's an actual phase.
 
 ## 5. What's already built
 
-- **waybar** — functional baseline exists (`waybar/.config/waybar/` in this
-  repo): workspaces, clock, pulseaudio, network, battery, tray. Module
-  *layout* is fine to keep. Styling is still the old generic dark-minimal
-  placeholder and does **not** match the Half-Life/Black Mesa language yet
-  — full restyle is Phase 1, currently in progress. See `PHASES.md`.
-- Nothing else has been touched yet. Everything else starts from scratch.
+- **waybar** (`waybar/.config/waybar/`, stowed live with `stow -t ~`):
+  workspaces, clock, pulseaudio (+ click-to-reveal volume slider),
+  network, battery, tray. Phase 1 restyle is deployed — locked palette,
+  Departure Mono, per-module boxes, `FIELD: value` labels, state colors.
+  Not yet confirmed on-screen by the user, module icons still blank, and
+  the content-density rework is still to come. Phase 1 stays open. See
+  `PHASES.md`.
+- **hypr** — not stowed from this repo yet. The only change so far is
+  `scale = "1"`, made directly in the live `~/.config/hypr/hyprland.lua`
+  (Phase 1 fix). When `hypr` is first stowed, back up the live file and
+  carry that line over.
+- Everything else starts from scratch.
