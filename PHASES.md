@@ -38,27 +38,56 @@ work only starts once that review comes back with a go-ahead.
 
 _Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Status (2026-10-06, #3): test round done and reviewed. No build yet —
-waiting on the user's choices** (Phase 1 → "Choices pending"). The
-build plan will be sent as soon as they're in.
+**Task (2026-10-06, #5): build Phase 1's final waybar pass. GO —
+approved.** The user picked every option (Phase 1 → "Choices made").
+The locked spec is `BUILD_SPEC.md` §2 (double-strike exception) and §3
+(font, framing, state color, labels, icons/bars, layout). Build exactly
+that. If something renders wrong or a key doesn't behave as `§6`
+says, **stop and report** with options — don't improvise a design fix.
 
-**One desk check meanwhile (no probe, no live changes):** option W2-d.
-If the user picks double-strike weight, the only way to keep the dim
-`FIELD:` labels dim is to give each label its own static module
-(`custom/…`, `"interval": "once"`, no exec — same as the `SITE-9` tag),
-colored `--text-dim` in CSS, so its doubled copy is dim too. Check
-against the waybar-git source/man pages and report:
-1. Can a label module sit inside a `group/…` next to its value module,
-   with the corner ticks drawn around the group rather than each
-   module?
-2. `group/volume` is a drawer with `pulseaudio` as leader and
-   `click-to-reveal`. Does adding a label module break the reveal or
-   change which module leads? What arrangement keeps it working?
-3. The DOS fill's empty part is inside the value string, so under W2 it
-   takes the module color. Under W2, does a `█` dark-trough empty part
-   (instead of `░`) leave only a 1px bright overhang at the bar's right
-   end, as THE OVERSEER expects? Reason it through from the render
-   order, no probe needed.
+Files: `waybar/.config/waybar/config.jsonc`, `style.css`, and a new
+`frame/tick-symbolic.svg` (from the probe). Verify every config key
+you haven't used before against the installed man pages / source, and
+list them in your report.
+
+Build in this order, **one commit per step**:
+
+1. **Font & weight.** `font-family: "DepartureMono Nerd Font"`,
+   `font-size: 11px`, `text-shadow: 1px 0 0 currentColor` on bar text.
+   Remove the dim-label pango spans — labels take the module's color.
+2. **Corner ticks.** Move the probe's 9-slice SVG into `frame/`, frame
+   every module and the tray with it, `--border` by default, recolored
+   via `-gtk-recolor` for `.warning` / `.critical` / `.disconnected`.
+   Workspace tabs: keep their current individual boxes for now (open
+   question for the screenshot review). Note each hardcoded hex with a
+   comment naming the `style.css` token it mirrors.
+3. **New modules + layout L2.** `custom/site` (`SITE-9`,
+   `"interval": "once"`, no exec), `custom/met` (interval 60, the
+   `awk` on `/proc/uptime` from your plan, `T+DDD:HH:MM`), `cpu`
+   (interval 10), `memory` (interval 30). Order: left `custom/site`,
+   workspaces · center clock, `custom/met` · right cpu, memory,
+   `group/volume`, network, battery, tray. Any new group needs
+   `"orientation": "horizontal"` (§6).
+4. **Icons & bars.** S1 icons; DOS-fill bars (10 cells, N-entry
+   `format-icons` arrays) on VOL, PWR, CPU, RAM, empty cells `█` in
+   `--border` via span; NET signal steps `▂▄▆█` with unlit steps in
+   `--border`; readout order icon, label, bar, value. Battery
+   `format-charging` swaps the label to `CHG:` (verify the key). Keep
+   existing PWR/NET thresholds and the disconnected format.
+5. **Tray & height.** Tray `icon-size: 14`; bar `"height": 36` set
+   explicitly (slider stays 14px/24px). Remove the stale "diagnostic
+   test / restore mute" comment from `config.jsonc`.
+6. **Deploy & capture.** The waybar package gained a new file, so
+   restow: `stow -R -t ~ waybar` from the repo, confirm
+   `~/.config/waybar/frame/` is linked, restart waybar, check the log
+   for errors, confirm 1920×36 via `hyprctl layers`. Screenshot cropped
+   and upscaled (`AGENTS.md`): the full bar plus close-ups of left,
+   center, and right. If you can trigger a warning state safely (e.g.
+   temporarily lowering a threshold in a scratch copy, not the repo),
+   capture one; otherwise say so.
+
+Then report. Phase 1 closes after THE OVERSEER's review and the user's
+on-screen confirm.
 
 ## Phase 1 — Waybar restyle
 
@@ -243,41 +272,75 @@ just building on top of it.
   - Probe height: 24px with ticks and 11px text but no slider. The live
     36px comes from the slider alone, so H1 could land well under 30px.
 
-  Choices pending from the user (THE OVERSEER's lean in brackets):
-  - F size [F1 11px — settled by the evidence, just confirm]
-  - W weight [W2-d if the user accepts the §2 exception and the desk
-    check passes; else W0. Not W1]
-  - §2 exception for W2 [user's explicit yes/no]
-  - Bar style [DOS fill `█`]; empty part [`░` with W0, `█` trough with
-    W2]
-  - S icons [S1 `◄` / `▂▄▆█` / `⏻`, without its `▌` bars]
-  - Charging [`CHG:` label swap]
-  - Framing [corner ticks]
-  - L layout [L2], MET format [`T+DDD:HH:MM`], T tray [T1], H height
-    [H2 keeps the bigger slider; H1 if the user would rather have a
-    slimmer bar]
-  - NET bar [none — the `▂▄▆█` steps carry signal]
-  - Bar width [10 cells]
+  W2-d desk check (2026-10-06, against waybar-git source at 3672eee0):
+  - Label module + value module in a group, ticks on the group: works.
+    **But the frame can no longer follow state** — `.warning` /
+    `.critical` / `.disconnected` sit on the value module, and GTK3 CSS
+    has no parent selector, so neither the group's frame nor the label
+    can react. Lost: PWR frame going amber/red, NET label going red on
+    disconnect. Value text and bar still recolor. Untested workaround:
+    split ticks — label module draws the left ticks, value module the
+    right ticks (recolored by state), so half the frame follows state.
+  - Volume drawer: the label can't just be added to `group/volume` (it
+    would become the leader, or be hidden in the drawer). Arrangement
+    A: drawer = [`group/vol-head`, `pulseaudio/slider`], with vol-head
+    = [`custom/vol-label`, `pulseaudio`] — click anywhere on label or
+    value toggles the slider, same as today. Arrangement B: plain outer
+    group = [label, `group/volume`] — label clicks do nothing. Neither
+    has been run.
+  - Icon order: with labels as separate modules, level-changing icons
+    (NET steps) must sit after the label (`NET: ▂▄▆█ 82%`); static
+    icons (`◄`, `⏻`) either go in the dim label module or move after
+    the label too.
+  - Cost: VOL/NET/PWR/CPU/RAM each gain a label module plus a group —
+    all `"interval": "once"`, no exec, no runtime cost, but noticeably
+    more config.
+  - `█` trough under W2: confirmed by reasoning from the render order
+    (shadow pass first, real text on top; the test-round pixels back it
+    up). Exactly one bright 1px column at the bar's right end, full
+    height, in the module's state color. The lit/trough boundary stays
+    clean.
+
+  THE OVERSEER's reading: W2-d keeps the dim labels but costs the
+  state-colored frame — which is also a locked §3 rule — unless the
+  untested split-tick workaround holds, and it roughly doubles the
+  module count. Three clean paths:
+  - **W0** — light weight, everything as locked, no exception, no new
+    structure.
+  - **W2-c** — bold everywhere; labels lose their separate dim color
+    and take the module's color, so the *whole* readout (label, value,
+    bar, frame) turns amber/red in a flagged state, HEV-style. One
+    locked rule changes (dim labels); config stays simple; no drawer
+    changes.
+  - **W2-d + split ticks** — keeps dim labels and (half-)state-colored
+    frames; needs drawer arrangement A and one more probe to prove the
+    split ticks before building.
+
+  **Choices made (user, 2026-10-06):** "W2-c, yes to exception, rest
+  your leans." So: 11px; W2-c double-strike weight with labels in the
+  module color; §2 exception granted (wording in `BUILD_SPEC.md` §2);
+  DOS-fill `█` bars with a `█` `--border` trough, 10 cells; S1 icons
+  (`◄` / `▂▄▆█` / `⏻`) without `▌` bars; `CHG:` label while charging;
+  corner-tick framing; layout L2; MET `T+DDD:HH:MM`; tray T1; height H2
+  (36px); no NET bar. All recorded as locked in `BUILD_SPEC.md` §2–§3.
+  This replaces the earlier "segmented value bars" idea with a fill bar
+  and the dim-label rule with one-color readouts.
 
 **Still open:**
-- Bar height auto-bumped again, 32px → 36px (2026-09-21) — enlarging
-  the slider gauge (14px/24px, up from 6px/20px) to address the "too
-  small" feedback grew waybar's computed minimum further. Total drift
-  from the original spec is now +6px (30px → 36px). Deferred rather
-  than tuned further right now — now choice H1/H2 in the plan review.
-- Font: family confirmed 2026-10-06; size and weight are choices F and
-  W (test results in the plan review). Framing/palette confirm: the
-  user has now seen corner ticks vs a full box on the probe — their
-  framing pick counts as the confirm.
-- All choices listed under "Choices pending" in the plan review —
-  needed before the build gets a go.
-- Module icons (VOL/NET/PWR) still blank — empty `format-icons` /
-  missing glyphs since the initial baseline commit (found 2026-09-21),
-  not caused by later edits. **Direction decided** 2026-10-06
-  (HUD/gauge-style, see "Decided so far"); candidates are now on the
-  table as S1/S2/S3 in the plan review — the user picks.
+- **Final build** (2026-10-06): approved and briefed in "Next up for
+  UNIT-1". Then THE OVERSEER reviews the screenshots and the user
+  gives the on-screen confirm — that closes Phase 1.
+- Workspace tabs: keep individual full boxes, or move to corner ticks
+  like everything else? Decide at the screenshot review.
+- Module icons still blank on the live bar until the build lands
+  (glyphs now chosen — S1).
 
 **Resolved:**
+- All Phase 1 design choices (2026-10-06): font size/weight, §2
+  double-strike exception, framing, bars, icons, charging, layout, MET,
+  tray, height — see "Choices made" in the plan review.
+- Bar height drift (30 → 36px): kept at 36px on purpose (H2), now set
+  explicitly instead of auto-bumped.
 - Workspace click-to-switch: works on `waybar-git`, confirmed by the
   user 2026-10-06.
 - Fractional-scale conflict (scale was 1.5, `BUILD_SPEC.md` §2 requires
@@ -336,6 +399,30 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
+- 2026-10-06 — **All Phase 1 choices made; final build approved.** User:
+  "W2-c, yes to exception, rest your leans." Locked in `BUILD_SPEC.md`:
+  §2 gains a narrow exception for `text-shadow: 1px 0 0 currentColor`
+  as double-strike weight only; §3 now records 11px + double-strike,
+  corner-tick framing, one-color readouts (dim-label rule retired),
+  S1 icons, DOS-fill bars with a `--border` trough, `CHG:` while
+  charging, layout L2, MET format, tray, and 36px height. Build brief
+  (6 steps, one commit each, restow for the new `frame/` dir) written
+  into "Next up for UNIT-1". Open for the screenshot review: workspace
+  tab framing.
+- 2026-10-06 — **W2-d desk check reviewed; weight narrowed to three
+  paths.** UNIT-1 synced docs (a235011; removed lines checked, nothing
+  of its own dropped) and desk-checked W2-d against the waybar-git
+  source — no probe, no machine changes. W2-d works structurally but
+  loses state-colored frames (no parent selector in GTK3 CSS), needs a
+  nested drawer arrangement, and adds a label module + group per
+  readout. `█` trough under W2 confirmed: one 1px bright end column.
+  Review and the three weight paths (W0 / W2-c / W2-d + split ticks)
+  are in Phase 1's plan review; lean W2-c. Verified waybar behavior
+  (group orientation default, drawer packing, click handling,
+  `always-visible-class`) recorded in `BUILD_SPEC.md` §6. Next: user's
+  choices. Project instructions also rewritten for the
+  docs-ownership + relay + /clear workflow (text given to the user to
+  paste into the Project).
 - 2026-10-06 — **Test round reviewed: corner ticks proven, weight
   options narrowed, DOS fill favored; f78a3e7 recovered.** UNIT-1 synced
   docs (ba56d94; checked removed lines, nothing of its own dropped) and

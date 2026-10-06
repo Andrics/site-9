@@ -47,6 +47,14 @@ with one of these, the design idea loses.
 - Nothing that renders continuously while idle (e.g. animated borders,
   looping background effects, animated wallpapers/video wallpapers).
 
+**Exception — double-strike text weight (user-approved 2026-10-06).**
+Exactly `text-shadow: 1px 0 0 currentColor` is allowed: zero blur, 1px
+horizontal offset, same color as the text. It renders as a 1px-wider
+stroke (the font has no bold), not as a shadow, and it's static with
+negligible cost. Allowed for font weight only. Any other `text-shadow`,
+any blur, any offset in another direction or color, and any
+`box-shadow` stay banned.
+
 ## 3. Design language: Half-Life / Black Mesa
 
 Primary references — go look at both before making style calls:
@@ -97,7 +105,10 @@ into every later phase rather than re-deciding per app.
   11px (11, 22, …). Other sizes (e.g. the current 13px) give uneven
   strokes. Pick sizes on the grid unless a deliberate exception is
   decided and recorded here.
-- **Weight:** only Regular is installed (confirmed with `fc-list`
+- **Locked 2026-10-06: 11px, double-strike weight** (`text-shadow: 1px
+  0 0 currentColor`, the §2 exception). Crisp 2px strokes, the
+  MS-DOS/terminal blocky look the user asked for.
+- **Weight background:** only Regular is installed (confirmed with `fc-list`
   2026-10-06: Regular in the Nerd Font, Nerd Font Mono, and Nerd Font
   Propo variants). Tested ways to look bolder, at 11px:
   - Synthetic bold (`font-weight: bold`): bolder but smeared, with gray
@@ -120,26 +131,32 @@ state-driven color use. Direction chosen: primarily bracketed-HUD framing
 (not structural — the module boxes already provide separation a hairline
 treatment would have given).
 
-- **Framing:** every module (workspace group, clock, VOL, NET, PWR) gets
-  its own thin `--border` box, small gap between boxes so they read as
-  discrete panel segments rather than one continuous strip. Workspace
-  numbers become individually boxed tabs, not plain numbers with a
-  highlight.
-- **State color:** values default to `--text` (label in `--text-dim`,
-  uppercase, e.g. `PWR:`), box border/value shifts to `--warning` or
-  `--critical` when the module is in a flagged state, `--accent` marks
-  the active workspace. Suggested starting thresholds (adjustable once
-  seen live): PWR `--warning` <30%, `--critical` <15%; NET `--critical`
-  on disconnect. Not yet confirmed on-screen.
-- **Labels:** `FIELD: value` formatting inside each box — uppercase
-  dimmed label, value in state color — carries the SCP report influence
-  without adding separate hairline dividers.
+- **Framing:** every module gets its own frame, small gap between frames
+  so they read as discrete panel segments rather than one continuous
+  strip. **Frame style updated 2026-10-06: corner ticks** (5px L-shaped
+  ticks at each corner, technique below) instead of full rectangles.
+  Workspace numbers are individually boxed tabs (whether the tabs move
+  to ticks too is open — see `PHASES.md`).
+- **State color (updated 2026-10-06):** each readout is one color — label,
+  icon, bar fill, value, and frame ticks all default to `--text`/
+  `--border` and the **whole readout** shifts to `--warning` or
+  `--critical` when the module is in a flagged state (HEV-style: the
+  entire reading turns amber/red). `--accent` marks the active
+  workspace. Thresholds (adjustable once seen live): PWR `--warning`
+  <30%, `--critical` <15%; NET `--critical` on disconnect.
+- **Labels (updated 2026-10-06):** `FIELD: value` formatting, uppercase
+  label — **same color as its value**, no separate dim color. Replaces
+  the original dim-label rule: with the double-strike weight, GTK3 draws
+  the doubled stroke in the module color and ignores span colors, so
+  dim labels would come out two-tone (see Weight above). The SCP report
+  influence is carried by the `FIELD:` format, the `SITE-9` tag, and the
+  mission clock.
 - Outer bar getting a top/bottom hairline rule (echoing a report-page
   header) is a nice-to-have, not required.
 
-Status: built and deployed 2026-09-21 (see `PHASES.md` Log). The approved
-content-density direction swaps full-rectangle boxes for **corner-tick
-framing**, so the full-box treatment above is current-but-provisional.
+Status: full-box version built and deployed 2026-09-21. The corner-tick
+and one-color-readout updates above are decided (2026-10-06) and being
+built — see `PHASES.md` "Next up for UNIT-1".
 
 **Corner ticks — proven feasible (probe, 2026-10-06):** 9-slice
 `border-image` from an 11×11 SVG with 1px L-shaped corners and
@@ -160,7 +177,7 @@ bracket-like forms that lean into the HEV HUD — **not** the default
 rounded, Font-Awesome-style icon-font look. Chosen over minimal outline
 glyphs and over going icon-less.
 
-- Icons and the segmented value bars (content-density pass) are **one
+- Icons and the value bars (content-density pass) are **one
   visual system**: same blocky, geometric register. Don't pick them
   independently.
 - What the font actually has (checked 2026-10-06 with `fc-query` and
@@ -179,12 +196,36 @@ glyphs and over going icon-less.
   from a color emoji font. Pin them with U+FE0E or avoid them. (No color
   emoji font is installed as of 2026-10-06, so `⚡` currently renders as
   Departure's own small, thin text glyph.)
-- Exact glyphs are not chosen yet. Candidates must be confirmed present
-  in the installed Departure Mono Nerd Font build (check the font
-  itself, not a generic Nerd Fonts cheat-sheet — coverage varies by
-  patch set) and proposed as options, not picked.
+- **Locked 2026-10-06 (user's picks):**
+  - VOL: `◄` U+25C4, static. PWR: `⏻` U+23FB. NET: signal steps
+    `▂▄▆█` (U+2582/2584/2586/2588), lit steps in the module color,
+    unlit in `--border`. NET gets no separate bar.
+  - Bars (VOL, PWR, CPU, RAM): **DOS fill** — 10 cells of `█`, lit
+    cells in the module color, empty cells `█` in `--border` (dark
+    trough). Not `▌` segments (soft at 11px) and not `░` (soft, and
+    busy under double-strike). Accepted side effect: one 1px column in
+    the module color right after the bar's end (double-strike
+    overhang).
+  - Charging: the `PWR:` label becomes `CHG:` while charging. No
+    lightning glyph.
+  - Readout order: icon, label, bar, value — e.g. `◄ VOL: ██████████
+    60%`, `▂▄▆█ NET: 82%`, `⏻ PWR: ██████████ 18%`.
+- New glyphs later must still be confirmed present in the installed
+  font (check the font itself, not a cheat-sheet) and proposed as
+  options, not picked.
 - If a good glyph only exists via a fallback font, that's a design
   question to raise, not something to quietly wire in.
+
+### Locked bar layout & content (decided Phase 1 — 2026-10-06)
+
+- **Layout (L2):** left — `SITE-9` tag, workspaces. Center — clock,
+  mission clock. Right — CPU, RAM, VOL, NET, PWR, tray.
+- **Mission clock (MET):** system uptime as `T+DDD:HH:MM`, updated every
+  60s. No seconds (they'd sit stale between updates).
+- **Tray:** one frame around the whole tray, icons at 14px. Tray icons
+  keep their app colors.
+- **Height:** 36px, set explicitly — keeps the larger volume slider
+  (14px/24px gauge) the user asked for. Original spec was 30px.
 
 ### What IS fixed regardless of which palette gets picked
 
@@ -246,3 +287,38 @@ now — no audio dependencies, no hooks, until it's an actual phase.
   repeating = true`), which is where mute lives now. When `hypr` is first stowed, back up
   the live file and carry both over.
 - Everything else starts from scratch.
+
+## 6. Verified tooling facts
+
+Behavior checked against the actual installed versions — not training
+data. Recheck if the package version changes. Newest first.
+
+**waybar-git 3672eee0** (source + installed `waybar.5`, 2026-10-06):
+- **Group orientation** defaults to `"orthogonal"`, which makes a group
+  *vertical* on a horizontal bar. Every group must set
+  `"orientation": "horizontal"` (or `"inherit"`).
+- **Group CSS name** is the part after `group/` — `group/net` is styled
+  as `#net`. Groups can nest.
+- **Drawer packing:** in a drawer group only the first module (the
+  leader) is visible; every later module goes into the revealer and is
+  hidden until revealed.
+- **Clicks:** a module only takes button presses if it has an
+  `on-click*` key (or the code forces clicks on). `custom/` modules
+  default to not taking clicks, so a static label with no `on-click`
+  passes clicks through to its group. A leader with *any* `on-click*`
+  bound swallows the drawer's reveal click (2026-09-21 finding).
+- **State classes** (`.warning`, `.critical`, `.disconnected`, …) are
+  set on the module's own widget. GTK3 CSS has no parent selector, so a
+  group's frame or a sibling module can't react to them.
+- **`always-visible-class`** needs a CSS class on the module; a static
+  `custom/` module can only get a class from JSON output, i.e. an
+  `exec`. Not useful for static labels.
+- **`format-icons` level indexing:** with N entries, the index is the
+  level scaled to N, capped at N−1. Prebuilt bar strings use N entries
+  where entry i lights i+1 cells. Pango markup inside icon strings is
+  passed through.
+- **`custom/` with `"interval": "once"` and no `exec`** draws once and
+  never starts a process.
+- **GTK3 `text-shadow`** paints the shadow pass first, then the real
+  text on top, and the shadow ignores pango span colors (see §3,
+  Weight).

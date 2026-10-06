@@ -76,6 +76,9 @@ over, not sprawling.
   dispatcher name, or package, check it's still current — don't rely on
   training data for anything version-specific. This project has a standing
   requirement: nothing deprecated, ever, even if it's faster to reach for.
+  Facts already verified on this machine are collected in
+  `BUILD_SPEC.md` §6 — use them, and report anything new you verify so
+  THE OVERSEER can add it there.
 - **Performance constraints in BUILD_SPEC.md are non-negotiable.** If a
   styling idea conflicts with them, the constraint wins — flag the conflict
   to the user rather than quietly softening the constraint.
