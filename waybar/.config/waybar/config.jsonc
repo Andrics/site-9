@@ -3,7 +3,8 @@
 {
     "layer": "top",
     "position": "top",
-    "height": 30,
+    // Set explicitly (H2): fits the 14px/24px volume slider gauge.
+    "height": 36,
     "spacing": 0,
     "margin-top": 0,
     "margin-left": 0,
@@ -110,11 +111,9 @@
                 "██████████"
             ]
         }
-        // on-click-right (mute) removed for a diagnostic test per THE
-        // OVERSEER: checking whether the leader swallows the reveal click
-        // just by having *any* on-click-* bound, not only on left-click.
-        // Mute is temporarily unreachable via click — restore once this
-        // test reports back. See PHASES.md Phase 1 "Still open".
+        // No on-click* here: any click binding on the drawer leader
+        // swallows the reveal click. Mute lives on XF86AudioMute in
+        // hyprland.lua.
     },
 
     "network": {
@@ -153,6 +152,7 @@
     },
 
     "tray": {
+        "icon-size": 14,
         "spacing": 8
     }
 }
