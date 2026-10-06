@@ -9,9 +9,34 @@
     "margin-left": 0,
     "margin-right": 0,
 
-    "modules-left": ["hyprland/workspaces"],
-    "modules-center": ["clock"],
-    "modules-right": ["group/volume", "network", "battery", "tray"],
+    "modules-left": ["custom/site", "hyprland/workspaces"],
+    "modules-center": ["clock", "custom/met"],
+    "modules-right": ["cpu", "memory", "group/volume", "network", "battery", "tray"],
+
+    // Static tag: no exec, drawn once, never starts a process.
+    "custom/site": {
+        "format": "SITE-9",
+        "interval": "once",
+        "tooltip": false
+    },
+
+    // Mission clock: system uptime as T+DDD:HH:MM. No seconds — they'd
+    // sit stale between 60s updates.
+    "custom/met": {
+        "exec": "awk '{s=int($1); printf \"T+%03d:%02d:%02d\\n\", s/86400, (s%86400)/3600, (s%3600)/60}' /proc/uptime",
+        "interval": 60,
+        "tooltip": false
+    },
+
+    "cpu": {
+        "interval": 10,
+        "format": "CPU: {usage}%"
+    },
+
+    "memory": {
+        "interval": 30,
+        "format": "RAM: {percentage}%"
+    },
 
     "group/volume": {
         "orientation": "horizontal",

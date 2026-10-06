@@ -48,7 +48,11 @@ window#waybar label {
    border keeps the old full-box geometry. Tick color is set by -gtk-recolor,
    which needs a literal color, so each hex is commented with the palette
    token it mirrors. Workspace tabs keep full boxes for now (PHASES.md). */
+#custom-site,
 #clock,
+#custom-met,
+#cpu,
+#memory,
 #pulseaudio,
 #pulseaudio-slider,
 #network,
