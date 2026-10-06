@@ -85,8 +85,21 @@ institutional olive/tan as the structural base.
 Font: Departure Mono Nerd Font (`otf-departure-mono-nerd`, AUR — not
 `[extra]`, Nerd Fonts patch v3.4.0) — swapped 2026-09-21 from JetBrains
 Mono Nerd Font per Overseer direction, applied to waybar. Carry this font
-into every later phase rather than re-deciding per app. Not yet confirmed
-on-screen by the user — see `PHASES.md` Phase 1.
+into every later phase rather than re-deciding per app.
+
+- **Family confirmed by the user 2026-10-06.** They want it a bit bolder
+  (MS-DOS / terminal blocky feel); size and weight are still open — see
+  `PHASES.md` Phase 1 plan review.
+- **Exact family name:** `DepartureMono Nerd Font` (no space). Use that
+  in CSS; the spaced name only works through fontconfig fuzzy matching.
+- **Pixel grid:** 550 units per em, 50 units per pixel, so the font is
+  drawn on an **11px grid**. It renders pixel-crisp only at multiples of
+  11px (11, 22, …). Other sizes (e.g. the current 13px) give uneven
+  strokes. Pick sizes on the grid unless a deliberate exception is
+  decided and recorded here.
+- **Weight:** only a Regular style is known to ship (UNIT-1 confirming
+  with `fc-list`). Any bolder look has to be produced another way —
+  options under test in `PHASES.md`.
 
 ### Locked module framing & state color (decided Phase 1 — 2026-09-21)
 
@@ -127,9 +140,18 @@ bracket-like forms that lean into the HEV HUD — **not** the default
 rounded, Font-Awesome-style icon-font look. Chosen over minimal outline
 glyphs and over going icon-less.
 
-- Icons and the segmented value bars (`▮▮▮▯▯`-style, content-density
-  pass) are **one visual system**: same blocky, geometric register.
-  Don't pick them independently.
+- Icons and the segmented value bars (content-density pass) are **one
+  visual system**: same blocky, geometric register. Don't pick them
+  independently.
+- What the font actually has (checked 2026-10-06 with `fc-query` and
+  `pango-view` renders): all Box Drawing (128/128) and Block Elements
+  (32/32) characters, all Nerd Font MD and FA icons, progress-bar glyphs
+  U+EE00–EE0B. **Not** in the font: `▮ ▯ ▰ ▱ ■ □` — don't use them,
+  they'd only render via a fallback font. Block and box characters
+  render pixel-sharp at 11px; Nerd Font icons render soft-edged and
+  slightly small next to the pixel text.
+- Watch emoji-default codepoints (e.g. `⚡` U+26A1): Pango can draw them
+  from a color emoji font. Pin them with U+FE0E or avoid them.
 - Exact glyphs are not chosen yet. Candidates must be confirmed present
   in the installed Departure Mono Nerd Font build (check the font
   itself, not a generic Nerd Fonts cheat-sheet — coverage varies by
@@ -150,7 +172,8 @@ glyphs and over going icon-less.
   not a default. Font: Departure Mono Nerd Font (see §3 locked palette) —
   whatever's picked, verify actual glyph rendering at bar-scale text size
   looks right on this specific screen before finalizing, don't just trust
-  it on name recognition. Not yet confirmed on-screen.
+  it on name recognition. Family confirmed 2026-10-06; size and weight
+  pending. Sizes on the 11px grid (see above).
 
 **Motion**
 - Short, linear/snap transitions. No easing flourishes, no bounce, no
@@ -190,6 +213,8 @@ now — no audio dependencies, no hooks, until it's an actual phase.
   `PHASES.md`.
 - **hypr** — not stowed from this repo yet. The only change so far is
   `scale = "1"`, made directly in the live `~/.config/hypr/hyprland.lua`
-  (Phase 1 fix). When `hypr` is first stowed, back up the live file and
-  carry that line over.
+  (Phase 1 fix). The live file also has the stock `XF86AudioMute` →
+  `wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle` bind (around line 308),
+  which is where mute lives now. When `hypr` is first stowed, back up
+  the live file and carry both over.
 - Everything else starts from scratch.

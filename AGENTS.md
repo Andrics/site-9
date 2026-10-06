@@ -26,9 +26,13 @@ drops them into the repo. So:
   of date against the actual machine, say so in your report — don't fix
   it in place. Your edits would be overwritten on the next drop-in.
 - **When the user drops in new versions**, check `git diff` on them
-  first. If it shows only the incoming changes, commit as
-  `docs: sync from Overseer (YYYY-MM-DD)`. If it shows local edits you
-  didn't expect, stop and ask — don't merge or discard them yourself.
+  first, and read the **removed** lines as carefully as the added ones.
+  If a removal drops something you committed since the last sync (check
+  `git log` on the file), stop and report it before committing — that's
+  how commit f78a3e7 got lost on 2026-10-06. Otherwise commit as
+  `docs: sync from Overseer (YYYY-MM-DD)`. If the diff shows local edits
+  you didn't expect, stop and ask — don't merge or discard them
+  yourself.
 - **End every reply that did real work with a report block**, so the
   user can carry it back for THE OVERSEER to fold into the docs:
 

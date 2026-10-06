@@ -36,55 +36,57 @@ work only starts once that review comes back with a go-ahead.
 
 ## Next up for UNIT-1
 
-_Written by THE OVERSEER; replaced whenever there's a new task. **Plan
-only** — don't build anything until the plan is reviewed and approved._
+_Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Task (2026-10-06): one combined plan for Phase 1's remaining waybar
-work** — icon glyphs + content-density rework + where bar height lands.
-These touch the same modules and share one glyph vocabulary, so they get
-planned together (see Phase 1 "Decided so far" → Combined pass).
+**Task (2026-10-06, #2): tests and recovery only. No changes to the live
+config.** Your combined plan was reviewed and is sound (Phase 1 →
+"Combined plan review"). The build waits on the user's choices, and two
+of those need evidence first. Do these, then report:
 
-The plan should cover:
+1. **Recover f78a3e7.** The 2026-10-06 doc sync dropped that commit's
+   content. Run `git show f78a3e7` and put everything it added or changed
+   in the docs into your report, so THE OVERSEER can restore what's
+   still missing. The mute-bind fact is already restored. Don't edit the
+   docs yourself.
+2. **Weight test.** Confirm with `fc-list | grep -i departure` which
+   styles are installed (expected: Regular only). Then show the bar's
+   real content at **11px** in four variants:
+   - W0: Regular, as is.
+   - W1: synthetic bold (`font-weight: bold`; fontconfig/FreeType
+     emboldens since there's no Bold file).
+   - W2: double-strike: `text-shadow: 1px 0 0 currentColor` (zero blur,
+     same color = every stroke 1px wider). **Test only.** It uses the
+     shadow property, so it needs the user's explicit OK as a §2
+     exception before it can ship. Include a module with a dimmed
+     pango label (`VOL:`) in this variant: the doubled copy may come
+     out in the module's color instead of the label's.
+   - W3: 22px Regular, reference only (true 2px strokes, too tall to
+     ship).
+   W1 can be checked with `pango-view`; W2 needs GTK, so render it in
+   the probe bar below.
+3. **Corner-tick probe: approved.** Run the throwaway second waybar from
+   the scratchpad as you described. Include: the 9-slice SVG ticks, one
+   state swap via `-gtk-recolor`, and W0 vs W2 side by side so the user
+   sees ticks and weight together. Confirm the SVG pixbuf loader is
+   installed as part of it. Close the probe bar when done; the live bar
+   and repo config stay untouched.
+4. **⚡ check (S1's charging glyph).** U+26A1 defaults to emoji
+   presentation, so Pango can draw it from a color emoji font, if one is
+   installed now or later. Check `fc-list ':charset=26a1'`, and render
+   `⚡︎` (U+26A1 + U+FE0E text selector). If it can't be pinned to the
+   text glyph reliably, propose a different charging glyph from the
+   font.
 
-1. **Icon glyphs (VOL / NET / PWR).** 2–3 candidates per module in the
-   HUD/gauge direction (`BUILD_SPEC.md` §3 Icon direction). For each:
-   codepoint, a plain description of what it looks like, and proof it's
-   present in the installed Departure Mono Nerd Font — check the font
-   itself (e.g. `fc-query` on the installed file, or render a test
-   string at bar size), not a cheat-sheet. Say if network/battery icons
-   should change with state (signal level, charge level) and how.
-2. **Segmented value bars.** Filled/empty glyph pair options (e.g.
-   `▮`/`▯` plus alternatives), segment count, which modules get one.
-   Prefer a native approach — e.g. a `format-icons` array of prebuilt
-   bar strings, which waybar already indexes by level for modules that
-   support it — over a polling script. Verify per module against the
-   installed man pages which ones support level-indexed icons.
-3. **New modules.** Which of CPU / RAM / uptime-as-mission-clock /
-   static `SITE-9` tag go in, where each sits (left/center/right), and
-   update intervals. Keep intervals as slow as is still useful. If
-   uptime needs a `custom/` module, say so and give its interval and
-   exact command.
-4. **Corner-tick framing.** How it would actually be built in waybar's
-   GTK CSS within §2 (no `box-shadow`, no gradients, nothing animated).
-   Feasibility is the real open question here — if clean corner ticks
-   aren't achievable without a hack, say so and propose the closest
-   clean fallback rather than forcing it.
-5. **Tray boxing.** Same `--border` box (or corner-tick) treatment as
-   the other modules.
-6. **Bar height.** Expected final height after all of the above,
-   compared to the original 30px (currently 36px), and what's driving
-   it.
-7. **Mute keybind (optional).** Whether to add the `XF86AudioMute`
-   keybind now or leave it for Phase 4 — your call, just state it. Note
-   `hypr` isn't stowed yet (see `BUILD_SPEC.md` §5).
+5. **Add a DOS-fill bar to the probe.** Next to S1's `▌` segments,
+   show one bar as `█` fill with `░` empty, but draw the `░` in
+   `--text-dim` instead of `--border` (in the first mocks it nearly
+   disappeared). This is the classic DOS installer/defrag look, and the
+   user wants a more MS-DOS feel.
+6. **Glyph sheet row E** rendered empty. Say what it was meant to show,
+   and whether it's missing from the font or just not rendering.
 
-Format: short, concrete, options rather than picks for anything
-design-related, list of every file the plan would touch, and what you
-verified each version-specific config key against.
-
-Gating: draft now. Glyph choices can't be **locked** until the user
-confirms Departure Mono on-screen (Phase 1 "Still open") — the icons
-will be drawn in it.
+Deliver: cropped, upscaled screenshots (method in `AGENTS.md`), file
+paths in your report.
 
 ## Phase 1 — Waybar restyle
 
@@ -101,28 +103,32 @@ just building on top of it.
   `NET 82%`, `PWR 100%`), not icon-only.
 - Font: Departure Mono Nerd Font (2026-09-21) — swapped from JetBrains
   Mono Nerd Font per Overseer direction. Installed from AUR
-  (`otf-departure-mono-nerd`). Not yet confirmed on-screen.
+  (`otf-departure-mono-nerd` 3.4.0-1). **Family confirmed by the user
+  2026-10-06** ("I like this font"), with one ask: a bit bolder, for an
+  MS-DOS / terminal blocky feel. Size and weight still open (choices F
+  and W in the plan review). Exact family name and the 11px pixel grid
+  are recorded in `BUILD_SPEC.md` §3.
 - Bar shape: full-width, flush to the screen edge, no floating rounded
   pill — reads more like an institutional control panel.
 - Module framing & state color (2026-09-21): bracketed-HUD boxes per
   module + HEV-style state coloring, SCP influence via `FIELD: value`
-  labeling only. Full detail in `BUILD_SPEC.md` §3. Not yet implemented
-  or seen live — see Still open.
+  labeling only. Full detail in `BUILD_SPEC.md` §3. Built and deployed
+  the same day (see below); corner-tick framing may replace the full
+  boxes (plan review).
 - Applied to waybar (`waybar/.config/waybar/`) — needs to be seen live on
   the actual screen and confirmed before calling this phase done.
 - Module framing & state-color pass (2026-09-21): built and deployed,
   per plan reviewed and approved by THE OVERSEER. See Log for detail.
 - Volume dropdown/slider (2026-09-21): built and deployed. Reveal
-  confirmed working (see Log) — user screenshotted it live. Mute is
-  temporarily unreachable via click (removed for the diagnostic test)
-  pending an Overseer decision on where it lives now — see Still open.
+  confirmed working (see Log) — user screenshotted it live. Mute is no
+  longer on the bar; it's the `XF86AudioMute` key (see Mute location).
   Slider gauge enlarged (14px/24px) per user feedback that it was too
   small to see.
 - Workspace click-to-switch (2026-09-21): package swapped
   `extra/waybar` → `aur/waybar-git` (0.15.0.r1019.g3672eee-1, includes
   the Lua-dispatch fix) per Overseer go-ahead. Installed, waybar
-  restarted on the new binary, no errors. Not yet click-tested live by
-  the user — see Still open.
+  restarted on the new binary, no errors. **Confirmed working by the
+  user 2026-10-06** — clicking a tab switches workspaces.
 - Mute location (2026-09-21, decided by THE OVERSEER): moves to a
   Hyprland keybind (`XF86AudioMute` → `wpctl set-mute @DEFAULT_AUDIO_SINK@
   toggle` or equivalent), not back onto waybar. Reasoning: real mute is
@@ -132,15 +138,20 @@ just building on top of it.
   option, so binding it there isn't confirmed possible. A dedicated key
   is also the more standard pattern (status widget for glanceable
   state + fine adjustment, discrete toggle lives at the compositor
-  level) and sidesteps the group/leader click-conflict entirely. Not
-  yet built — this is Phase 4 (Motion/Hyprland config) territory once
-  hypr/ is actually touched, or can be done now as a small aside since
-  it's just one keybind line; UNIT-1's call on timing.
+  level) and sidesteps the group/leader click-conflict entirely.
+  **Already in place:** the live `~/.config/hypr/hyprland.lua` has the
+  stock bind (around line 308) `XF86AudioMute` → `wpctl set-mute
+  @DEFAULT_AUDIO_SINK@ toggle`. Nothing to add. (UNIT-1 recorded this in
+  commit f78a3e7; the 2026-10-06 doc sync dropped it, restored here.)
+  Carry the bind over when `hypr` is first stowed. The stale
+  "diagnostic test / restore mute" comment in `config.jsonc` gets
+  removed in the combined build.
 - Content-density direction approved (2026-09-21) — user reacted
   positively to all of the Overseer's brainstormed additions from the
   "too simple" feedback round: more modules (CPU/RAM/uptime formatted
   as a mission clock, a static `SITE-9` tag), segmented value bars
-  (block-character gauges like `▮▮▮▯▯` next to the percentage),
+  (block-character gauges next to the percentage — note the `▮▯` used
+  as the example then aren't in Departure Mono, see plan review),
   corner-tick framing instead of full-rectangle module boxes, and
   boxing the tray icons for consistency. Approved in direction. Now
   being scoped together with the icon glyphs — see Combined pass below.
@@ -159,31 +170,109 @@ just building on top of it.
   still 0.15.0, without the PR #5013 Lua-dispatch fix. Recheck at each
   phase start; return to `extra/waybar` once a tagged release has it.
   Recorded in `BUILD_SPEC.md` §4.
+- **Combined plan review (2026-10-06, THE OVERSEER).** Verdict: the
+  plan is **approved in structure** — nothing in it breaks §2 or the
+  design language, the build method (prebuilt bar strings in
+  `format-icons`, no polling scripts, `interval: "once"` for the static
+  tag) is the right one, and skipping waybar-git's undocumented new
+  option is correct. **Build is not a go yet:** it waits on the user's
+  choices below and on the tests in "Next up for UNIT-1". Review notes
+  that bind the build:
+  - Nerd Font icons render soft-edged and smaller next to the pixel text
+    (UNIT-1's renders). That works against the blocky direction, so
+    S2/S3 start at a disadvantage.
+  - `⚡` (S1 charging) has emoji-by-default presentation — must be
+    pinned to the text glyph or replaced (test #4).
+  - Empty-segment color is a hardcoded hex inside a pango span, same as
+    the dimmed labels: each one needs the same comment naming the
+    `style.css` token it mirrors.
+  - CSS `font-family` changes to the exact family name
+    `DepartureMono Nerd Font` (it currently relies on fontconfig
+    fuzzy-matching the spaced name).
+  - Bar strings use N entries (entry i lights i+1 segments), so 0% still
+    shows one lit segment. Accepted: mute, disconnect, and low battery
+    already have their own states.
+
+  Options as UNIT-1 planned them (glyphs verified present in the font):
+  - **S1 all-native:** VOL `◄` U+25C4 static; NET `▂▄▆█`
+    U+2582/84/86/88 lit by signal strength (no separate NET bar); PWR
+    `⏻` U+23FB, plus `⚡` U+26A1 while charging; bars `▌` U+258C ×10,
+    lit in the module's state color, empty in `--border`.
+  - **S2 Nerd MD, level-stepped:** speaker with 3 levels + muted
+    (U+F057F/F0580/F057E, F0581); stepped signal (U+F08BC–F08BF),
+    disconnected U+F0318; upright battery in 10% steps (U+F007A–F0082,
+    F0079), charging U+F0084; bars `┃`/`│` ×10.
+  - **S3 mixed:** VOL `◄`; NET as S2; PWR sideways battery outline, 5
+    steps (U+F244–F240); bars `█`/`░` ×5 (reads as a solid fill, and
+    `░` in `--border` nearly disappears).
+  - Layout **L2:** left `SITE-9` · workspaces | center clock · MET |
+    right CPU RAM VOL NET PWR tray. (L1/L3 move SITE-9/MET elsewhere —
+    see UNIT-1's plan.)
+  - MET (mission clock): `custom/met`, interval 60, `awk` on
+    `/proc/uptime`, format `T+DDD:HH:MM`. CPU interval 10, RAM 30.
+  - Framing: corner ticks via `border-image` 9-slice SVG with
+    `border-image-width` separate from the 1px border, recolored per
+    state with `-gtk-recolor`. Unproven — probe first. Fallbacks: (a)
+    keep full boxes, (b) left/right borders only.
+  - Tray: **T1** one box around the whole tray, `icon-size: 14`;
+    **T2** a box per icon, `--warning` border on needs-attention. Tray
+    icons are app-colored either way.
+  - Height: **H1** back to ~30px by shrinking the slider; **H2** keep
+    36px and the bigger slider the user asked for. 11px text rows come
+    to ~28px; corner ticks add 0px.
+
+  First renders reviewed 2026-10-06 (UNIT-1's `site9-mock-11px.png`,
+  `site9-mock-13px.png`, `site9-glyphsheet-11px.png`, via the user):
+  - S1 reads best: the `▌` segments and `▂▄▆█` NET steps are crisp, and
+    the state colors work (PWR at 8% goes fully `--critical`, bar
+    included).
+  - S2's Nerd icons and thin `┃`/`│` bars look small and light — they
+    undercut the blocky direction.
+  - S3's `█`/`░` reads as a fill, not segments. That fails the
+    segmented-bar idea but is the classic DOS installer look, which
+    suits the user's new MS-DOS ask. Kept as a bar-style candidate
+    alongside `▌` segments, with `░` in `--text-dim` so it stays
+    visible (probe item 5).
+  - `⚡` currently renders as the plain text glyph (no color emoji font
+    in the way). The pin to U+FE0E still applies, in case one gets
+    installed later.
+  - The glyph sheet's alternate clock format `T+03:14:07` shows seconds;
+    with a 60s interval that would sit stale for up to a minute. Keep
+    seconds out unless the interval changes.
+  - At the screenshot sizes, 13px reads heavier mainly because it's
+    bigger. The uneven strokes UNIT-1 measured need the upscaled crops
+    to judge.
+
+  Choices pending from the user (THE OVERSEER's lean in brackets):
+  F size [F1 11px, on-grid — get weight from W, not from size], W
+  weight [after the test; W2 if the user accepts the §2 exception],
+  S icon system [S1], bar style [`▌` segments vs `█░` DOS fill — after
+  the probe], NET bar [none, S1 steps carry it], L layout [L2],
+  MET format [`T+DDD:HH:MM`], framing [corner ticks if the probe
+  passes, else (a)], T tray [T1], H height [H2], segments [10].
 
 **Still open:**
 - Bar height auto-bumped again, 32px → 36px (2026-09-21) — enlarging
   the slider gauge (14px/24px, up from 6px/20px) to address the "too
   small" feedback grew waybar's computed minimum further. Total drift
   from the original spec is now +6px (30px → 36px). Deferred rather
-  than tuned further right now — folding into the content-density
-  rework below rather than chasing gauge size in isolation.
-- Workspace click fix needs live confirmation — package is swapped and
-  waybar's restarted clean, but UNIT-1 can't simulate a click. **User
-  action:** click a few workspace tabs and report whether they switch.
-  Still pending as of 2026-10-06.
-- On-screen confirm of the new framing/color AND the palette/font-at-
-  bar-scale check (now Departure Mono, see above) — do both together,
-  this is the real gate before Phase 1 closes. **User action**, still
-  pending as of 2026-10-06. Also gates locking the icon glyphs (they'll
-  be drawn in this font).
+  than tuned further right now — now choice H1/H2 in the plan review.
+- Font: family confirmed 2026-10-06; **size (F) and weight (W) still
+  open**, W waiting on the weight test. Framing/palette on-screen
+  confirm also still open — it now happens on the corner-tick probe
+  screenshots, since the framing is about to change anyway. Both gate
+  locking the glyphs and closing Phase 1.
+- User choices from the plan review (S, NET bar, L, MET format, T, H,
+  segments) — needed before the build gets a go.
 - Module icons (VOL/NET/PWR) still blank — empty `format-icons` /
   missing glyphs since the initial baseline commit (found 2026-09-21),
   not caused by later edits. **Direction decided** 2026-10-06
-  (HUD/gauge-style, see "Decided so far"); what's left is choosing the
-  actual glyphs, which is item 1 of the combined plan. Still ask-first:
-  UNIT-1 proposes candidates, doesn't pick.
+  (HUD/gauge-style, see "Decided so far"); candidates are now on the
+  table as S1/S2/S3 in the plan review — the user picks.
 
 **Resolved:**
+- Workspace click-to-switch: works on `waybar-git`, confirmed by the
+  user 2026-10-06.
 - Fractional-scale conflict (scale was 1.5, `BUILD_SPEC.md` §2 requires
   integer only): user fixed directly, `scale = "auto"` → `scale = "1"`
   in `~/.config/hypr/hyprland.lua`, confirmed live via `hyprctl monitors`
@@ -239,6 +328,27 @@ over from waybar's decisions.
 ## Log
 
 _(newest first, short entries)_
+
+- 2026-10-06 — **Combined plan reviewed; workspace click confirmed; font
+  family confirmed with a bolder ask; doc-sync slip found and fixed.**
+  UNIT-1 synced the docs (commit 0608fc0) and delivered the combined
+  plan without building. Review: approved in structure, build waits on
+  user choices plus a test round (weight, corner-tick probe, `⚡`
+  presentation) — full review under Phase 1 "Decided so far". UNIT-1
+  found the sync had dropped commit f78a3e7: PHASES.md said the mute
+  keybind wasn't built, but the stock `XF86AudioMute` bind is already
+  live in `hyprland.lua`. Cause: THE OVERSEER edited from the Project's
+  copy of PHASES.md, which predated f78a3e7. Mute fact restored; UNIT-1
+  asked to report the rest of that commit; `AGENTS.md` sync rule now
+  says to check removed lines too. UNIT-1 also found: `▮ ▯ ▰ ▱ ■ □`
+  aren't in Departure Mono; the font is on an 11px pixel grid (13px is
+  off-grid); exact family name is `DepartureMono Nerd Font` — all
+  recorded in `BUILD_SPEC.md` §3. User confirmed workspace clicks work
+  and that they like Departure Mono, but want it a tad bolder for an
+  MS-DOS / terminal feel. THE OVERSEER checked: only one weight is
+  known to ship, so the weight test covers synthetic bold, a
+  double-strike via zero-blur `text-shadow` (flagged as needing an
+  explicit §2 exception), and 22px as reference.
 
 - 2026-10-06 — **New Overseer chat: icon direction decided, combined
   plan briefed, doc ownership moved to THE OVERSEER.** Picked up from
