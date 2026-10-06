@@ -43,13 +43,12 @@ window#waybar label {
     border: 1px solid #3a3626;
 }
 
-#clock {
-    padding: 0 12px;
-    margin: 4px 2px;
-    color: #d6d0bd;
-    border: 1px solid #3a3626;
-}
-
+/* Corner-tick frame (BUILD_SPEC.md §3): 9-slice border-image from an 11×11
+   SVG with 5px L-shaped corners and transparent edges. The 1px transparent
+   border keeps the old full-box geometry. Tick color is set by -gtk-recolor,
+   which needs a literal color, so each hex is commented with the palette
+   token it mirrors. Workspace tabs keep full boxes for now (PHASES.md). */
+#clock,
 #pulseaudio,
 #pulseaudio-slider,
 #network,
@@ -57,7 +56,17 @@ window#waybar label {
 #tray {
     padding: 0 10px;
     margin: 4px 2px;
-    border: 1px solid #3a3626;
+    border: 1px solid transparent;
+    /* --border */
+    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #3a3626);
+    border-image-slice: 5;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+}
+
+#clock {
+    padding: 0 12px;
+    color: #d6d0bd;
 }
 
 #pulseaudio-slider slider {
@@ -84,22 +93,26 @@ window#waybar label {
 
 #pulseaudio.muted {
     color: #8f8a76;
-    border-color: #8f8a76;
+    /* --text-dim */
+    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #8f8a76);
 }
 
 #network.disconnected {
     color: #b8452e;
-    border-color: #b8452e;
+    /* --critical */
+    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #b8452e);
 }
 
 #battery.warning {
     color: #c98a3c;
-    border-color: #c98a3c;
+    /* --warning */
+    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #c98a3c);
 }
 
 #battery.critical {
     color: #b8452e;
-    border-color: #b8452e;
+    /* --critical */
+    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #b8452e);
 }
 
 #tray {
