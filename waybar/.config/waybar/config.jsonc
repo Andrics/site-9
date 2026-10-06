@@ -39,11 +39,8 @@
     },
 
     "pulseaudio": {
-        // Label hardcoded to --text-dim (#8f8a76) — pango <span> inside a
-        // format string can't be reached by GTK CSS.
-        "format": "{icon} <span color='#8f8a76'>VOL:</span> {volume}%",
-        // Label hardcoded to --text-dim (#8f8a76) — same reason as above.
-        "format-muted": " <span color='#8f8a76'>VOL:</span> MUTE",
+        "format": "{icon} VOL: {volume}%",
+        "format-muted": " VOL: MUTE",
         "format-icons": { "default": ["", "", ""] }
         // on-click-right (mute) removed for a diagnostic test per THE
         // OVERSEER: checking whether the leader swallows the reveal click
@@ -53,23 +50,14 @@
     },
 
     "network": {
-        // Label hardcoded to --text-dim (#8f8a76) — pango <span> can't be
-        // reached by GTK CSS.
-        "format-wifi": " <span color='#8f8a76'>NET:</span> {signalStrength}%",
-        // Label hardcoded to --text-dim (#8f8a76) — same reason as above.
-        "format-ethernet": " <span color='#8f8a76'>NET:</span> LINK",
-        // Label hardcoded to --critical (#b8452e) — disconnect is a
-        // whole-module alert, so the label shouts too instead of staying
-        // dim like the other states.
-        "format-disconnected": " <span color='#b8452e'>NET:</span> OFFLINE",
+        "format-wifi": " NET: {signalStrength}%",
+        "format-ethernet": " NET: LINK",
+        "format-disconnected": " NET: OFFLINE",
         "tooltip-format": "{ifname}: {ipaddr}"
     },
 
     "battery": {
-        // Label hardcoded to --text-dim (#8f8a76) — pango <span> can't be
-        // reached by GTK CSS; #battery.warning/.critical still colors the
-        // value and box via CSS.
-        "format": "{icon} <span color='#8f8a76'>PWR:</span> {capacity}%",
+        "format": "{icon} PWR: {capacity}%",
         "format-icons": ["", "", "", "", ""],
         "states": { "warning": 25, "critical": 10 }
     },
