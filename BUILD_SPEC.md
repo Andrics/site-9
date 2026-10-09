@@ -251,8 +251,12 @@ glyphs and over going icon-less.
 - Kept as a drawer: click VOL reveals `pulseaudio/slider`.
 - **Horizontal gauge, 80×4px** trough in `--border`, fill in **`--text`
   cream** (one-color readout — VOL is cream everywhere), no knob, inside
-  the existing tick frame. All Adwaita decoration on the scale removed
-  (border, outline, box-shadow, background-image).
+  the existing tick frame. Adwaita decoration removed: trough,
+  highlight and knob get `border: none`, `outline: none`,
+  `box-shadow: none`, `background-image: none`. The scale itself
+  (`#pulseaudio-slider`) **keeps its border — that border draws the tick
+  frame** — and only clears outline, box-shadow and background-image
+  (corrected 2026-10-09; the first brief wrongly said border too).
 - Mute empties the gauge (`zero-on-mute`, default). Mute itself stays
   on the `XF86AudioMute` key.
 - **Scroll on VOL: 5% per step**, same as the media keys.
@@ -314,7 +318,12 @@ now — no audio dependencies, no hooks, until it's an actual phase.
   status not checked). **fuzzel is being installed in round #7 for the
   network picker only** (user, 2026-10-09); Super+R stays on
   hyprlauncher until Phase 3 decides the launcher.
-- Notifications: mako — install status not checked yet.
+- Notifications: **mako 1.11.0 — installed and running, no config**
+  (found 2026-10-09). **libnotify isn't installed**, so there's no
+  `notify-send` and apps that use it (e.g. networkmanager-dmenu's
+  connect/fail notices) stay silent. Unstyled, mako uses its upstream
+  defaults (blue `#285577` background, white text, 2px `#4C7899`
+  border) — off-palette; Phase 3 styles it.
 - Idle/lock: hypridle + hyprlock — **planned, not installed**.
 - Wallpaper: hyprpaper — not checked yet.
 - Screenshot: grim + slurp + swappy (bound to Print) — grim is in use;

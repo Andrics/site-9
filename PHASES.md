@@ -81,7 +81,9 @@ mirror (same rule as the pango spans).
    `min-height`), background `--border`; highlight 4px tall, fill
    `--text`; knob stays hidden; on scale, trough, highlight and knob set
    `border: none`, `outline: none`, `box-shadow: none`,
-   `background-image: none`. Remove the stale "diagnostic test /
+   `background-image: none` — **except the scale's `border`**, which
+   draws the tick frame and stays (corrected after UNIT-1 caught it; see
+   "Progress"). Remove the stale "diagnostic test /
    restore mute" comment in `config.jsonc` if it's still there. Commit.
 6. **Bar height** — `"height": 30`. Commit.
 7. **Active tab hover** — `#workspaces button.active:hover` keeps its
@@ -113,6 +115,18 @@ mirror (same rule as the pango spans).
 **Then** push to `origin/main` and end with the report block (pushed
 hash + screenshot paths). After this round Phase 1 closes on the user's
 on-screen confirm of the whole bar.
+
+**Progress (mid-round, 2026-10-09):** 90ef4f3 docs sync (removed lines
+checked), c854b79 volume slider V1, b6925bc height 30, 63ece26 active
+tab hover. Waiting on the user's install for steps 1–4, then the user's
+clicks for the tests. UNIT-1 kept the border on `#pulseaudio-slider`
+(it draws the tick frame) and cleared only outline/box-shadow/
+background-image there — **approved**: the brief was wrong, the spec
+was right. Leftover `dmenu-open.png` moved out of the repo root to
+`~/Pictures/site-9-phase1/1-prev-hyprlauncher-dmenu-open.png`.
+**Notices:** mako runs but libnotify isn't installed, so picker
+notices are silent — don't install libnotify unless the user picks it
+(Phase 1 → "Still open").
 
 ## Phase 1 — Waybar restyle
 
@@ -451,6 +465,14 @@ sub-phase numbering):**
   - Real connect test includes a passphrase network, and a wrong
     passphrase (check the failure is visible somehow, or report that
     it isn't).
+- **Picker notices (found mid-round #7, 2026-10-09):** mako 1.11.0 is
+  installed and running unstyled; libnotify isn't, so networkmanager-
+  dmenu's connect/fail notices are silent. Options: (a) leave silent
+  until Phase 3 — NET on the bar already shows connected / disconnected
+  (red), **THE OVERSEER's lean**; (b) install `libnotify` now and accept
+  mako's blue default popups until Phase 3; (c) install it plus a
+  stopgap mako config with locked tokens (pulls Phase 3 work forward).
+  Default if the user doesn't pick: (a).
 - Phase 1 closes when 1.1 and 1.2 are built and the user confirms the
   whole bar on-screen.
 
