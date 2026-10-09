@@ -133,7 +133,10 @@
             "▂▄▆<span color='#3a3626'>█</span>",
             "▂▄▆█"
         ],
-        "tooltip-format": "{ifname}: {ipaddr}"
+        "tooltip-format": "{ifname}: {ipaddr}",
+        // Network picker: networkmanager_dmenu through fuzzel. NET has no
+        // drawer, so a click binding is safe here.
+        "on-click": "networkmanager_dmenu"
     },
 
     "battery": {
