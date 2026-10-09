@@ -25,29 +25,37 @@ window#waybar label {
     padding: 0 4px;
 }
 
+/* Tabs use the same corner-tick frame as the modules below: --border
+   ticks by default, --accent ticks and number on the active tab. Hover
+   only lifts the number to --text; the ticks stay as they are. */
 #workspaces button {
     padding: 0 10px;
     margin: 4px 2px;
     background: transparent;
     color: #8f8a76;
-    border: 1px solid #3a3626;
+    border: 1px solid transparent;
+    /* --border */
+    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #3a3626);
+    border-image-slice: 5;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
 }
 
 #workspaces button.active {
     color: #5fae5a;
-    border: 1px solid #5fae5a;
+    /* --accent */
+    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #5fae5a);
 }
 
 #workspaces button:hover {
     color: #d6d0bd;
-    border: 1px solid #3a3626;
 }
 
 /* Corner-tick frame (BUILD_SPEC.md §3): 9-slice border-image from an 11×11
    SVG with 5px L-shaped corners and transparent edges. The 1px transparent
    border keeps the old full-box geometry. Tick color is set by -gtk-recolor,
    which needs a literal color, so each hex is commented with the palette
-   token it mirrors. Workspace tabs keep full boxes for now (PHASES.md). */
+   token it mirrors. Workspace tabs carry the same frame (above). */
 #custom-site,
 #clock,
 #custom-met,
