@@ -49,6 +49,8 @@ window#waybar label {
 
 #workspaces button:hover {
     color: #d6d0bd;
+    /* Adwaita adds a 1px hover shadow line (BUILD_SPEC.md §2) */
+    box-shadow: none;
 }
 
 /* Corner-tick frame (BUILD_SPEC.md §3): 9-slice border-image from an 11×11
