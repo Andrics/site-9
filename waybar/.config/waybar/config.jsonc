@@ -29,9 +29,11 @@
         "tooltip": false
     },
 
+    // Percentages use a fmt width spec ({usage:>3}) so readouts keep one
+    // width from 0% to 100%; min-length would pad the whole label instead.
     "cpu": {
         "interval": 10,
-        "format": "CPU: {icon} {usage}%",
+        "format": "CPU: {icon} {usage:>3}%",
         // DOS-fill bar: entry i lights i+1 of 10 cells. Empty cells are
         // █ in --border (#3a3626) inside a pango span.
         "format-icons": [
@@ -50,7 +52,7 @@
 
     "memory": {
         "interval": 30,
-        "format": "RAM: {icon} {percentage}%",
+        "format": "RAM: {icon} {percentage:>3}%",
         // DOS-fill bar: entry i lights i+1 of 10 cells. Empty cells are
         // █ in --border (#3a3626) inside a pango span.
         "format-icons": [
@@ -93,7 +95,7 @@
     },
 
     "pulseaudio": {
-        "format": "◄ VOL: {icon} {volume}%",
+        "format": "◄ VOL: {icon} {volume:>3}%",
         "format-muted": "◄ VOL: MUTE",
         // DOS-fill bar: entry i lights i+1 of 10 cells. Empty cells are
         // █ in --border (#3a3626) inside a pango span.
@@ -117,7 +119,7 @@
     },
 
     "network": {
-        "format-wifi": "{icon} NET: {signalStrength}%",
+        "format-wifi": "{icon} NET: {signalStrength:>3}%",
         "format-ethernet": "NET: LINK",
         "format-disconnected": "NET: OFFLINE",
         // Signal steps: entry i lights i+1 of ▂▄▆█. Unlit steps in
@@ -132,8 +134,8 @@
     },
 
     "battery": {
-        "format": "⏻ PWR: {icon} {capacity}%",
-        "format-charging": "⏻ CHG: {icon} {capacity}%",
+        "format": "⏻ PWR: {icon} {capacity:>3}%",
+        "format-charging": "⏻ CHG: {icon} {capacity:>3}%",
         // DOS-fill bar: entry i lights i+1 of 10 cells. Empty cells are
         // █ in --border (#3a3626) inside a pango span.
         "format-icons": [
