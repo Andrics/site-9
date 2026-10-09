@@ -27,7 +27,8 @@ window#waybar label {
 
 /* Tabs use the same corner-tick frame as the modules below: --border
    ticks by default, --accent ticks and number on the active tab. Hover
-   only lifts the number to --text; the ticks stay as they are. */
+   only lifts the number to --text, and not on the active tab; the ticks
+   stay as they are. */
 #workspaces button {
     padding: 0 10px;
     margin: 4px 2px;
@@ -51,6 +52,11 @@ window#waybar label {
     color: #d6d0bd;
     /* Adwaita adds a 1px hover shadow line (BUILD_SPEC.md §2) */
     box-shadow: none;
+}
+
+#workspaces button.active:hover {
+    color: #5fae5a;
+    /* --accent */
 }
 
 /* Corner-tick frame (BUILD_SPEC.md §3): 9-slice border-image from an 11×11
