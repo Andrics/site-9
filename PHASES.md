@@ -44,47 +44,75 @@ go inside the plan, not in a round of their own. Full rule in
 
 _Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Round (2026-10-09, #7): sub-phases 1.1 + 1.2 — one plan. Plus a
-trivial fix and a push.**
+**Round #7 build (2026-10-09): sub-phases 1.1 + 1.2 — GO.**
 
-**Do now (no plan needed):**
-- **Tab hover line:** add `box-shadow: none` to the workspace button
-  hover rule (Adwaita's hover shadow — a §2 violation, see `BUILD_SPEC.md`
-  §2 "GTK theme defaults count"). One commit.
-- **Push:** nothing has been pushed since 2026-09-21. Push everything to
-  `origin/main` once `git status` is clean, and report the hash.
+The user took every lean. Locked specs are in `BUILD_SPEC.md` §3
+("Locked network picker", "Locked volume slider", Height). Build it as
+below, one commit per step. Check every config key and flag against the
+installed man pages (`zcat /usr/share/man/...`), not from memory. Hex
+colors in non-CSS files get a comment naming the `style.css` token they
+mirror (same rule as the pango spans).
 
-**Then write ONE plan covering both sub-phases** (Phase 1 → "Still
-open" has the background). Present design choices as options; the user
-picks when THE OVERSEER reviews the plan. Fold any checks into the plan.
+1. **Install** (the user runs it — needs sudo):
+   `sudo pacman -S fuzzel networkmanager-dmenu` (from `extra`, not AUR).
+   Confirm binary names with `pacman -Ql`.
+2. **`fuzzel` stow package** — `fuzzel/.config/fuzzel/fuzzel.ini`,
+   locked tokens only: font `DepartureMono Nerd Font` at 11px (pixel
+   size — check the fcft/fontconfig syntax in `fuzzel.ini(5)`);
+   colors as RRGGBBAA — background `15140fff` (`--bg`), text and input
+   `d6d0bdff` (`--text`), border `3a3626ff` (`--border`), selection
+   `3a3626ff` with selection-text `d6d0bdff`, match and selection-match
+   `5fae5aff` (`--accent`), placeholder and counter `8f8a76ff`
+   (`--text-dim`); border width 1, radius 0, selection radius 0. Any
+   other color key fuzzel has → `--text`. `stow -t ~ fuzzel`. Commit.
+3. **`networkmanager-dmenu` stow package** —
+   `networkmanager-dmenu/.config/networkmanager-dmenu/config.ini`:
+   `dmenu_command = fuzzel --anchor top-right --x-margin 8 --y-margin N`
+   (no `--dmenu`; it adds that itself); `wifi_chars = ▂▄▆█` and a
+   `format` that uses `{bars}`; `[dmenu_passphrase] obscure = True`.
+   Find N first: open fuzzel with `--y-margin 8` and check with
+   `hyprctl layers` whether it lands 8px under the bar or 8px from the
+   screen edge — set N so the gap under the 30px bar is 8px.
+   `stow -t ~ networkmanager-dmenu`. Commit.
+4. **NET on-click** — `"on-click": "networkmanager_dmenu"` on the
+   network module. Commit.
+5. **Volume slider (V1)** — slider `"orientation": "horizontal"`;
+   pulseaudio `"scroll-step": 5`; CSS: trough 80×4px (`min-width`/
+   `min-height`), background `--border`; highlight 4px tall, fill
+   `--text`; knob stays hidden; on scale, trough, highlight and knob set
+   `border: none`, `outline: none`, `box-shadow: none`,
+   `background-image: none`. Remove the stale "diagnostic test /
+   restore mute" comment in `config.jsonc` if it's still there. Commit.
+6. **Bar height** — `"height": 30`. Commit.
+7. **Active tab hover** — `#workspaces button.active:hover` keeps its
+   ticks and number `--accent`. Commit.
 
-- **1.1 Network picker** — click NET → a list of available networks;
-  pick one to connect, prompt for the passphrase if needed. Plan these
-  options concretely (packages, config, keybinds/on-click, how the menu
-  is positioned and styled for now):
-  - N1a: `extra/networkmanager-dmenu` through **fuzzel** (needs fuzzel
-    installed — it's the planned launcher, but not on the machine).
-  - N1b: `networkmanager-dmenu` through **hyprlauncher `--dmenu`**
-    (already installed). Check on the machine: does `--dmenu` work, can
-    it mask a passphrase (or does it need pinentry), can it be placed
-    top-right under the bar.
-  - N3: click NET opens `nmtui` in a floating **kitty** window (no new
-    packages).
-  - N2 (`nm-applet`) is out — deprecated dependency (`BUILD_SPEC.md` §6).
-  NET has no drawer, so `on-click` on the network module is safe.
-- **1.2 Volume slider** — currently vertical by config (`orientation:
-  vertical`, 14×24px trough), Adwaita border + blue outline, fill
-  ~2px at 12%. Plan both options:
-  - V1: fix it — horizontal, a long thin trough in the palette, fill in
-    the module's color, no knob, Adwaita border/outline overridden.
-    Give the size and what it does to bar height (could the bar drop
-    back toward 30px?).
-  - V2: drop the slider — volume by scrolling on VOL (pulseaudio's
-    native scroll), click stays free for something else or nothing.
-    Say what happens to `group/volume`, and the bar height.
+**Test** (restart waybar, log must be clean):
+- `hyprctl layers`: bar 1920×30.
+- VOL: reveal on click, drag sets volume, scroll changes it 5% a step
+  (on the touchpad too — add `smooth-scrolling-threshold` only if it
+  jumps, and report the value), mute empties the gauge. 3x crop of the
+  open slider: no light border, blue outline or gradient left.
+- NET: run `networkmanager_dmenu` yourself to screenshot the open menu
+  (placement, palette, `▂▄▆█`, radius 0), then close it. Then ask the
+  user to click NET and connect for real while you watch the logs. A
+  passphrase prompt only shows for a network that isn't saved — ask
+  the user whether they want to test one (e.g. forget and re-add a
+  network they know the passphrase for); don't forget a connection
+  without asking. Report what they saw, including whether a failed
+  connect shows anything (no notification daemon yet — expected
+  silent; report, don't install one).
+- Hover on the active tab: still `--accent`.
 
-Screenshots for anything you render go in `~/Pictures/site-9-phase1/`
-(`AGENTS.md`). End with the report block, including the pushed hash.
+**Screenshots** in `~/Pictures/site-9-phase1/`: `1.1-net-menu-x3.png`
+(crop of the menu area + the bar above it), `1.1-net-passphrase-x3.png`
+(if tested), `1.2-vol-slider-open-x3.png`, `1.2-bar30-full-x3.png`
+(whole bar, left and right halves are fine as two files),
+`1-fix-tab-hover-active-x3.png`.
+
+**Then** push to `origin/main` and end with the report block (pushed
+hash + screenshot paths). After this round Phase 1 closes on the user's
+on-screen confirm of the whole bar.
 
 ## Phase 1 — Waybar restyle
 
@@ -325,31 +353,104 @@ just building on top of it.
 
 **Still open — remaining sub-phases (earlier Phase 1 work predates
 sub-phase numbering):**
-- **1.1 Network picker** (user request 2026-10-09): click NET → a list
-  of available networks to connect to — the user doesn't manage wifi
-  from the terminal. Machine: NetworkManager 1.58.1, wlp2s0. Options
-  (UNIT-1 plans them, user picks at review):
-  - N1a `networkmanager-dmenu` via fuzzel — needs fuzzel installed
-    (the planned launcher). THE OVERSEER's lean *if* the user is going
-    with fuzzel as the launcher anyway.
-  - N1b `networkmanager-dmenu` via hyprlauncher `--dmenu` — already
-    installed; viability (passphrase masking, positioning) being
-    checked in the plan. Lean *if* the user keeps hyprlauncher.
-  - N3 `nmtui` in a floating kitty window — no new packages, but a
-    terminal screen, not a list menu.
-  - N2 `nm-applet` — **rejected**: depends on unmaintained Canonical
-    libappindicator (no-deprecated rule).
-  This forces the open launcher question (`BUILD_SPEC.md` §4): fuzzel
-  vs hyprlauncher. Whichever menu is picked gets its real styling in
-  Phase 3 and looks plain until then.
-- **1.2 Volume slider** (known since 2026-09-21): diagnosed 2026-10-09 —
-  vertical by config (`"orientation": "vertical"`, renders bottom-up),
-  14×24px trough (16×26 rendered), Adwaita's light border and blue
-  outline on it, fill only ~2px tall at 12%. Options: V1 fix it as a
-  long thin horizontal gauge in the palette (THE OVERSEER's lean — the
-  user asked for a slider); V2 drop it and scroll on VOL to change
-  volume. Either way, check whether the bar can come back down toward
-  30px.
+- **Round #7 plan review (2026-10-09, THE OVERSEER): 1.1 + 1.2.**
+  Verdict: approved in structure. The checks are thorough and the
+  build steps (one commit per piece, real connect test, screenshots,
+  push) are right. Build waits on the picks below. Machine facts from
+  the plan are in `BUILD_SPEC.md` §6.
+
+  **1.1 Network picker** (user request: click NET → list of networks,
+  passphrase prompt if needed; NET has no drawer, so `on-click` is
+  safe). N2 `nm-applet` stays rejected.
+  - **N1a** `networkmanager-dmenu` + **fuzzel** (install fuzzel +
+    networkmanager-dmenu, ~0.4 MB): list top-right under the bar, signal
+    shown per network, masked passphrase via `fuzzel --password`, no
+    process left running. **THE OVERSEER's lean.**
+  - **N1b** `networkmanager-dmenu` + hyprlauncher `-m`: menu stuck in
+    the screen centre, no prompt text, passphrase in a separate pinentry
+    window that tiles (needs a rule in the unstowed `hyprland.lua`), and
+    may not work at all (stdout unconfirmed). Weakest option.
+  - **N3** `nmtui connect` in a floating kitty (tested placement, no
+    installs): a terminal screen in newt blue/grey, not a list; needs a
+    toggle wrapper against double-clicks.
+  - N1c (wofi) only flagged by UNIT-1 — not offered: it would be a third
+    launcher on the machine for one menu.
+
+  Sub-choices if N1a:
+  - **Styling until Phase 3.** fuzzel's defaults are Solarized light
+    with a 10px border radius — the radius breaks `BUILD_SPEC.md` §3, so
+    some override is required, not optional. (a) A minimal `fuzzel`
+    stow package (`fuzzel.ini`) with locked tokens only: font
+    `DepartureMono Nerd Font` at 11px, background `--bg`, text `--text`,
+    1px `--border` border, radius 0, selected row `--border` background
+    with `--text`, match highlight `--accent`. Phase 3 refines this same
+    file. (b) The same values as flags inside `dmenu_command`, scoped to
+    the picker only. **Lean (a).** fuzzel can't do the double-strike, so
+    the menu text is the light weight until Phase 3 decides otherwise.
+  - **Placement:** top-right under the bar, 8px margins (UNIT-1's
+    proposal). **Lean: as proposed.**
+  - **Wifi icons:** (a) Nerd wifi glyphs (soft, like the rejected S2
+    icons) or (b) `▂▄▆█` via `wifi_chars` + `{bars}`, matching NET.
+    **Lean (b).**
+  - **Package source:** (a) `extra` — 2.6.3 now, 2.7.2 already in
+    `extra-testing` and arriving through normal updates; (b) AUR `-git`.
+    **Lean (a).**
+  - **Super+R:** installing fuzzel doesn't have to move the launcher.
+    (a) Leave Super+R on hyprlauncher until Phase 3 (when `hypr` gets
+    stowed and fuzzel gets real styling); (b) switch now. **Lean (a)** —
+    the §4 launcher question stays open until then.
+
+  **1.2 Volume slider** (now: vertical 14×24 trough, Adwaita border +
+  blue outline, forces the bar to 36px). Note: scroll-on-VOL works with
+  **either** option — pulseaudio scrolls natively; V1 only adds a drag
+  gauge on top.
+  - **V1** fix the slider: horizontal, drawer kept (click VOL reveals
+    it). **THE OVERSEER's lean** — the user asked for a slider, and this
+    keeps scroll too. Sub-choices: width 60 / **80** / 100px; height 2 /
+    **4** / 6px (lean 80×4, as in UNIT-1's render); fill **cream
+    `--text`** (lean — follows the locked one-color readout rule; VOL is
+    cream everywhere else) or `--accent` green (today's fill; §3 uses
+    `--accent` for the active workspace).
+  - **V2** drop the slider: `group/volume`, the slider block, its CSS
+    and the stale drawer comments go; `pulseaudio` goes straight into
+    `modules-right`. Loses drag-to-set. Left-click: nothing, or mute
+    toggle (reverses the 2026-09-21 "mute not on the bar" call — that
+    was made because of the drawer conflict, which V2 removes).
+  - **Scroll step** (both): 1% (default) or **5%** (lean — same as the
+    media keys; touchpad feel checked at build).
+
+  **Bar height** (both): 24px (natural — ticks sit nearly against the
+  bar edges), **30px** (lean — the original spec, frames get a gap from
+  the bar edge; see `1.2-v2-scroll-bar30-right-x3.png`), or keep 36px.
+
+  **Small one (rides along):** hovering the active workspace tab turns
+  its number from `--accent` to `--text`. §3 says the active tab is
+  `--accent`. **Lean: keep `--accent` on hover** (one CSS rule).
+
+  **Choices made (user, 2026-10-09): "your lean" — all of them.** N1a
+  (fuzzel + `extra/networkmanager-dmenu`), stopgap `fuzzel.ini` with
+  locked tokens (a), top-right under the bar, `▂▄▆█`, Super+R stays on
+  hyprlauncher until Phase 3; V1 at 80×4 in cream `--text`, scroll 5%;
+  bar 30px; active tab keeps `--accent` on hover. Locked in
+  `BUILD_SPEC.md` §3–§4; build brief in "Next up for UNIT-1".
+
+  Review notes that bind the build:
+  - V1 CSS: override Adwaita on every node of the scale — `border`,
+    `outline`, `box-shadow` and `background-image: none` on the scale,
+    trough, highlight and knob — then confirm with a 3x crop that no
+    light border, blue outline or gradient remains.
+  - V1: confirm scrolling on VOL still changes volume inside the drawer
+    group.
+  - N1a: check `y-margin` against the bar (screen edge vs reserved
+    area) and set it so the menu sits just under the bar; check the
+    fuzzel flag/key names in the installed `fuzzel.ini(5)`, not from
+    memory.
+  - N1a: connect/fail notices need a notification daemon (mako isn't
+    installed) — silent for now, that's expected; report it, don't
+    install one.
+  - Real connect test includes a passphrase network, and a wrong
+    passphrase (check the failure is visible somehow, or report that
+    it isn't).
 - Phase 1 closes when 1.1 and 1.2 are built and the user confirms the
   whole bar on-screen.
 
@@ -360,7 +461,10 @@ sub-phase numbering):**
   UNIT-1's report.
 - Tab hover line (1px light line on hover): Adwaita's button-hover
   box-shadow, present since before the tabs changed. Counts as a drop
-  shadow under §2 — removed in round #7 (`box-shadow: none`).
+  shadow under §2 — removed in cf4319a (`box-shadow: none` on
+  `#workspaces button:hover`), confirmed on a 3x crop.
+- Push: cf4319a on `origin/main` (2026-10-09, 27 commits, first push
+  since 2026-09-21; diff checked for secrets/personal data first).
 - Light 1px column after each DOS bar and after NET's steps: the
   double-strike overhang already accepted in `BUILD_SPEC.md` §3. Left
   as-is.
@@ -436,6 +540,29 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
+- 2026-10-09 — **Round #7 picks made; build is a go.** User took every
+  lean: N1a (fuzzel + networkmanager-dmenu from `extra`) with a stopgap
+  token-only `fuzzel.ini`, `▂▄▆█` signal, menu top-right under the bar,
+  Super+R unchanged until Phase 3; V1 slider 80×4 cream, 5% scroll;
+  bar 30px; active tab keeps `--accent` on hover. Locked in
+  `BUILD_SPEC.md` §3 (new "Locked volume slider" and "Locked network
+  picker" blocks) and §4. 7-step build brief in "Next up for UNIT-1".
+- 2026-10-09 — **Round #7: plan for 1.1 + 1.2 reviewed (approved in
+  structure); tab hover fix and push done.** First round under the new
+  Overseer chat. UNIT-1 synced docs (49553c7; removed lines checked,
+  nothing of its own dropped), fixed the hover shadow (cf4319a) and
+  pushed (cf4319a on `origin/main`). Plan checks recorded in
+  `BUILD_SPEC.md` §6: NM lets the user connect without polkit;
+  networkmanager-dmenu's fuzzel support (masked passphrase) vs
+  hyprlauncher `-m` (centred, no masking, stdout unconfirmed);
+  pinentry-gtk/qt work; `hl.dsp.exec_cmd` with rules places a floating
+  kitty; the bar's natural height is 24px. THE OVERSEER found:
+  fuzzel's defaults are Solarized light with radius 10 (breaks §3, must
+  be overridden); networkmanager-dmenu 2.7.2 is already in
+  `extra-testing`. Found by UNIT-1: stray `nm-applet` autostart in the
+  live `hyprland.lua` (§5), polkit agent installed but not running
+  (§4), `pacman -F` unsynced. Options and leans in Phase 1 → "Still
+  open". Next: the user's picks, then the build brief.
 - 2026-10-09 — **Fix pass reviewed: approved. New working rules: two
   sub-phases per round, push every round, screenshots in ~/Pictures.
   Handoff to a new Overseer chat.** UNIT-1 synced docs (61415e7) and

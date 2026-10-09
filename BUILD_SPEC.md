@@ -165,9 +165,8 @@ treatment would have given).
 - Outer bar getting a top/bottom hairline rule (echoing a report-page
   header) is a nice-to-have, not required.
 
-Status: full-box version built and deployed 2026-09-21. The corner-tick
-and one-color-readout updates above are decided (2026-10-06) and being
-built — see `PHASES.md` "Next up for UNIT-1".
+Status: full-box version built 2026-09-21; corner ticks and one-color
+readouts built and live since 2026-10-09.
 
 **Corner ticks — proven feasible (probe, 2026-10-06):** 9-slice
 `border-image` from an 11×11 SVG with 1px L-shaped corners and
@@ -240,8 +239,39 @@ glyphs and over going icon-less.
   60s. No seconds (they'd sit stale between updates).
 - **Tray:** one frame around the whole tray, icons at 14px. Tray icons
   keep their app colors.
-- **Height:** 36px, set explicitly — keeps the larger volume slider
-  (14px/24px gauge) the user asked for. Original spec was 30px.
+- **Height: 30px**, set explicitly (user, 2026-10-09 — back to the
+  original spec). The earlier 36px came only from the vertical slider
+  trough; the bar's natural height is 24px, and 30 gives the frames a
+  gap from the bar edge.
+- **Active workspace tab** stays `--accent` (ticks and number) while
+  hovered (2026-10-09).
+
+### Locked volume slider (decided Phase 1.2 — 2026-10-09)
+
+- Kept as a drawer: click VOL reveals `pulseaudio/slider`.
+- **Horizontal gauge, 80×4px** trough in `--border`, fill in **`--text`
+  cream** (one-color readout — VOL is cream everywhere), no knob, inside
+  the existing tick frame. All Adwaita decoration on the scale removed
+  (border, outline, box-shadow, background-image).
+- Mute empties the gauge (`zero-on-mute`, default). Mute itself stays
+  on the `XF86AudioMute` key.
+- **Scroll on VOL: 5% per step**, same as the media keys.
+
+### Locked network picker (decided Phase 1.1 — 2026-10-09)
+
+- Click NET → `networkmanager_dmenu` (`extra`) through **fuzzel**: a
+  list of networks under the bar, top-right, 8px margins; masked
+  passphrase via fuzzel's password mode.
+- Signal per network as **`▂▄▆█`** (`wifi_chars`), matching NET — not
+  the Nerd wifi glyphs.
+- **fuzzel stopgap styling** (until Phase 3 refines the same file):
+  locked tokens only — DepartureMono Nerd Font 11px, background `--bg`,
+  text `--text`, 1px `--border` border, radius 0, selected row
+  `--border` background with `--text`, match highlight `--accent`,
+  placeholder/counter `--text-dim`. Light weight (fuzzel has no
+  double-strike) — a Phase 3 question.
+- Super+R stays on hyprlauncher until Phase 3; fuzzel is installed for
+  the picker only for now.
 
 ### What IS fixed regardless of which palette gets picked
 
@@ -279,15 +309,21 @@ now — no audio dependencies, no hooks, until it's an actual phase.
   tagged release includes the fix. Background in `PHASES.md` Log
   (2026-09-21).
 - Launcher: fuzzel — **planned, not installed** (2026-10-09). Live now:
-  **hyprlauncher** (Hyprland's first-party launcher, bound in
-  `hyprland.lua`); wofi is also installed.
+  **hyprlauncher** 0.1.6 (Hyprland's first-party launcher, bound to
+  Super+R in `hyprland.lua`); wofi 1.5.3 is also installed (maintenance
+  status not checked). **fuzzel is being installed in round #7 for the
+  network picker only** (user, 2026-10-09); Super+R stays on
+  hyprlauncher until Phase 3 decides the launcher.
 - Notifications: mako — install status not checked yet.
 - Idle/lock: hypridle + hyprlock — **planned, not installed**.
 - Wallpaper: hyprpaper — not checked yet.
 - Screenshot: grim + slurp + swappy (bound to Print) — grim is in use;
   slurp/swappy not checked.
 - Terminal: foot — **planned, not installed**. Live now: **kitty**.
-- Polkit agent: hyprpolkitagent — not checked yet.
+- Polkit agent: hyprpolkitagent 0.2.0 — **installed, not running**
+  (polkit-gnome is installed too). Nothing needs one yet: NetworkManager
+  lets the user scan and connect without it (§6). Start it once
+  something does (Phase 3/4, when `hypr` is stowed).
 - Network: **NetworkManager 1.58.1** (wpa_supplicant backend), `nmcli`
   and `nmtui` present; iwd not installed, systemd-networkd disabled.
 
@@ -315,6 +351,9 @@ that touches this.
   @DEFAULT_AUDIO_SINK@ toggle` bind (around line 308, `locked = true,
   repeating = true`), which is where mute lives now. When `hypr` is first stowed, back up
   the live file and carry both over.
+  - **Stray autostart:** `hyprland.lua:55` starts `nm-applet`, which
+    isn't installed (and is rejected — §6), so it fails silently at
+    every login. Drop that line when `hypr` is stowed.
 - Everything else starts from scratch.
 
 ## 6. Verified tooling facts
@@ -325,26 +364,68 @@ data. Recheck if the package version changes. Newest first.
 **Machine (2026-10-09):**
 - `man` isn't installed (no man-db). Read man pages with
   `zcat /usr/share/man/man<N>/<page>.<N>.gz`.
+- `pacman -F` (file database) isn't synced — needs `sudo pacman -Fy`
+  before use. Use `pacman -Ql` on installed packages instead.
 
 **Hyprland 0.56.2 (Lua config):**
 - `hyprctl dispatch` takes a Lua dispatcher expression with a table
   argument, e.g. `hyprctl dispatch 'hl.dsp.cursor.move({ x = 135, y =
   18 })'` — not positional args.
 - Dispatcher/API stubs for checking names: `/usr/share/hypr/stubs/hl.meta.lua`.
+- **`hl.dsp.exec_cmd(cmd, { rules })` works through `hyprctl dispatch`**
+  and applies window rules to what it launches, no config edit needed.
+  Tested 2026-10-09: `hyprctl dispatch 'hl.dsp.exec_cmd("kitty --class X
+  …", { float = true, size = "720 480", move = "monitor_w-728 44" })'`
+  → floating kitty at 1192,44, 720×480. `move` accepts `monitor_w`
+  expressions.
+- Window rules can't move a **layer surface** (launchers, bars) — only
+  the app's own anchor/margin options can.
 
 **Network & menus (2026-10-09):**
-- `extra/networkmanager-dmenu` 2.6.3 (upstream latest 2.7.2,
-  2026-09-21; `-git` on AUR maintained by upstream). Works with fuzzel,
-  including `fuzzel --password` for passphrases.
+- **NetworkManager permissions** (`nmcli general permissions`):
+  network-control, wifi.scan and settings.modify.own are `yes` for the
+  user, so any picker can scan and connect **without a polkit agent**.
+- `extra/networkmanager-dmenu` 2.6.3, not installed (upstream
+  latest 2.7.2; **2.7.2-1 is in `extra-testing`**, built 2026-09-29, so
+  it reaches `extra` through normal updates — no AUR build needed).
+  `-git` on AUR is maintained by upstream. Read in the v2.6.3 source
+  (recheck after the 2.7.x upgrade):
+  - Strips `-d`, `-dmenu` and `--dmenu` from `dmenu_command`, then adds
+    its own flags for launchers it knows.
+  - Knows fuzzel: adds `--dmenu --placeholder <prompt>`, and with
+    `[dmenu_passphrase] obscure = True` adds `--password` (masked
+    passphrase).
+  - Launchers it doesn't know (e.g. hyprlauncher) get no prompt text and
+    no masking — only a `pinentry` program can hide the passphrase.
+  - Config keys (upstream README): `wifi_chars` (4 characters, used by
+    `{bars}` in `format`), `wifi_icons` (used by `{icon}`), `format`,
+    `compact`, `pinentry`. Default icons are Nerd wifi glyphs
+    (󰤯󰤟󰤢󰤥󰤨), present in DepartureMono Nerd Font.
+  - Uses `notify-send` for connect/fail notices if libnotify is present;
+    with no notification daemon running they don't show.
 - `extra/network-manager-applet` 1.36.0 does SNI/tray via `--indicator`,
   but depends on Canonical's **libappindicator** (unmaintained upstream,
   not the maintained libayatana-appindicator) — treat as deprecated,
   don't use.
-- `extra/fuzzel` 1.15.0: `anchor=top-right` with `x-margin`/`y-margin`
-  can place it under the bar.
-- hyprlauncher has a `-m` / `--dmenu` mode (newline list on stdin) per
-  its upstream man page — **not yet checked on this machine**, nor
-  whether it can mask a passphrase or be positioned.
+- `extra/fuzzel` 1.15.0 (upstream man page; not installed yet):
+  `anchor=top-right` with `x-margin`/`y-margin` can place it under the
+  bar — whether `y-margin` counts from the bar's edge or the screen's is
+  **unchecked on this machine**. Defaults are off-spec: **Solarized
+  light colors** (background `fdf6e3`) and **`border-radius` 10** —
+  rounded, breaks §3. Any use must override radius (0) and colors.
+  Default layer `overlay`. No text-shadow, so no double-strike weight.
+- **hyprlauncher 0.1.6 `-m` / `--dmenu`** (checked live 2026-10-09):
+  opens a 400×260 layer surface centred on screen (760,410) through the
+  already-running daemon. No position or password flags; config keys
+  are only `ui:window_size`, `general:grab_focus` and finder settings.
+  Times out with no pick → exits 124 and closes cleanly. **Unconfirmed:**
+  that a picked line comes back on stdout (no way to send keys to a
+  layer surface from UNIT-1's side).
+- **pinentry 1.3.3:** `pinentry-gtk` and `pinentry-qt` link cleanly;
+  `pinentry-gnome3` is missing a library — don't use it.
+- **wofi 1.5.3** is installed; networkmanager-dmenu supports it natively
+  (`-P` masks the passphrase) and it can anchor top-right. Upstream
+  maintenance not checked.
 
 **waybar-git 3672eee0** (source + installed `waybar.5`, 2026-10-06/09):
 - **fmt width specs** (`{usage:>3}` etc.) work on cpu, memory,
@@ -354,7 +435,17 @@ data. Recheck if the package version changes. Newest first.
   bottom-up (inverted). Unstyled, its trough gets Adwaita's light
   `#ccc6c1` border and the highlight a blue `#185fb4` outline.
 - **Workspace buttons on hover** get Adwaita's box-shadow (a 1px light
-  line along the top edge) unless overridden.
+  line along the top edge) unless overridden — fixed with
+  `box-shadow: none` on `#workspaces button:hover` (cf4319a).
+- **Natural bar height** (no `height` key, 11px text + corner ticks):
+  **24px**, with no slider or with a horizontal 4px slider trough. The
+  old vertical 24px trough was what forced 36px. A drawer's hidden
+  slider still counts toward the bar's height.
+- **`pulseaudio` scroll:** scrolling on the module changes volume
+  natively; `scroll-step` defaults to 1.0 (%). `reverse-scrolling` and
+  `smooth-scrolling-threshold` exist for touchpads. (Media keys use 5%.)
+- **`pulseaudio/slider` `zero-on-mute`** defaults to true — mute empties
+  the gauge.
 - **`memory` supports `{icon}`** with `format-icons` even though the man
   page's replacement list doesn't mention it (memory/common.cpp).
 - **Battery `format-<status>`:** the status is lowercased, so

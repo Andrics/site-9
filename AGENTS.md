@@ -128,7 +128,9 @@ them at once**:
 - **Screenshots go in `~/Pictures/site-9-phase<N>/`** (create it if
   missing), never `/tmp` or the scratchpad — the user needs to find and
   upload them. Prefix filenames with the sub-phase (e.g.
-  `1.1-net-picker-x3.png`). Don't commit them to the repo.
+  `1.1-net-picker-x3.png`); ride-along fixes that belong to no
+  sub-phase get `<phase>-fix-` (e.g. `1-fix-tab-hover-x3.png`). Don't
+  commit them to the repo.
 - **Ask before big or destructive changes** — anything that would be
   annoying to undo (repartitioning config structure, removing a working
   tool in favor of another, touching files outside this repo's scope).
