@@ -81,7 +81,7 @@
     "pulseaudio/slider": {
         "min": 0,
         "max": 100,
-        "orientation": "vertical"
+        "orientation": "horizontal"
     },
 
     "hyprland/workspaces": {
@@ -95,6 +95,8 @@
     },
 
     "pulseaudio": {
+        // Scroll on VOL: 5% a step, same as the media keys.
+        "scroll-step": 5,
         "format": "◄ VOL: {icon} {volume:>3}%",
         "format-muted": "◄ VOL: MUTE",
         // DOS-fill bar: entry i lights i+1 of 10 cells. Empty cells are

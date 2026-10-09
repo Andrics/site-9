@@ -83,26 +83,41 @@ window#waybar label {
     color: #d6d0bd;
 }
 
+/* Volume gauge: 80×4 trough in --border, fill in --text, no knob. Adwaita
+   puts a light border, a blue outline and gradients on these nodes, so all
+   of them are cleared here. The scale keeps its tick-frame border. */
+#pulseaudio-slider,
+#pulseaudio-slider trough,
+#pulseaudio-slider highlight,
+#pulseaudio-slider slider {
+    outline: none;
+    box-shadow: none;
+    background-image: none;
+}
+
+#pulseaudio-slider trough,
+#pulseaudio-slider highlight,
+#pulseaudio-slider slider {
+    border: none;
+}
+
 #pulseaudio-slider slider {
     min-width: 0;
     min-height: 0;
     opacity: 0;
-    background-image: none;
-    border: none;
-    box-shadow: none;
 }
 
 #pulseaudio-slider trough {
-    min-width: 14px;
-    min-height: 24px;
-    border-radius: 0;
+    min-width: 80px;
+    min-height: 4px;
+    /* --border */
     background: #3a3626;
 }
 
 #pulseaudio-slider highlight {
-    min-width: 14px;
-    border-radius: 0;
-    background: #5fae5a;
+    min-height: 4px;
+    /* --text */
+    background: #d6d0bd;
 }
 
 #pulseaudio.muted {
