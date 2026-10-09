@@ -47,6 +47,13 @@ with one of these, the design idea loses.
 - Nothing that renders continuously while idle (e.g. animated borders,
   looping background effects, animated wallpapers/video wallpapers).
 
+**GTK theme defaults count.** Adwaita (GTK's default theme) adds its own
+box-shadows and outlines to some widgets — e.g. a 1px shadow line on
+hovered buttons, a blue focus outline on sliders. Those are drop
+shadows / off-palette decoration by this spec: override them
+(`box-shadow: none`, `outline: none`, explicit borders) wherever they
+show up.
+
 **Exception — double-strike text weight (user-approved 2026-10-06).**
 Exactly `text-shadow: 1px 0 0 currentColor` is allowed: zero blur, 1px
 horizontal offset, same color as the text. It renders as a 1px-wider
@@ -271,13 +278,24 @@ now — no audio dependencies, no hooks, until it's an actual phase.
   Recheck at each phase start; switch back to `extra/waybar` once a
   tagged release includes the fix. Background in `PHASES.md` Log
   (2026-09-21).
-- Launcher: fuzzel
-- Notifications: mako
-- Idle/lock: hypridle + hyprlock
-- Wallpaper: hyprpaper
-- Screenshot: grim + slurp + swappy (bound to Print)
-- Terminal: foot
-- Polkit agent: hyprpolkitagent
+- Launcher: fuzzel — **planned, not installed** (2026-10-09). Live now:
+  **hyprlauncher** (Hyprland's first-party launcher, bound in
+  `hyprland.lua`); wofi is also installed.
+- Notifications: mako — install status not checked yet.
+- Idle/lock: hypridle + hyprlock — **planned, not installed**.
+- Wallpaper: hyprpaper — not checked yet.
+- Screenshot: grim + slurp + swappy (bound to Print) — grim is in use;
+  slurp/swappy not checked.
+- Terminal: foot — **planned, not installed**. Live now: **kitty**.
+- Polkit agent: hyprpolkitagent — not checked yet.
+- Network: **NetworkManager 1.58.1** (wpa_supplicant backend), `nmcli`
+  and `nmtui` present; iwd not installed, systemd-networkd disabled.
+
+**Open stack question (for whichever phase first needs it):** keep the
+live tools (hyprlauncher, kitty) or switch to the planned ones (fuzzel,
+foot)? The user decides; don't install a planned tool or remove a live
+one without asking. The network picker (Phase 1.1) is the first thing
+that touches this.
 
 ## 5. What's already built
 
@@ -286,8 +304,10 @@ now — no audio dependencies, no hooks, until it's an actual phase.
   2026-10-09 — layout L2 (`SITE-9`, workspaces | clock, MET | CPU, RAM,
   VOL, NET, PWR, tray), 11px double-strike, corner ticks
   (`frame/tick-symbolic.svg`), one-color state readouts, S1 icons,
-  DOS-fill bars, 36px. Seen live by the user. Remaining Phase 1 work
-  (small fix pass, network picker, volume slider) is in `PHASES.md`.
+  DOS-fill bars, 36px. Seen live by the user. Fix pass done 2026-10-09:
+  ticked workspace tabs, thresholds 29/14, fixed-width percentages.
+  Remaining Phase 1 work (1.1 network picker, 1.2 volume slider) is in
+  `PHASES.md`.
 - **hypr** — not stowed from this repo yet. The only change so far is
   `scale = "1"`, made directly in the live `~/.config/hypr/hyprland.lua`
   (Phase 1 fix); otherwise it's Hyprland's stock example config. It
@@ -302,7 +322,39 @@ now — no audio dependencies, no hooks, until it's an actual phase.
 Behavior checked against the actual installed versions — not training
 data. Recheck if the package version changes. Newest first.
 
+**Machine (2026-10-09):**
+- `man` isn't installed (no man-db). Read man pages with
+  `zcat /usr/share/man/man<N>/<page>.<N>.gz`.
+
+**Hyprland 0.56.2 (Lua config):**
+- `hyprctl dispatch` takes a Lua dispatcher expression with a table
+  argument, e.g. `hyprctl dispatch 'hl.dsp.cursor.move({ x = 135, y =
+  18 })'` — not positional args.
+- Dispatcher/API stubs for checking names: `/usr/share/hypr/stubs/hl.meta.lua`.
+
+**Network & menus (2026-10-09):**
+- `extra/networkmanager-dmenu` 2.6.3 (upstream latest 2.7.2,
+  2026-09-21; `-git` on AUR maintained by upstream). Works with fuzzel,
+  including `fuzzel --password` for passphrases.
+- `extra/network-manager-applet` 1.36.0 does SNI/tray via `--indicator`,
+  but depends on Canonical's **libappindicator** (unmaintained upstream,
+  not the maintained libayatana-appindicator) — treat as deprecated,
+  don't use.
+- `extra/fuzzel` 1.15.0: `anchor=top-right` with `x-margin`/`y-margin`
+  can place it under the bar.
+- hyprlauncher has a `-m` / `--dmenu` mode (newline list on stdin) per
+  its upstream man page — **not yet checked on this machine**, nor
+  whether it can mask a passphrase or be positioned.
+
 **waybar-git 3672eee0** (source + installed `waybar.5`, 2026-10-06/09):
+- **fmt width specs** (`{usage:>3}` etc.) work on cpu, memory,
+  pulseaudio, network and battery values — all integers in the source.
+  `min-length` pads the whole label instead (moves icons and bars).
+- **`pulseaudio/slider` with `"orientation": "vertical"`** renders
+  bottom-up (inverted). Unstyled, its trough gets Adwaita's light
+  `#ccc6c1` border and the highlight a blue `#185fb4` outline.
+- **Workspace buttons on hover** get Adwaita's box-shadow (a 1px light
+  line along the top edge) unless overridden.
 - **`memory` supports `{icon}`** with `format-icons` even though the man
   page's replacement list doesn't mention it (memory/common.cpp).
 - **Battery `format-<status>`:** the status is lowercased, so

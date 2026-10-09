@@ -44,6 +44,8 @@ drops them into the repo. So:
 - Found: anything unexpected, including docs that don't match the machine
 - Needs a decision: open questions, with options if you have them
 - Proposed doc changes: anything you think BUILD_SPEC/PHASES should say
+- Pushed: the commit hash now on origin/main (or why the push failed)
+- Screenshots: full paths under ~/Pictures/site-9-phase<N>/
 ```
 
 Plans (see Workflow below) don't need this block — just the plan.
@@ -64,6 +66,27 @@ This is a manual relay — the user is carrying the plan between you and
 THE OVERSEER, so keep plans concrete and short enough to be worth copying
 over, not sprawling.
 
+## Batching: two sub-phases per round (from 2026-10-09)
+
+Every relay round costs the user a trip between chats, so each round has
+to move the project further. Work is split into numbered sub-phases
+(`1.1`, `1.2`, `2.1`, …) in `PHASES.md`, and **each round covers two of
+them at once**:
+
+- **Plans:** one plan covering both sub-phases, reviewed together, built
+  together after one go-ahead.
+- **Builds, tests and fixes:** same — two sub-phases' worth per round,
+  not one.
+- **Read-only checks needed for a plan go *inside* the plan** — don't
+  spend a round on checks alone.
+- **Trivial fixes** (no plan needed, see above) ride along in whatever
+  round is happening.
+- Stay in order: the round is the next two sub-phases in `PHASES.md`.
+  Don't skip ahead past them. If one sub-phase blocks the other, say so
+  and do what you can of both.
+- If a phase has only one sub-phase left, pair it with the next phase's
+  first sub-phase once that phase is scoped; until then, do the one.
+
 ## Standing rules
 
 - **Ask before deciding anything design-related.** Palette, exact fonts,
@@ -82,13 +105,17 @@ over, not sprawling.
 - **Performance constraints in BUILD_SPEC.md are non-negotiable.** If a
   styling idea conflicts with them, the constraint wins — flag the conflict
   to the user rather than quietly softening the constraint.
-- **Work one phase at a time.** Don't start Phase 3 work while Phase 2 is
-  still open. If something in a later phase blocks earlier work, say so and
-  ask rather than jumping ahead.
+- **Work in order.** Two sub-phases per round (Batching, above), never
+  past them. If something in a later phase blocks earlier work, say so
+  and ask rather than jumping ahead.
 - **Commit as you go.** Small, real commits with plain descriptions of what
   changed — not one giant commit per phase. This is a personal dotfiles
   repo, not a team project: clarity over ceremony, no need for PRs/branches
   unless the user asks for them.
+- **Push at the end of every round.** `git push origin main` once the
+  round's commits are in and `git status` is clean. Report the pushed
+  hash. If the push fails, report why — never force-push. (The repo is
+  public: keep secrets, tokens and personal files out of it.)
 - **Report, don't update docs.** When you finish a phase or a meaningful
   chunk of one, put status and notes for the next session in your
   "Report for THE OVERSEER" block — THE OVERSEER writes them into
@@ -98,6 +125,10 @@ over, not sprawling.
   nearest-neighbor (`grim -g "0,0 1920x<bar height>"` then `ffmpeg`
   with `flags=neighbor`, ~3x) — a full-desktop capture is too small to
   judge font weight or framing.
+- **Screenshots go in `~/Pictures/site-9-phase<N>/`** (create it if
+  missing), never `/tmp` or the scratchpad — the user needs to find and
+  upload them. Prefix filenames with the sub-phase (e.g.
+  `1.1-net-picker-x3.png`). Don't commit them to the repo.
 - **Ask before big or destructive changes** — anything that would be
   annoying to undo (repartitioning config structure, removing a working
   tool in favor of another, touching files outside this repo's scope).

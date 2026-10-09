@@ -22,6 +22,12 @@ loop before execution — see the Workflow section in `AGENTS.md`. UNIT-1
 proposes a plan, the user relays it to the Project chat for review, and
 work only starts once that review comes back with a go-ahead.
 
+**Two sub-phases per round (from 2026-10-09).** Phases are split into
+numbered sub-phases (`1.1`, `1.2`, `2.1`, …), and every round — plan,
+build, test or fix — covers the next two together. Checks a plan needs
+go inside the plan, not in a round of their own. Full rule in
+`AGENTS.md` → Batching.
+
 ## Status
 
 | # | Phase | Status |
@@ -38,39 +44,47 @@ work only starts once that review comes back with a go-ahead.
 
 _Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Task (2026-10-09, #6): small fix pass (GO) + two read-only checks.**
-Your final build was reviewed and approved (Phase 1 → Log 2026-10-09).
-The user saw it live. Do these, one commit per fix:
+**Round (2026-10-09, #7): sub-phases 1.1 + 1.2 — one plan. Plus a
+trivial fix and a push.**
 
-**Fixes — approved, build them:**
-1. **Workspace tabs → corner ticks** (user's call). Each number keeps
-   its own tab, framed with the same tick SVG; inactive ticks
-   `--border`, active tab's ticks and number `--accent`. Keep hover
-   behavior as it is, unless it relied on the full border — then
-   report.
-2. **Battery thresholds → spec:** `"warning": 29`, `"critical": 14`
-   (`BUILD_SPEC.md` §3).
-3. **Fixed-width percentages** on CPU, RAM, VOL, NET, PWR, so values
-   don't shift the layout at 9→10% / 99→100%. Use whatever the
-   installed waybar documents (fmt width spec or `min-length` — verify
-   which works with these modules and say which you used).
+**Do now (no plan needed):**
+- **Tab hover line:** add `box-shadow: none` to the workspace button
+  hover rule (Adwaita's hover shadow — a §2 violation, see `BUILD_SPEC.md`
+  §2 "GTK theme defaults count"). One commit.
+- **Push:** nothing has been pushed since 2026-09-21. Push everything to
+  `origin/main` once `git status` is clean, and report the hash.
 
-Restart, check the log, screenshot cropped + upscaled (full bar plus a
-close-up of the workspace tabs).
+**Then write ONE plan covering both sub-phases** (Phase 1 → "Still
+open" has the background). Present design choices as options; the user
+picks when THE OVERSEER reviews the plan. Fold any checks into the plan.
 
-**Read-only checks — report, don't change anything:**
-4. **Network backend.** Is NetworkManager what's managing the
-   connection (vs iwd standalone / systemd-networkd)? Is `nmcli`
-   available? Check whether `networkmanager-dmenu` (AUR) is current,
-   whether `network-manager-applet` on Arch still supports SNI/tray via
-   `--indicator`, and whether fuzzel can anchor its window top-right
-   under the bar. Report what's true; don't install.
-5. **Volume slider.** Report the slider's current CSS (`min-width` /
-   `min-height` on trough, highlight, slider), the group's
-   orientation, and the slider's rendered size. User reports it opens
-   as a small vertical bar. THE OVERSEER's hypothesis: the gauge is only
-   ~14×24px, so it's short and reads as vertical. Confirm or refute —
-   the fix comes later, as its own plan.
+- **1.1 Network picker** — click NET → a list of available networks;
+  pick one to connect, prompt for the passphrase if needed. Plan these
+  options concretely (packages, config, keybinds/on-click, how the menu
+  is positioned and styled for now):
+  - N1a: `extra/networkmanager-dmenu` through **fuzzel** (needs fuzzel
+    installed — it's the planned launcher, but not on the machine).
+  - N1b: `networkmanager-dmenu` through **hyprlauncher `--dmenu`**
+    (already installed). Check on the machine: does `--dmenu` work, can
+    it mask a passphrase (or does it need pinentry), can it be placed
+    top-right under the bar.
+  - N3: click NET opens `nmtui` in a floating **kitty** window (no new
+    packages).
+  - N2 (`nm-applet`) is out — deprecated dependency (`BUILD_SPEC.md` §6).
+  NET has no drawer, so `on-click` on the network module is safe.
+- **1.2 Volume slider** — currently vertical by config (`orientation:
+  vertical`, 14×24px trough), Adwaita border + blue outline, fill
+  ~2px at 12%. Plan both options:
+  - V1: fix it — horizontal, a long thin trough in the palette, fill in
+    the module's color, no knob, Adwaita border/outline overridden.
+    Give the size and what it does to bar height (could the bar drop
+    back toward 30px?).
+  - V2: drop the slider — volume by scrolling on VOL (pulseaudio's
+    native scroll), click stays free for something else or nothing.
+    Say what happens to `group/volume`, and the bar height.
+
+Screenshots for anything you render go in `~/Pictures/site-9-phase1/`
+(`AGENTS.md`). End with the report block, including the pushed hash.
 
 ## Phase 1 — Waybar restyle
 
@@ -309,31 +323,47 @@ just building on top of it.
   This replaces the earlier "segmented value bars" idea with a fill bar
   and the dim-label rule with one-color readouts.
 
-**Still open (remaining Phase 1 work, in this order):**
-- **Fix pass** (2026-10-09): workspace tabs to corner ticks, battery
-  thresholds to spec, fixed-width percentages. Approved, briefed in
-  "Next up for UNIT-1".
-- **Network picker** (new, user request 2026-10-09): click NET → a
-  dropdown list of available networks to connect to, since the user
-  doesn't manage wifi from the terminal. Options pending the backend
-  check: N1 `networkmanager-dmenu` through fuzzel (list with `▂▄▆█`
-  signal bars, passphrase prompt, no resident process — THE OVERSEER's
-  lean; fuzzel styling itself is Phase 3, so it'd look plain until
-  then); N2 `nm-applet` in the tray (real GTK dropdown, but an
-  always-running process, colorful tray icon, GTK theming is Phase 2);
-  N3 click NET opens `nmtui` in a floating `foot` window (no new
-  packages, but a terminal UI, not a dropdown). User picks after the
-  check.
-- **Volume slider** (known issue since 2026-09-21, user: "work on it
-  later"): opens as a small, vertical-looking bar. Hypothesis: gauge
-  sized ~14×24px. Diagnosis in this round; fix as its own plan after
-  the network picker. Worth weighing then: drop the slider and adjust
-  volume by scrolling on VOL (the pulseaudio module scrolls volume
-  natively), which would also free the bar to shrink below 36px.
-- User's on-screen confirm of the full Phase 1 look after the fix pass
-  — closes Phase 1 together with the two items above.
+**Still open — remaining sub-phases (earlier Phase 1 work predates
+sub-phase numbering):**
+- **1.1 Network picker** (user request 2026-10-09): click NET → a list
+  of available networks to connect to — the user doesn't manage wifi
+  from the terminal. Machine: NetworkManager 1.58.1, wlp2s0. Options
+  (UNIT-1 plans them, user picks at review):
+  - N1a `networkmanager-dmenu` via fuzzel — needs fuzzel installed
+    (the planned launcher). THE OVERSEER's lean *if* the user is going
+    with fuzzel as the launcher anyway.
+  - N1b `networkmanager-dmenu` via hyprlauncher `--dmenu` — already
+    installed; viability (passphrase masking, positioning) being
+    checked in the plan. Lean *if* the user keeps hyprlauncher.
+  - N3 `nmtui` in a floating kitty window — no new packages, but a
+    terminal screen, not a list menu.
+  - N2 `nm-applet` — **rejected**: depends on unmaintained Canonical
+    libappindicator (no-deprecated rule).
+  This forces the open launcher question (`BUILD_SPEC.md` §4): fuzzel
+  vs hyprlauncher. Whichever menu is picked gets its real styling in
+  Phase 3 and looks plain until then.
+- **1.2 Volume slider** (known since 2026-09-21): diagnosed 2026-10-09 —
+  vertical by config (`"orientation": "vertical"`, renders bottom-up),
+  14×24px trough (16×26 rendered), Adwaita's light border and blue
+  outline on it, fill only ~2px tall at 12%. Options: V1 fix it as a
+  long thin horizontal gauge in the palette (THE OVERSEER's lean — the
+  user asked for a slider); V2 drop it and scroll on VOL to change
+  volume. Either way, check whether the bar can come back down toward
+  30px.
+- Phase 1 closes when 1.1 and 1.2 are built and the user confirms the
+  whole bar on-screen.
 
 **Resolved:**
+- Fix pass (2026-10-09): 26db176 ticked workspace tabs (active =
+  `--accent`), 3ad0eb1 battery thresholds 29/14, 49b5ab6 fixed-width
+  percentages via fmt `{x:>3}`. Log clean, 1920×36. Approved on
+  UNIT-1's report.
+- Tab hover line (1px light line on hover): Adwaita's button-hover
+  box-shadow, present since before the tabs changed. Counts as a drop
+  shadow under §2 — removed in round #7 (`box-shadow: none`).
+- Light 1px column after each DOS bar and after NET's steps: the
+  double-strike overhang already accepted in `BUILD_SPEC.md` §3. Left
+  as-is.
 - Final Phase 1 build (2026-10-09): six steps committed (0f6fdc7,
   3276af9, eee67bf, bfecf46, c53a162) and deployed, reviewed and
   approved by THE OVERSEER. User saw it live; asked for tick framing on
@@ -406,6 +436,26 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
+- 2026-10-09 — **Fix pass reviewed: approved. New working rules: two
+  sub-phases per round, push every round, screenshots in ~/Pictures.
+  Handoff to a new Overseer chat.** UNIT-1 synced docs (61415e7) and
+  shipped the fix pass (26db176, 3ad0eb1, 49b5ab6) — approved. Checks:
+  NetworkManager 1.58.1 runs the network; `nm-applet` would pull in
+  unmaintained libappindicator, so N2 is out; the slider is vertical by
+  config, 14×24px, with Adwaita's border/outline. Found: `BUILD_SPEC.md`
+  §4 didn't match the machine — fuzzel, foot, hypridle, hyprlock aren't
+  installed; kitty and hyprlauncher are live (§4 corrected, launcher /
+  terminal now an open stack question). Tab hover line traced to
+  Adwaita's hover box-shadow — §2 now says GTK theme defaults count as
+  shadows; fix rides along in the next round. User set new rules: (1)
+  every round covers **two sub-phases** — plans, builds, tests and
+  fixes alike — to cut round trips (`AGENTS.md` → Batching); remaining
+  Phase 1 work renumbered as 1.1 network picker + 1.2 volume slider;
+  (2) **push to GitHub every round** — nothing had been pushed since
+  2026-09-21; (3) screenshots go in `~/Pictures/site-9-phase<N>/`, not
+  `/tmp` (UNIT-1 had announced that folder but still used the
+  scratchpad). This chat was handed off to a fresh Overseer chat; the
+  docs are the full handoff.
 - 2026-10-09 — **Final Phase 1 build reviewed: approved; fix pass
   briefed; network picker added.** UNIT-1 synced docs (9d84e94 —
   included `AGENTS.md`, correctly, since it was part of the same drop)
