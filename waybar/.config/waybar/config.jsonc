@@ -148,7 +148,7 @@
             "█████████<span color='#3a3626'>█</span>",
             "██████████"
         ],
-        "states": { "warning": 25, "critical": 10 }
+        "states": { "warning": 29, "critical": 14 }
     },
 
     "tray": {
