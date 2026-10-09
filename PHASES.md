@@ -38,56 +38,39 @@ work only starts once that review comes back with a go-ahead.
 
 _Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Task (2026-10-06, #5): build Phase 1's final waybar pass. GO —
-approved.** The user picked every option (Phase 1 → "Choices made").
-The locked spec is `BUILD_SPEC.md` §2 (double-strike exception) and §3
-(font, framing, state color, labels, icons/bars, layout). Build exactly
-that. If something renders wrong or a key doesn't behave as `§6`
-says, **stop and report** with options — don't improvise a design fix.
+**Task (2026-10-09, #6): small fix pass (GO) + two read-only checks.**
+Your final build was reviewed and approved (Phase 1 → Log 2026-10-09).
+The user saw it live. Do these, one commit per fix:
 
-Files: `waybar/.config/waybar/config.jsonc`, `style.css`, and a new
-`frame/tick-symbolic.svg` (from the probe). Verify every config key
-you haven't used before against the installed man pages / source, and
-list them in your report.
+**Fixes — approved, build them:**
+1. **Workspace tabs → corner ticks** (user's call). Each number keeps
+   its own tab, framed with the same tick SVG; inactive ticks
+   `--border`, active tab's ticks and number `--accent`. Keep hover
+   behavior as it is, unless it relied on the full border — then
+   report.
+2. **Battery thresholds → spec:** `"warning": 29`, `"critical": 14`
+   (`BUILD_SPEC.md` §3).
+3. **Fixed-width percentages** on CPU, RAM, VOL, NET, PWR, so values
+   don't shift the layout at 9→10% / 99→100%. Use whatever the
+   installed waybar documents (fmt width spec or `min-length` — verify
+   which works with these modules and say which you used).
 
-Build in this order, **one commit per step**:
+Restart, check the log, screenshot cropped + upscaled (full bar plus a
+close-up of the workspace tabs).
 
-1. **Font & weight.** `font-family: "DepartureMono Nerd Font"`,
-   `font-size: 11px`, `text-shadow: 1px 0 0 currentColor` on bar text.
-   Remove the dim-label pango spans — labels take the module's color.
-2. **Corner ticks.** Move the probe's 9-slice SVG into `frame/`, frame
-   every module and the tray with it, `--border` by default, recolored
-   via `-gtk-recolor` for `.warning` / `.critical` / `.disconnected`.
-   Workspace tabs: keep their current individual boxes for now (open
-   question for the screenshot review). Note each hardcoded hex with a
-   comment naming the `style.css` token it mirrors.
-3. **New modules + layout L2.** `custom/site` (`SITE-9`,
-   `"interval": "once"`, no exec), `custom/met` (interval 60, the
-   `awk` on `/proc/uptime` from your plan, `T+DDD:HH:MM`), `cpu`
-   (interval 10), `memory` (interval 30). Order: left `custom/site`,
-   workspaces · center clock, `custom/met` · right cpu, memory,
-   `group/volume`, network, battery, tray. Any new group needs
-   `"orientation": "horizontal"` (§6).
-4. **Icons & bars.** S1 icons; DOS-fill bars (10 cells, N-entry
-   `format-icons` arrays) on VOL, PWR, CPU, RAM, empty cells `█` in
-   `--border` via span; NET signal steps `▂▄▆█` with unlit steps in
-   `--border`; readout order icon, label, bar, value. Battery
-   `format-charging` swaps the label to `CHG:` (verify the key). Keep
-   existing PWR/NET thresholds and the disconnected format.
-5. **Tray & height.** Tray `icon-size: 14`; bar `"height": 36` set
-   explicitly (slider stays 14px/24px). Remove the stale "diagnostic
-   test / restore mute" comment from `config.jsonc`.
-6. **Deploy & capture.** The waybar package gained a new file, so
-   restow: `stow -R -t ~ waybar` from the repo, confirm
-   `~/.config/waybar/frame/` is linked, restart waybar, check the log
-   for errors, confirm 1920×36 via `hyprctl layers`. Screenshot cropped
-   and upscaled (`AGENTS.md`): the full bar plus close-ups of left,
-   center, and right. If you can trigger a warning state safely (e.g.
-   temporarily lowering a threshold in a scratch copy, not the repo),
-   capture one; otherwise say so.
-
-Then report. Phase 1 closes after THE OVERSEER's review and the user's
-on-screen confirm.
+**Read-only checks — report, don't change anything:**
+4. **Network backend.** Is NetworkManager what's managing the
+   connection (vs iwd standalone / systemd-networkd)? Is `nmcli`
+   available? Check whether `networkmanager-dmenu` (AUR) is current,
+   whether `network-manager-applet` on Arch still supports SNI/tray via
+   `--indicator`, and whether fuzzel can anchor its window top-right
+   under the bar. Report what's true; don't install.
+5. **Volume slider.** Report the slider's current CSS (`min-width` /
+   `min-height` on trough, highlight, slider), the group's
+   orientation, and the slider's rendered size. User reports it opens
+   as a small vertical bar. THE OVERSEER's hypothesis: the gauge is only
+   ~14×24px, so it's short and reads as vertical. Confirm or refute —
+   the fix comes later, as its own plan.
 
 ## Phase 1 — Waybar restyle
 
@@ -326,16 +309,40 @@ just building on top of it.
   This replaces the earlier "segmented value bars" idea with a fill bar
   and the dim-label rule with one-color readouts.
 
-**Still open:**
-- **Final build** (2026-10-06): approved and briefed in "Next up for
-  UNIT-1". Then THE OVERSEER reviews the screenshots and the user
-  gives the on-screen confirm — that closes Phase 1.
-- Workspace tabs: keep individual full boxes, or move to corner ticks
-  like everything else? Decide at the screenshot review.
-- Module icons still blank on the live bar until the build lands
-  (glyphs now chosen — S1).
+**Still open (remaining Phase 1 work, in this order):**
+- **Fix pass** (2026-10-09): workspace tabs to corner ticks, battery
+  thresholds to spec, fixed-width percentages. Approved, briefed in
+  "Next up for UNIT-1".
+- **Network picker** (new, user request 2026-10-09): click NET → a
+  dropdown list of available networks to connect to, since the user
+  doesn't manage wifi from the terminal. Options pending the backend
+  check: N1 `networkmanager-dmenu` through fuzzel (list with `▂▄▆█`
+  signal bars, passphrase prompt, no resident process — THE OVERSEER's
+  lean; fuzzel styling itself is Phase 3, so it'd look plain until
+  then); N2 `nm-applet` in the tray (real GTK dropdown, but an
+  always-running process, colorful tray icon, GTK theming is Phase 2);
+  N3 click NET opens `nmtui` in a floating `foot` window (no new
+  packages, but a terminal UI, not a dropdown). User picks after the
+  check.
+- **Volume slider** (known issue since 2026-09-21, user: "work on it
+  later"): opens as a small, vertical-looking bar. Hypothesis: gauge
+  sized ~14×24px. Diagnosis in this round; fix as its own plan after
+  the network picker. Worth weighing then: drop the slider and adjust
+  volume by scrolling on VOL (the pulseaudio module scrolls volume
+  natively), which would also free the bar to shrink below 36px.
+- User's on-screen confirm of the full Phase 1 look after the fix pass
+  — closes Phase 1 together with the two items above.
 
 **Resolved:**
+- Final Phase 1 build (2026-10-09): six steps committed (0f6fdc7,
+  3276af9, eee67bf, bfecf46, c53a162) and deployed, reviewed and
+  approved by THE OVERSEER. User saw it live; asked for tick framing on
+  workspace tabs too.
+- Module icons: no longer blank — S1 icons live.
+- `█` fringe (≤10%, from the font): left as-is, see `BUILD_SPEC.md` §3.
+- Undefined-by-spec defaults UNIT-1 picked, accepted: CPU/RAM have no
+  icon; ethernet shows `NET: LINK` (no steps); muted shows
+  `◄ VOL: MUTE` with no bar.
 - All Phase 1 design choices (2026-10-06): font size/weight, §2
   double-strike exception, framing, bars, icons, charging, layout, MET,
   tray, height — see "Choices made" in the plan review.
@@ -399,6 +406,22 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
+- 2026-10-09 — **Final Phase 1 build reviewed: approved; fix pass
+  briefed; network picker added.** UNIT-1 synced docs (9d84e94 —
+  included `AGENTS.md`, correctly, since it was part of the same drop)
+  and built all six steps, one commit each (0f6fdc7 font & weight,
+  3276af9 corner ticks, eee67bf new modules + L2, bfecf46 icons & bars
+  + `CHG:`, c53a162 tray/height/comment), restowed, restarted: log
+  clean, 1920×36. Warning/critical/offline captured from a scratch copy
+  — whole readout recolors as specced. Verdict: matches the spec;
+  approved. Deviations found and settled: battery thresholds were
+  25/10 in config vs 30/15 in spec (THE OVERSEER's brief said "keep
+  existing" — ambiguous; spec wins, fix queued); `█` has a faint
+  font-level fringe (left as-is, §3 corrected); percentage width jitter
+  (fix queued). User saw it live: tabs should get corner ticks too;
+  volume slider still opens as a small vertical bar (known, later); and
+  asked for a network picker (click NET → list of networks). New §6
+  facts recorded. Next: fix pass + backend and slider checks.
 - 2026-10-06 — **All Phase 1 choices made; final build approved.** User:
   "W2-c, yes to exception, rest your leans." Locked in `BUILD_SPEC.md`:
   §2 gains a narrow exception for `text-shadow: 1px 0 0 currentColor`

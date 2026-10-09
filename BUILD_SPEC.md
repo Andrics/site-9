@@ -95,9 +95,9 @@ Font: Departure Mono Nerd Font (`otf-departure-mono-nerd`, AUR — not
 Mono Nerd Font per Overseer direction, applied to waybar. Carry this font
 into every later phase rather than re-deciding per app.
 
-- **Family confirmed by the user 2026-10-06.** They want it a bit bolder
-  (MS-DOS / terminal blocky feel); size and weight are still open — see
-  `PHASES.md` Phase 1 plan review.
+- **Family confirmed by the user 2026-10-06**, with an ask for a bolder,
+  MS-DOS / terminal blocky feel — met by the 11px + double-strike lock
+  below. Live on the bar since 2026-10-09.
 - **Exact family name:** `DepartureMono Nerd Font` (no space). Use that
   in CSS; the spaced name only works through fontconfig fuzzy matching.
 - **Pixel grid:** 550 units per em, 50 units per pixel, so the font is
@@ -135,15 +135,19 @@ treatment would have given).
   so they read as discrete panel segments rather than one continuous
   strip. **Frame style updated 2026-10-06: corner ticks** (5px L-shaped
   ticks at each corner, technique below) instead of full rectangles.
-  Workspace numbers are individually boxed tabs (whether the tabs move
-  to ticks too is open — see `PHASES.md`).
+  **Workspace tabs get corner ticks too** (user, 2026-10-09): each
+  number is its own ticked tab; the active tab's ticks and number are
+  `--accent`.
 - **State color (updated 2026-10-06):** each readout is one color — label,
   icon, bar fill, value, and frame ticks all default to `--text`/
   `--border` and the **whole readout** shifts to `--warning` or
   `--critical` when the module is in a flagged state (HEV-style: the
   entire reading turns amber/red). `--accent` marks the active
   workspace. Thresholds (adjustable once seen live): PWR `--warning`
-  <30%, `--critical` <15%; NET `--critical` on disconnect.
+  <30%, `--critical` <15% — in waybar's ≤ terms, `"warning": 29`,
+  `"critical": 14`; NET `--critical` on disconnect.
+- **Fixed-width values:** percentages are padded to a fixed width so a
+  readout doesn't shift sideways when a value crosses 9→10 or 99→100.
 - **Labels (updated 2026-10-06):** `FIELD: value` formatting, uppercase
   label — **same color as its value**, no separate dim color. Replaces
   the original dim-label rule: with the double-strike weight, GTK3 draws
@@ -187,8 +191,13 @@ glyphs and over going icon-less.
   they'd only render via a fallback font. Nerd Font icons render
   soft-edged and slightly small next to the pixel text.
 - **Crispness at 11px (measured 2026-10-06 by counting partial
-  pixels):** only `█` (full block) is pixel-sharp among the bar
-  glyphs. `▌`, the other partial blocks `▏`–`▉`, and `┃` land on half
+  pixels):** `█` (full block) is the sharpest bar glyph, but not
+  perfectly crisp: the font's own `█` has a faint ≤10% fringe on its
+  outer edges (top/bottom ~8–10%, left ~6%; confirmed in a bare
+  `pango-view` render, so it's the font, not waybar). Left as-is
+  (THE OVERSEER, 2026-10-09 — barely visible at 1x; the user can reopen
+  it, the alternative being antialiasing off for this font). Text glyphs measure fully crisp
+  (0 partial pixels). `⏻` and the `▂▄▆` steps have soft edges. `▌`, the other partial blocks `▏`–`▉`, and `┃` land on half
   pixels and come out soft-edged (`▌` is 3.5px wide). `░` is a soft dot
   texture at every size tested (11/22/33px). Letter-spacing tweaks push
   glyphs onto fractional pixels — avoid them.
@@ -240,8 +249,8 @@ glyphs and over going icon-less.
   not a default. Font: Departure Mono Nerd Font (see §3 locked palette) —
   whatever's picked, verify actual glyph rendering at bar-scale text size
   looks right on this specific screen before finalizing, don't just trust
-  it on name recognition. Family confirmed 2026-10-06; size and weight
-  pending. Sizes on the 11px grid (see above).
+  it on name recognition. Locked: 11px with double-strike weight (§3
+  font notes above). Sizes on the 11px grid.
 
 **Motion**
 - Short, linear/snap transitions. No easing flourishes, no bounce, no
@@ -272,13 +281,13 @@ now — no audio dependencies, no hooks, until it's an actual phase.
 
 ## 5. What's already built
 
-- **waybar** (`waybar/.config/waybar/`, stowed live with `stow -t ~`):
-  workspaces, clock, pulseaudio (+ click-to-reveal volume slider),
-  network, battery, tray. Phase 1 restyle is deployed — locked palette,
-  Departure Mono, per-module boxes, `FIELD: value` labels, state colors.
-  Not yet confirmed on-screen by the user, module icons still blank, and
-  the content-density rework is still to come. Phase 1 stays open. See
-  `PHASES.md`.
+- **waybar** (`waybar/.config/waybar/`, stowed live with `stow -t ~`,
+  restow with `-R` when files are added): final Phase 1 pass deployed
+  2026-10-09 — layout L2 (`SITE-9`, workspaces | clock, MET | CPU, RAM,
+  VOL, NET, PWR, tray), 11px double-strike, corner ticks
+  (`frame/tick-symbolic.svg`), one-color state readouts, S1 icons,
+  DOS-fill bars, 36px. Seen live by the user. Remaining Phase 1 work
+  (small fix pass, network picker, volume slider) is in `PHASES.md`.
 - **hypr** — not stowed from this repo yet. The only change so far is
   `scale = "1"`, made directly in the live `~/.config/hypr/hyprland.lua`
   (Phase 1 fix); otherwise it's Hyprland's stock example config. It
@@ -293,7 +302,22 @@ now — no audio dependencies, no hooks, until it's an actual phase.
 Behavior checked against the actual installed versions — not training
 data. Recheck if the package version changes. Newest first.
 
-**waybar-git 3672eee0** (source + installed `waybar.5`, 2026-10-06):
+**waybar-git 3672eee0** (source + installed `waybar.5`, 2026-10-06/09):
+- **`memory` supports `{icon}`** with `format-icons` even though the man
+  page's replacement list doesn't mention it (memory/common.cpp).
+- **Battery `format-<status>`:** the status is lowercased, so
+  `format-charging` is valid. A charging battery at 100% reports
+  "Full" and falls back to `format-full` / `format`.
+- **`network` `{icon}`** is indexed by signal strength.
+- **`custom/` `exec` runs via `sh`**, so shell syntax works but quoting
+  in JSONC needs escaping (the MET `awk` round-trips correctly).
+- **Tray with no items is hidden** — its frame only shows when an app
+  has a tray icon.
+- **`format-icons` also accepts threshold objects** in waybar-git
+  (ALabel.cpp:222), but it's undocumented in the man page — don't use
+  it until it's documented in a tagged release.
+- **Text-shadow placement:** applying it on `window#waybar label`
+  covers bar text and leaves tooltips alone.
 - **Group orientation** defaults to `"orthogonal"`, which makes a group
   *vertical* on a horizontal bar. Every group must set
   `"orientation": "horizontal"` (or `"inherit"`).
