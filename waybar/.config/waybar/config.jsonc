@@ -3,8 +3,9 @@
 {
     "layer": "top",
     "position": "top",
-    // Set explicitly (H2): fits the 14px/24px volume slider gauge.
-    "height": 36,
+    // Set explicitly: natural height is 24px; 30 gives the frames a gap
+    // from the bar edge.
+    "height": 30,
     "spacing": 0,
     "margin-top": 0,
     "margin-left": 0,
