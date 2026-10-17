@@ -8,8 +8,16 @@
 # for its passphrase, which reaches nmcli through a pipe (passwd-file
 # /dev/fd/3) — never argv, never a file. A failed attempt deletes the
 # profile it created and asks again with WRONG PASSPHRASE.
+#
+# The list comes from NetworkManager's cache, so the menu opens at once
+# (nmcli's default rescans when the cache is over 30 s old, and that scan
+# has hung for ~30 s here). `net-menu --rescan` (right click on NET), or
+# F5 in the menu (fuzzel.ini: custom-1, exit code 10), scans first.
 
 set -u
+
+rescan=no
+[[ ${1:-} == --rescan ]] && rescan=yes
 
 max_name=24    # longer names are cut with … so the bars never are
 max_lines=12
@@ -77,7 +85,8 @@ while IFS=: read -r inuse sig sec ssid; do
         security[$ssid]=$sec
     fi
     [[ $inuse == '*' ]] && active[$ssid]=1
-done < <(nmcli -t --escape no -f IN-USE,SIGNAL,SECURITY,SSID device wifi list ifname "$dev")
+done < <(nmcli -t --escape no -f IN-USE,SIGNAL,SECURITY,SSID device wifi list \
+    --rescan "$rescan" ifname "$dev")
 
 # Connected first, then by signal.
 ssids=()
@@ -87,8 +96,16 @@ done < <(for ssid in "${!signal[@]}"; do
     printf '%d\t%d\t%s\n' "${active[$ssid]:-0}" "${signal[$ssid]}" "$ssid"
 done | sort -t $'\t' -k1,1nr -k2,2nr)
 
+# F5: close, rescan, reopen. The lock is dropped first so the new run
+# doesn't take itself for an open menu.
+refresh() {
+    exec 9>&-
+    exec "$0" --rescan
+}
+
 if (( ${#ssids[@]} == 0 )); then
     menu --lines 0 --placeholder 'NO NETWORKS' </dev/null >/dev/null
+    (( $? == 10 )) && refresh
     exit 0
 fi
 
@@ -124,7 +141,12 @@ done
 lines=${#rows[@]}
 (( lines > max_lines )) && lines=$max_lines
 
-pick=$(printf '%s\n' "${rows[@]}" | menu --index --width "$(( longest + 2 ))" --lines "$lines") || exit 0
+pick=$(printf '%s\n' "${rows[@]}" | menu --index --width "$(( longest + 2 ))" --lines "$lines")
+case $? in
+    0) ;;
+    10) refresh ;;
+    *) exit 0 ;;
+esac
 [[ $pick =~ ^[0-9]+$ ]] && (( pick < ${#ssids[@]} )) || exit 0
 ssid=${ssids[pick]}
 sec=${security[$ssid]}

@@ -133,10 +133,14 @@
             "▂▄▆<span color='#3a3626'>█</span>",
             "▂▄▆█"
         ],
-        "tooltip-format": "{ifname}: {ipaddr}",
+        // Off: it would sit over the picker's top row while the pointer
+        // rests on NET (user, 2026-10-18).
+        "tooltip": false,
         // Network picker: scripts/net-menu (nmcli + fuzzel). NET has no
-        // drawer, so a click binding is safe here.
-        "on-click": "~/.config/waybar/scripts/net-menu"
+        // drawer, so click bindings are safe here. Left click opens the
+        // list NetworkManager already has; right click rescans first.
+        "on-click": "~/.config/waybar/scripts/net-menu",
+        "on-click-right": "~/.config/waybar/scripts/net-menu --rescan"
     },
 
     "battery": {
