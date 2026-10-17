@@ -134,9 +134,9 @@
             "▂▄▆█"
         ],
         "tooltip-format": "{ifname}: {ipaddr}",
-        // Network picker: networkmanager_dmenu through fuzzel. NET has no
+        // Network picker: scripts/net-menu (nmcli + fuzzel). NET has no
         // drawer, so a click binding is safe here.
-        "on-click": "networkmanager_dmenu"
+        "on-click": "~/.config/waybar/scripts/net-menu"
     },
 
     "battery": {

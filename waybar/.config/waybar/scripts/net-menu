@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+# waybar/.config/waybar/scripts/net-menu
+# SITE-9 network picker behind NET (BUILD_SPEC.md §3, "Locked network
+# picker"): nmcli + fuzzel, runs only when clicked. Every row is a
+# network: `▂▄▆█  NAME  SEC`, connected one first and tagged [ACTIVE].
+#
+# A saved or open network connects straight away. A new secured one asks
+# for its passphrase, which reaches nmcli through a pipe (passwd-file
+# /dev/fd/3) — never argv, never a file. A failed attempt deletes the
+# profile it created and asks again with WRONG PASSPHRASE.
+
+set -u
+
+max_name=24    # longer names are cut with … so the bars never are
+max_lines=12
+
+# One menu at a time. A second click on NET closes the open one (toggle):
+# only a fuzzel descended from the running script is killed, never any
+# other. (fuzzel runs inside $(…), so its parent is a subshell.)
+lock="${XDG_RUNTIME_DIR:-/tmp}/site9-net-menu.lock"
+exec 9>>"$lock"
+if ! flock -n 9; then
+    owner=$(<"$lock")
+    for f in $(pgrep -x fuzzel); do
+        p=$f
+        while (( p > 1 )); do
+            p=$(awk '/^PPid:/ { print $2 }' "/proc/$p/status" 2>/dev/null)
+            [[ $p == "$owner" ]] && { kill "$f"; break; }
+        done
+    done
+    exit 0
+fi
+printf '%s\n' "$$" >"$lock"
+
+# Top-right, 8px from the screen edge and 8px under the bar (y-margin
+# counts from below the bar's exclusive zone). on-demand focus lets
+# fuzzel close when focus moves to another window. Colors and font come
+# from fuzzel.ini.
+menu() {
+    fuzzel --dmenu --anchor top-right --x-margin 8 --y-margin 8 \
+        --keyboard-focus on-demand "$@" 9>&-
+}
+
+dev=$(nmcli -t -f DEVICE,TYPE device | awk -F: '$2 == "wifi" { print $1; exit }')
+[[ -n $dev ]] || exit 0
+
+# One entry per SSID (strongest AP), hidden SSIDs skipped. With --escape
+# no and SSID as the last field, colons inside the SSID stay in $ssid.
+declare -A signal security active
+while IFS=: read -r inuse sig sec ssid; do
+    [[ -n $ssid ]] || continue
+    if [[ -z ${signal[$ssid]+set} ]] || (( sig > signal[$ssid] )); then
+        signal[$ssid]=$sig
+        security[$ssid]=$sec
+    fi
+    [[ $inuse == '*' ]] && active[$ssid]=1
+done < <(nmcli -t --escape no -f IN-USE,SIGNAL,SECURITY,SSID device wifi list ifname "$dev")
+
+# Connected first, then by signal.
+ssids=()
+while IFS=$'\t' read -r _ _ ssid; do
+    ssids+=("$ssid")
+done < <(for ssid in "${!signal[@]}"; do
+    printf '%d\t%d\t%s\n' "${active[$ssid]:-0}" "${signal[$ssid]}" "$ssid"
+done | sort -t $'\t' -k1,1nr -k2,2nr)
+
+if (( ${#ssids[@]} == 0 )); then
+    menu --lines 0 --placeholder 'NO NETWORKS' </dev/null >/dev/null
+    exit 0
+fi
+
+# Same steps as NET on the bar: 0–24% lights 1, …, 75–100% lights 4.
+# Unlit steps are spaces (fuzzel can't color single characters).
+bars() {
+    local lit=$(( $1 * 4 / 100 + 1 ))
+    (( lit > 4 )) && lit=4
+    local steps=▂▄▆█
+    printf '%s%*s' "${steps:0:lit}" $(( 4 - lit )) ''
+}
+
+names=()
+width=0
+for ssid in "${ssids[@]}"; do
+    name=$ssid
+    (( ${#name} > max_name )) && name="${name:0:max_name-1}…"
+    names+=("$name")
+    (( ${#name} > width )) && width=${#name}
+done
+
+rows=()
+longest=0
+for i in "${!ssids[@]}"; do
+    ssid=${ssids[i]}
+    sec=${security[$ssid]:-OPEN}
+    row="$(bars "${signal[$ssid]}")  ${names[i]}$(printf '%*s' $(( width - ${#names[i]} )) '')  $sec"
+    [[ -n ${active[$ssid]:-} ]] && row+='  [ACTIVE]'
+    rows+=("$row")
+    (( ${#row} > longest )) && longest=${#row}
+done
+
+lines=${#rows[@]}
+(( lines > max_lines )) && lines=$max_lines
+
+pick=$(printf '%s\n' "${rows[@]}" | menu --index --width "$longest" --lines "$lines") || exit 0
+[[ $pick =~ ^[0-9]+$ ]] && (( pick < ${#ssids[@]} )) || exit 0
+ssid=${ssids[pick]}
+sec=${security[$ssid]}
+
+# Already connected: nothing to do.
+[[ -n ${active[$ssid]:-} ]] && exit 0
+
+# A saved profile for this SSID connects without asking.
+while IFS=: read -r uuid type; do
+    [[ $type == 802-11-wireless ]] || continue
+    if [[ $(nmcli --escape no -g 802-11-wireless.ssid connection show uuid "$uuid") == "$ssid" ]]; then
+        exec nmcli --wait 30 connection up uuid "$uuid" 9>&-
+    fi
+done < <(nmcli -t -f UUID,TYPE connection show)
+
+# Open network: no passphrase.
+if [[ -z $sec ]]; then
+    exec nmcli --wait 30 device wifi connect "$ssid" ifname "$dev" 9>&-
+fi
+
+# New secured network. PSK only; WPA3-only networks use SAE. 802.1X
+# (enterprise) and WEP aren't handled here.
+case $sec in
+    *802.1X*|*WEP*) exit 0 ;;
+    *WPA1*|*WPA2*) key_mgmt=wpa-psk ;;
+    *WPA3*) key_mgmt=sae ;;
+    *) exit 0 ;;
+esac
+
+placeholder=PASSPHRASE
+while :; do
+    pass=$(menu --password --lines 0 --placeholder "$placeholder" </dev/null) || exit 0
+    [[ -n $pass ]] || exit 0
+
+    added=$(nmcli -t connection add type wifi ifname "$dev" con-name "$ssid" \
+        ssid "$ssid" wifi-sec.key-mgmt "$key_mgmt" autoconnect no 9>&-) || exit 1
+    uuid=$(sed -n 's/.*(\([0-9a-f-]\{36\}\)).*/\1/p' <<<"$added")
+    [[ -n $uuid ]] || exit 1
+
+    # printf is a shell builtin and <(…) is a pipe: the passphrase is in
+    # neither an argv nor a file.
+    if out=$(nmcli --wait 30 connection up uuid "$uuid" \
+            passwd-file /dev/fd/3 3< <(printf 'wifi-sec.psk:%s\n' "$pass") 2>&1 9>&-); then
+        unset pass
+        # Autoconnect only once it has worked, so NetworkManager can't
+        # race the first attempt with a profile that has no key yet.
+        nmcli connection modify uuid "$uuid" connection.autoconnect yes 9>&-
+        exit 0
+    fi
+    unset pass
+    nmcli connection delete uuid "$uuid" >/dev/null 2>&1 9>&-
+    printf 'net-menu: %s\n' "$out" >&2
+
+    # Only a rejected passphrase asks again; any other failure just ends.
+    [[ $out == *[Ss]ecrets* ]] || exit 1
+    placeholder='WRONG PASSPHRASE'
+done
