@@ -44,7 +44,77 @@ go inside the plan, not in a round of their own. Full rule in
 
 _Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Round #7 build (2026-10-09): sub-phases 1.1 + 1.2 — GO.**
+**Round #7 build (2026-10-09): sub-phases 1.1 + 1.2 — GO, with a
+picker rework mid-round. Design pivot pending (see below): do the
+functional work only, no restyling.**
+
+**Design pivot (2026-10-09) — affects this round:** the user wants the
+VOX console look everywhere (`BUILD_SPEC.md` §3 note; options in
+Phase 1 → "Design pivot"). For this round:
+- Picker rework and VOL/tab behavior tests go ahead — they're function,
+  not style. Keep `fuzzel.ini` as is; don't tune any colors.
+- Skip the style screenshots (`1.2-vol-slider-open`, `1.2-bar30-full`,
+  `1-fix-tab-hover-active`) — that look is being replaced. Keep
+  `1.1-net-menu-x3.png` (rows/format check).
+- **Add: scratch renders for the pivot** (scratch config only, not
+  committed, live bar untouched afterwards). Palette from the reference
+  CSS: panel `#445435`, field `#303f25`, bevel light `#667359`, bevel
+  dark `#1f2719`, text `#cbcfc8`, bright `#ffffff`. Bevels as per-side
+  `border-*-color` (raised = light top/left, dark bottom/right;
+  recessed = reversed). Render the right half of the bar four ways:
+  layout A (raised bar `#445435`, modules recessed, tabs raised
+  buttons, active tab recessed + white) and layout B (recessed bar
+  `#303f25`, modules raised), each with double-strike and with regular
+  weight. Bar troughs `█` in `#1f2719`. No corner ticks. Check GTK3
+  honours per-side border colors on these nodes. Shots:
+  `1-pivot-A-strike-x3.png`, `1-pivot-A-regular-x3.png`,
+  `1-pivot-B-strike-x3.png`, `1-pivot-B-regular-x3.png`, plus the left
+  half (tabs) of A as `1-pivot-A-left-x3.png`.
+
+**Picker rework (2026-10-09, after the user saw it live) — do this
+before the NET tests.** The user wants the menu to list **networks
+only** (the other actions move to a SITE-9 system settings panel built
+later), no clickable blank rows, and it must **close when clicking
+away**. networkmanager-dmenu can't hide its action rows, so it's
+replaced. Steps 3–4 below are superseded by this; steps 1–2 and 5–7
+stand. Spec: `BUILD_SPEC.md` §3 "Locked network picker".
+
+- **Script** `waybar/.config/waybar/scripts/net-menu` (in the waybar
+  package, `stow -R`), `nmcli` + fuzzel, runs only when clicked (no
+  polling, nothing left running).
+  - List: `nmcli -t` wifi list (check the fields and the `--rescan`
+    behavior in `nmcli(1)`), skip hidden (empty) SSIDs, one row per SSID
+    (strongest AP), unescape `\:` in `-t` output, sort connected first
+    then by signal.
+  - Row: `▂▄▆█  NAME  SEC` padded into columns, `[ACTIVE]` on the
+    connected one, open networks show `OPEN`. Bars: 4 cells, lit by
+    signal; unlit cells as spaces (fuzzel has no per-character color).
+    Names longer than ~24 chars truncated with `…`. `--width` from the
+    longest row, `--lines` = number of rows (capped ~12).
+  - Pick a saved network → `nmcli connection up`. Pick a new one with
+    security → `fuzzel --password` prompt → connect. **The passphrase
+    must not appear in argv or be written to disk in plain text** —
+    find an nmcli method that takes it on stdin or via a pipe/fd (e.g.
+    `passwd-file` from a pipe) and verify with `ps`/`/proc` while it
+    runs. If there's no clean way, stop and report — don't fall back
+    to `password <pw>` on the command line.
+  - Failed connect: delete the profile the attempt created, reopen the
+    prompt with placeholder `WRONG PASSPHRASE`; Esc cancels cleanly.
+  - Toggle: clicking NET while the menu is open closes it — track the
+    script's own fuzzel (PID/lock file), don't `pkill` every fuzzel.
+  - Close on click-away: try `--keyboard-focus=on-demand` (with
+    exit-on-focus-loss on). Must still take typing immediately when it
+    opens — test both. If on-demand breaks typing, report it.
+- **NET on-click** → the script. Remove the `networkmanager-dmenu`
+  stow package (`stow -D`, then delete it from the repo) and ask the
+  user to run `sudo pacman -Rns networkmanager-dmenu`. fuzzel and
+  `fuzzel.ini` stay.
+- One commit for the script + on-click, one for removing the old
+  package config.
+- NET tests as below, plus: no blank rows, toggle, click-away, and the
+  passphrase test the user picks (see their answer in the relay).
+- Screenshot: `1.1-net-menu-x3.png` (overwrite) and, if tested,
+  `1.1-net-passphrase-x3.png` and `1.1-net-wrong-pass-x3.png`.
 
 The user took every lean. Locked specs are in `BUILD_SPEC.md` §3
 ("Locked network picker", "Locked volume slider", Height). Build it as
@@ -125,8 +195,15 @@ background-image there — **approved**: the brief was wrong, the spec
 was right. Leftover `dmenu-open.png` moved out of the repo root to
 `~/Pictures/site-9-phase1/1-prev-hyprlauncher-dmenu-open.png`.
 **Notices:** mako runs but libnotify isn't installed, so picker
-notices are silent — don't install libnotify unless the user picks it
-(Phase 1 → "Still open").
+notices are silent — left that way (option (a), applied by default;
+the user didn't pick otherwise).
+
+**After steps 1–7 (UNIT-1, mid-round):** built and committed, bar
+1920×30, log clean. Picker built as networkmanager-dmenu first; the
+user saw it live and asked for the rework above. UNIT-1's format
+options A/B/C for the cut-off bars are superseded by the script's
+padded bars-first format. `y-margin` result (screen edge vs bar) still
+to report.
 
 ## Phase 1 — Waybar restyle
 
@@ -473,6 +550,43 @@ sub-phase numbering):**
   mako's blue default popups until Phase 3; (c) install it plus a
   stopgap mako config with locked tokens (pulls Phase 3 work forward).
   Default if the user doesn't pick: (a).
+- **Design pivot: VOX console look everywhere** (user, 2026-10-09,
+  reference `index.css` in project context). Proposed tokens, taken
+  exactly from the reference: panel `#445435` (raised/window), field
+  `#303f25` (recessed), bevel light `#667359` (the reference's
+  `#687360` merged in — visually identical), bevel dark `#1f2719`, text
+  `#cbcfc8` (its 75% white flattened onto the field), bright text
+  `#ffffff` (active/selected/titles), match highlight `#667359`. A dim
+  text token for placeholders/inactive isn't in the reference —
+  proposed `#8f9a85`. Bevels are plain per-side borders: no shadow, no
+  gradient, §2-clean. Options (THE OVERSEER's lean in bold, picks
+  pending — confirm on UNIT-1's real renders):
+  - Bar structure: **A** raised bar, recessed modules, tabs as raised
+    buttons, active tab pressed in / B recessed bar, raised modules.
+  - Accent: **none** — active = pressed bevel + white text (pure VOX) /
+    keep HUD green `#5fae5a` for the active tab.
+  - Warning / critical: **keep `#c98a3c` / `#b8452e`**, check contrast on
+    olive in the render.
+  - Corner ticks: **drop** (bevels do the framing) / keep both.
+  - Font: **keep Departure Mono 11px**; weight double-strike vs regular —
+    decide on the renders (the reference is regular-weight).
+  - SCP content (`SITE-9` tag, `FIELD:` labels, MET, `[ACTIVE]`):
+    **keep** — the visual changes, the content stays.
+  - Limits: fuzzel, mako and Hyprland window borders take one border
+    color only (no bevel) — they'd get a flat `#1f2719` border; GTK
+    apps and waybar get real bevels. kitty is colors only.
+  - Rollout once locked: re-skin waybar + picker as the last Phase 1
+    round; Phases 2–3 apply the same tokens to GTK, kitty, fuzzel,
+    mako, hyprlock. The old Phase 2 terminal questions (bevels for the
+    terminal only? lighter register for the terminal?) are answered by
+    "everywhere".
+- **SITE-9 system settings panel** (user request 2026-10-09): a
+  self-built settings surface in the same BMRF style, which takes the
+  network actions dropped from the picker (WiFi/networking/Bluetooth
+  on-off, connection editing, deleting connections, rescan, show
+  password) and likely more. Not scoped and not placed in a phase yet —
+  decide where it goes when Phase 1 closes. Until then those actions
+  are only reachable via `nmcli`/`nmtui`.
 - Phase 1 closes when 1.1 and 1.2 are built and the user confirms the
   whole bar on-screen.
 
@@ -516,7 +630,7 @@ Not scoped. Once Phase 1's palette is locked, ask what "system theme"
 should actually cover before proposing anything — don't assume GTK/icon
 theme scope carries over automatically.
 
-**Reference found for the terminal (2026-09-21):**
+**Reference found for the terminal (2026-09-21) — superseded 2026-10-09: the user now wants this look everywhere (Phase 1 → "Design pivot"); the two open questions below are answered by that.**
 [suchipi/half-life-vox-console](https://github.com/suchipi/half-life-vox-console)
 — a real Black Mesa VOX announcer web console, source added to project
 context (`index.css`, `App.js`, etc.), actual CSS reviewed, not just
@@ -562,6 +676,23 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
+- 2026-10-09 — **Design pivot requested: VOX console look everywhere.**
+  User: the half-life-vox-console style should apply system-wide, not
+  only the terminal; the current HUD look isn't working for them.
+  Tokens taken from the reference CSS, options and leans under Phase 1
+  "Still open" → "Design pivot"; THE OVERSEER showed a mockup in chat.
+  Round #7 continues with functional work only plus scratch renders of
+  the two bar layouts; restyle is the next round once picks lock.
+- 2026-10-09 — **Round #7, mid-round: picker reworked to a SITE-9
+  script.** UNIT-1 built steps 1–7 (bar 1920×30, log clean). The user
+  saw the networkmanager-dmenu menu live and asked for: networks only
+  (other actions → a future SITE-9 system settings panel), no clickable
+  blank rows, close on click-away. networkmanager-dmenu can't hide its
+  actions, so it's replaced by an `nmcli` + fuzzel script (spec in
+  `BUILD_SPEC.md` §3, brief in "Next up"). Connected network tagged
+  `[ACTIVE]`, wrong passphrase reopens the prompt. Notices stay silent
+  (option (a) by default). System settings panel recorded under
+  Phase 1 "Still open", unplaced.
 - 2026-10-09 — **Round #7 picks made; build is a go.** User took every
   lean: N1a (fuzzel + networkmanager-dmenu from `extra`) with a stopgap
   token-only `fuzzel.ini`, `▂▄▆█` signal, menu top-right under the bar,

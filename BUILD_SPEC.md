@@ -64,6 +64,15 @@ any blur, any offset in another direction or color, and any
 
 ## 3. Design language: Half-Life / Black Mesa
 
+> **Under revision (user, 2026-10-09): the VOX console look everywhere.**
+> The user wants the visual style of
+> [suchipi/half-life-vox-console](https://github.com/suchipi/half-life-vox-console)
+> (Valve-VGUI olive panels, two-tone bevels) applied system-wide, not
+> just the terminal — the current HUD look "isn't doing it". Options
+> and picks are in `PHASES.md` → "Design pivot". **Until picks are
+> locked, everything below stands** and nothing gets restyled. Behavior
+> rules (picker, slider, layout, MET, thresholds) are unaffected.
+
 Primary references — go look at both before making style calls:
 - **Black Mesa Research Facility** (Half-Life) — 1990s institutional-
   industrial: keycard/badge systems, stenciled warning labels, hazard
@@ -263,11 +272,23 @@ glyphs and over going icon-less.
 
 ### Locked network picker (decided Phase 1.1 — 2026-10-09)
 
-- Click NET → `networkmanager_dmenu` (`extra`) through **fuzzel**: a
-  list of networks under the bar, top-right, 8px margins; masked
+- Click NET → a **SITE-9 script** (`nmcli` + **fuzzel**) — replaces
+  networkmanager-dmenu (user, 2026-10-09: the menu shows **networks
+  only**; its other actions move to a SITE-9 system settings panel,
+  built later). List under the bar, top-right, 8px margins; masked
   passphrase via fuzzel's password mode.
-- Signal per network as **`▂▄▆█`** (`wifi_chars`), matching NET — not
-  the Nerd wifi glyphs.
+- **No blank or non-network rows** — every row is a network.
+- **Closes when you click away** (another window) and when NET is
+  clicked again (toggle). Esc closes too.
+- Row format: `▂▄▆█  NAME  SEC`, bars first, columns padded so they line
+  up; connected network listed first and tagged `[ACTIVE]`. Menu width
+  fits the rows; long names truncated with `…` so the bars are never
+  cut off.
+- Signal as **`▂▄▆█`**, matching NET — not the Nerd wifi glyphs.
+- Wrong passphrase: the prompt reopens with the placeholder
+  `WRONG PASSPHRASE`; Esc cancels and the failed profile is deleted.
+- The passphrase never goes on a command line (argv) or to disk in
+  plain text.
 - **fuzzel stopgap styling** (until Phase 3 refines the same file):
   locked tokens only — DepartureMono Nerd Font 11px, background `--bg`,
   text `--text`, 1px `--border` border, radius 0, selected row
@@ -391,6 +412,19 @@ data. Recheck if the package version changes. Newest first.
   the app's own anchor/margin options can.
 
 **Network & menus (2026-10-09):**
+- **networkmanager-dmenu has no option to hide its action rows**
+  (Disable WiFi, Launch Connection Manager, …) or the blank separator
+  rows between sections — not in the README's config table (UNIT-1 to
+  confirm in the installed source). In fuzzel the blank rows are
+  clickable. It also prints 4 `GLib-GObject-CRITICAL` lines per launch
+  (works anyway), and "Launch Connection Manager" runs `xterm -e nmtui`
+  unless `[editor] terminal` is set (xterm isn't installed). Being
+  replaced by a SITE-9 script (§3).
+- **fuzzel, observed 2026-10-09:** default width is 30 characters (rows
+  get cut off). With the default `keyboard-focus=exclusive`, clicking
+  another window **doesn't** close it; `keyboard-focus=on-demand` +
+  `exit-on-keyboard-focus-loss` (default yes) is the documented way to
+  close on focus loss — to be checked on this machine.
 - **NetworkManager permissions** (`nmcli general permissions`):
   network-control, wifi.scan and settings.modify.own are `yes` for the
   user, so any picker can scan and connect **without a polkit agent**.
