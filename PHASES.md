@@ -28,6 +28,16 @@ build, test or fix — covers the next two together. Checks a plan needs
 go inside the plan, not in a round of their own. Full rule in
 `AGENTS.md` → Batching.
 
+**THE OVERSEER's working rules from the user (2026-10-09)** — on top of
+the Project instructions, for every Overseer chat:
+- End every reply with a short **"What to do"**: concise, easy,
+  step-by-step actions for the user. It comes last, after /clear and
+  the Relay.
+- If a question's answer would drastically change the relay to UNIT-1,
+  **ask it first, before drafting anything** (docs or relay).
+- Explain things in plain words; the user isn't always familiar with
+  the jargon (e.g. "passphrase" = WiFi password).
+
 ## Status
 
 | # | Phase | Status |
@@ -47,6 +57,33 @@ _Written by THE OVERSEER; replaced whenever there's a new task._
 **Round #7 build (2026-10-09): sub-phases 1.1 + 1.2 — GO, with a
 picker rework mid-round. Design pivot pending (see below): do the
 functional work only, no restyling.**
+
+**Status (2026-10-09, late):** docs sync 55d5ef3; picker rework built
+and committed. User ran the tests — all as expected:
+- VOL: wheel scroll on the readout steps 5% (log shows clean steps);
+  slider opens/closes on click, drag works; Fn+mute shows `MUTE` and
+  empties the gauge. Touchpad on the open slider: up is slow, down is
+  fast — waybar bug (UNIT-1: `pulseaudio_slider.cpp:50` truncates the
+  value instead of rounding). Open question in Phase 1 "Still open".
+- Active-tab hover: moot — the VOX restyle replaces the hover rules.
+- NET: networks only, typing works at once, toggle and click-away work.
+- **Bug to fix (rides along):** after clicking NET without moving the
+  mouse, the cursor drops from pointer to the default arrow and a
+  second click on NET does nothing until the mouse moves 1px. Find
+  which surface gets the click (log it), fix it if there's a clean way
+  (e.g. a zero-distance cursor move after the menu opens — check the
+  dispatcher name in `hl.meta.lua`), and say whether a pointer pass
+  over a window alone closes the menu.
+- **Passphrase test: user picked (a)** — forget TransworldNet and
+  re-add it through the picker (the user knows the WiFi password). Try
+  one wrong password first (check the `WRONG PASSPHRASE` re-prompt and
+  that the failed profile is deleted), then the right one. Ask the user
+  before you forget it.
+- Touchpad slider bug: **left as is** (user, option a) — no issue draft.
+- Still to do: the cursor fix, the passphrase test, the scratch renders
+  below, push, report. After the report, the next Overseer locks weight
+  and tokens on the renders and briefs round #8 (1.3 waybar VOX
+  re-skin + 1.4 picker/fuzzel VOX re-skin).
 
 **Design pivot (2026-10-09) — affects this round:** the user wants the
 VOX console look everywhere (`BUILD_SPEC.md` §3 note; options in
@@ -69,7 +106,10 @@ Phase 1 → "Design pivot"). For this round:
   honours per-side border colors on these nodes. Shots:
   `1-pivot-A-strike-x3.png`, `1-pivot-A-regular-x3.png`,
   `1-pivot-B-strike-x3.png`, `1-pivot-B-regular-x3.png`, plus the left
-  half (tabs) of A as `1-pivot-A-left-x3.png`.
+  half (tabs) of A as `1-pivot-A-left-x3.png`. **SCP is dropped and
+  the HUD green is out** (user: one theme only) — no corner ticks, no
+  green anywhere in the renders; the active tab is pressed-in with
+  white text.
 
 **Picker rework (2026-10-09, after the user saw it live) — do this
 before the NET tests.** The user wants the menu to list **networks
@@ -550,6 +590,32 @@ sub-phase numbering):**
   mako's blue default popups until Phase 3; (c) install it plus a
   stopgap mako config with locked tokens (pulls Phase 3 work forward).
   Default if the user doesn't pick: (a).
+- **Design pivot picks (user, 2026-10-09):** layout **A** — raised bar
+  `--panel`, recessed modules, workspace tabs as raised buttons, the
+  active one pressed in with white text. SCP leftovers: `SITE-9` tag
+  kept as the machine's name, styled as a plain raised title; `CPU:`
+  labels kept; MET kept as uptime. Picker tag: the user took the lean
+  "dim `connected`", **but fuzzel can't color part of a row** (no
+  markup) — THE OVERSEER's mistake. Re-ask in round #8 (1.4): plain
+  `connected` / keep `[ACTIVE]` / no tag. `[ACTIVE]` stays until then.
+  Still open: weight (double-strike vs regular) on the renders.
+- **Design pivot, update (user, later 2026-10-09):** "Ditch the SCP
+  right now", hyper-focus on the VOX picture; loved the blocky button
+  style in THE OVERSEER's mockup; mixing themes causes inconsistency;
+  update the README (done). Read as settled: SCP aesthetic and the
+  HEV/HUD look dropped, so **no HUD green accent and no corner ticks**
+  (active = pressed button + white text); amber/red stay for flagged
+  states only. `BUILD_SPEC.md` §3 rewritten around the VOX direction
+  with the proposed token table. Still open (leans in bold):
+  - Bar layout from the mockup: **A** (raised bar, recessed modules) /
+    B (recessed bar, raised modules) — confirm on the renders.
+  - Font weight: double-strike / regular — on the renders. **Keep
+    Departure Mono 11px** either way.
+  - On-screen SCP leftovers: `SITE-9` tag — **keep as the machine's
+    name, styled as a plain raised title** / drop it. `CPU:`-style
+    labels — **keep, they're just labels**. MET `T+DDD:HH:MM` — **keep
+    as uptime** / drop. Picker `[ACTIVE]` — keep / **dim `connected`**
+    / no tag (listed first only).
 - **Design pivot: VOX console look everywhere** (user, 2026-10-09,
   reference `index.css` in project context). Proposed tokens, taken
   exactly from the reference: panel `#445435` (raised/window), field
@@ -580,6 +646,20 @@ sub-phase numbering):**
     mako, hyprlock. The old Phase 2 terminal questions (bevels for the
     terminal only? lighter register for the terminal?) are answered by
     "everywhere".
+- **Volume slider touchpad bug** (found 2026-10-09): waybar's
+  `pulseaudio/slider` truncates its value (`pulseaudio_slider.cpp:50`),
+  so touchpad swipes on the open slider go up slowly and down fast.
+  Wheel, drag and scroll-on-readout are fine. No duplicate found in a
+  quick search of open Alexays/Waybar issues (THE OVERSEER, 2026-10-09).
+  **Decided (user, 2026-10-09): (a) leave it.** It is a code issue —
+  the fix is about one line in waybar (round instead of truncate); an
+  upstream report or PR would reach this machine on the next
+  waybar-git update if the user ever wants it. Options were: (a) leave
+  it; (b) report it upstream — UNIT-1 drafts
+  the issue (source line, repro, expected rounding), the user files it
+  or has THE OVERSEER file it through the user's GitHub connector;
+  (c) patch locally (rejected in advance: a maintained patch on an AUR
+  -git build).
 - **SITE-9 system settings panel** (user request 2026-10-09): a
   self-built settings surface in the same BMRF style, which takes the
   network actions dropped from the picker (WiFi/networking/Bluetooth
@@ -660,7 +740,8 @@ Not scoped further than this — still gated behind Phase 1 closing first.
 Not scoped.
 
 ## Phase 4 — Motion
-Not scoped. `BUILD_SPEC.md` §2 performance constraints still govern
+Not scoped. User (2026-10-09): wants animations later, in the VOX
+style. `BUILD_SPEC.md` §2 performance constraints still govern
 whatever gets decided here.
 
 ## Phase 5 — Login screen
@@ -676,6 +757,24 @@ over from waybar's decisions.
 
 _(newest first, short entries)_
 
+- 2026-10-09 — **Layout A picked; Overseer handoff.** User picked bar
+  layout A, took the leans on the SCP leftovers (SITE-9 tag as a plain
+  title, labels and MET kept), left the slider touchpad bug as is,
+  chose passphrase test (a). Correction: "dim `connected`" in the
+  picker isn't possible in fuzzel — re-asked in round #8. New user
+  rules for THE OVERSEER recorded under "How this actually works"
+  ("What to do" at the end; ask drastic questions before drafting).
+  This Overseer chat hands off to a fresh one; it will receive UNIT-1's
+  round #7 report.
+- 2026-10-09 — **SCP dropped; VOX is the only theme. Round #7 tests
+  passed.** User: ditch SCP now, focus on the VOX picture, loved the
+  mockup's blocky buttons, no theme mixing; update the README.
+  `BUILD_SPEC.md` §3 rewritten around VOX (proposed tokens, HUD-era
+  sections marked as being replaced), README updated. Read as settled:
+  no HUD green, no corner ticks. Tests: VOL, NET picker all as expected;
+  found a waybar slider touchpad bug (truncation, upstream) and a
+  cursor/second-click bug on NET (UNIT-1 to fix). Open: layout A/B and
+  weight (on renders), SCP leftovers on screen, the touchpad bug.
 - 2026-10-09 — **Design pivot requested: VOX console look everywhere.**
   User: the half-life-vox-console style should apply system-wide, not
   only the terminal; the current HUD look isn't working for them.

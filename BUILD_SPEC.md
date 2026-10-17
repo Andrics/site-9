@@ -62,36 +62,70 @@ negligible cost. Allowed for font weight only. Any other `text-shadow`,
 any blur, any offset in another direction or color, and any
 `box-shadow` stay banned.
 
-## 3. Design language: Half-Life / Black Mesa
+## 3. Design language: Half-Life VOX console
 
-> **Under revision (user, 2026-10-09): the VOX console look everywhere.**
-> The user wants the visual style of
-> [suchipi/half-life-vox-console](https://github.com/suchipi/half-life-vox-console)
-> (Valve-VGUI olive panels, two-tone bevels) applied system-wide, not
-> just the terminal — the current HUD look "isn't doing it". Options
-> and picks are in `PHASES.md` → "Design pivot". **Until picks are
-> locked, everything below stands** and nothing gets restyled. Behavior
-> rules (picker, slider, layout, MET, thresholds) are unaffected.
+**Direction (user, 2026-10-09):** one look, everywhere — the
+[suchipi/half-life-vox-console](https://github.com/suchipi/half-life-vox-console)
+style (its `index.css` is in project context; picture in chat
+2026-10-09). Valve-era olive panels, two-tone bevelled edges, blocky
+buttons, monospace text. **The SCP report aesthetic and the HEV/HUD
+look are dropped** — the user wants a single theme so nothing reads
+inconsistent. Animations come later (Phase 4), in the same style.
 
-Primary references — go look at both before making style calls:
-- **Black Mesa Research Facility** (Half-Life) — 1990s institutional-
-  industrial: keycard/badge systems, stenciled warning labels, hazard
-  tape, beige/olive-drab hardware, monochrome CRT terminal readouts, the
-  HEV suit's amber HUD.
-- **SCP Foundation report aesthetic** — typewriter/monospace text,
-  redacted black bars, clinical bureaucratic document tone, site/unit
-  numbering, classification-stamp styling.
+What defines it (from the reference CSS):
+- Mid-tone olive surfaces, no near-black: a raised panel tone and a
+  darker recessed field tone.
+- **Bevels from plain per-side borders**: raised = light top/left, dark
+  bottom/right; recessed (fields, pressed buttons) = reversed. No
+  `box-shadow`, no gradient, radius 0 — §2-clean as it stands.
+- Buttons and tags are raised blocks; text fields, lists and output
+  areas are recessed.
+- Off-white text; pure white for the selected/active item and titles.
+  Selection and match highlights are flat background swaps, nothing
+  glowing.
 
-Net result: serious, raw, work-focused. Nothing soft, nothing playful,
-nothing decorative for its own sake.
+**Locked so far (user, 2026-10-09):**
+- **Bar layout A:** bar background `--panel` (raised); every module a
+  recessed field; workspace tabs are raised buttons, the active tab is
+  pressed in (recessed) with `--text-bright` text.
+- **No accent color** and **no corner ticks** — bevels do the framing,
+  pressed-in + white marks "active". Amber/red only for flagged states.
+- `SITE-9` tag stays as the machine's name, styled as a plain raised
+  title. `CPU:`-style labels and the MET uptime clock stay.
+- Font stays Departure Mono 11px; weight decided on the renders.
 
-**Palette, exact shade of the accent color, and specific fonts are NOT
-decided here** — they're personal choices, made by asking the user, not
+**Status:** tokens below are proposed and get locked on UNIT-1's real
+renders (`PHASES.md` → Phase 1 "Design pivot"). Until then the old
+HUD-era sections further down stay on screen, but they're **being
+replaced** — their technical findings (font pixel grid, double-strike,
+glyph crispness, corner-tick technique, GTK quirks) remain valid
+reference.
+
+| Token (proposed) | Value | Use |
+|---|---|---|
+| `--panel` | `#445435` | raised surfaces, window/bar background, buttons |
+| `--field` | `#303f25` | recessed surfaces: fields, lists, pressed buttons |
+| `--bevel-light` | `#667359` | light edge (raised top/left, recessed bottom/right); also match highlight |
+| `--bevel-dark` | `#1f2719` | dark edge; also bar troughs |
+| `--text` | `#cbcfc8` | normal text (the reference's 75% white, flattened) |
+| `--text-bright` | `#ffffff` | active/selected item, titles |
+| `--text-dim` | `#8f9a85` | placeholders, inactive (not in the reference — proposed) |
+| `--warning` / `--critical` | `#c98a3c` / `#b8452e` | flagged states only (kept from the HUD era, contrast to check) |
+
+Single-color-border tools (fuzzel, mako, Hyprland window borders) can't
+bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
+
+**Rule that still holds: palette, accent and fonts are NOT
+decided by the agent** — they're personal choices, made by asking the user, not
 assumed by the agent. See `PHASES.md` Phase 1 for the open questions and
 where decisions get recorded once made. Don't invent a palette and present
 it as done — propose 2–3 concrete options and ask which lands.
 
-### Locked palette (decided Phase 1 — 2026-09-20)
+---
+
+*HUD-era sections (being replaced by the VOX lock):*
+
+### Locked palette (decided Phase 1 — 2026-09-20) — HUD era, being replaced
 
 Fusion direction: HEV-style green as the primary signal color, Black Mesa
 institutional olive/tan as the structural base.
@@ -138,7 +172,7 @@ into every later phase rather than re-deciding per app.
   - 22px: an exact 2× of 11px — bigger, not bolder.
   Weight decision is in `PHASES.md` (Phase 1 plan review).
 
-### Locked module framing & state color (decided Phase 1 — 2026-09-21)
+### Locked module framing & state color (decided Phase 1 — 2026-09-21) — HUD era, being replaced
 
 First on-screen pass read as a generic dark-mode bar with one green accent,
 not Half-Life/SCP — traced to missing module separation and no
@@ -189,7 +223,7 @@ per state with the color hard-coded. Relies on gdk-pixbuf's SVG loader
 (present: glycin-svg 2.1.5 with librsvg 2.62.4). Static, nothing
 animated — §2-clean.
 
-### Icon direction (decided Phase 1 — 2026-10-06)
+### Icon direction (decided Phase 1 — 2026-10-06) — glyph findings still valid
 
 HUD/gauge-style glyphs for the VOL/NET/PWR modules: boxy, segmented or
 bracket-like forms that lean into the HEV HUD — **not** the default

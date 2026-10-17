@@ -1,9 +1,12 @@
 # SITE-9
 
 Personal workstation configuration. Arch Linux / Hyprland, on an old
-Intel UHD laptop — built with a hard performance ceiling and a
-Half-Life-HUD-meets-SCP-report visual language. See `BUILD_SPEC.md` for
-the actual design spec, `PHASES.md` for current status.
+Intel UHD laptop — built with a hard performance ceiling and one visual
+language everywhere: the **Half-Life VOX console** look (after
+[suchipi/half-life-vox-console](https://github.com/suchipi/half-life-vox-console)) —
+Valve-era olive panels, bevelled blocky buttons, monospace text. See
+`BUILD_SPEC.md` for the actual design spec, `PHASES.md` for current
+status.
 
 ## Requirements
 - Arch Linux
@@ -47,5 +50,7 @@ that changes. The convention is just:
   repo.
 
 ## Status
-See `PHASES.md`. Short version: waybar has a working baseline, nothing is
-restyled to the final look yet — that's Phase 1.
+See `PHASES.md`. Short version: waybar is functionally done (layout,
+readouts, volume slider, network picker) and is being restyled to the
+VOX look as the last part of Phase 1. The rest of the desktop follows in
+later phases with the same tokens.
