@@ -38,7 +38,30 @@ printf '%s\n' "$$" >"$lock"
 # from fuzzel.ini.
 menu() {
     fuzzel --dmenu --anchor top-right --x-margin 8 --y-margin 8 \
-        --keyboard-focus on-demand "$@" 9>&-
+        --keyboard-focus on-demand "$@" <&0 9>&- &
+    local pid=$!
+    give_pointer_back "$pid" >/dev/null 2>&1 9>&- &
+    wait "$pid"
+}
+
+# When fuzzel maps, Hyprland hands it pointer focus even though the
+# pointer is still over the bar (fuzzel gets `enter` at y=-23): the
+# cursor turns into fuzzel's arrow and the next click on NET goes to
+# fuzzel, so the toggle doesn't fire until the mouse moves. A warp to
+# where the pointer already is makes Hyprland pick the surface under it
+# again. Keyboard focus stays with fuzzel. (Only safe because the script
+# runs from a click on NET: over a window, the warp would hand that
+# window focus via follow_mouse and fuzzel would close.)
+give_pointer_back() {
+    local i
+    for (( i = 0; i < 50; i++ )); do
+        kill -0 "$1" 2>/dev/null || return
+        if hyprctl -j layers | grep -qE "\"pid\": $1([^0-9]|$)"; then
+            hyprctl dispatch 'hl.dsp.cursor.move(hl.get_cursor_pos())'
+            return
+        fi
+        sleep 0.02
+    done
 }
 
 dev=$(nmcli -t -f DEVICE,TYPE device | awk -F: '$2 == "wifi" { print $1; exit }')
@@ -101,7 +124,7 @@ done
 lines=${#rows[@]}
 (( lines > max_lines )) && lines=$max_lines
 
-pick=$(printf '%s\n' "${rows[@]}" | menu --index --width "$longest" --lines "$lines") || exit 0
+pick=$(printf '%s\n' "${rows[@]}" | menu --index --width "$(( longest + 2 ))" --lines "$lines") || exit 0
 [[ $pick =~ ^[0-9]+$ ]] && (( pick < ${#ssids[@]} )) || exit 0
 ssid=${ssids[pick]}
 sec=${security[$ssid]}
