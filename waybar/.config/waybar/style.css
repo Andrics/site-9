@@ -27,41 +27,56 @@ window#waybar {
     border-bottom: 1px solid @bevel-dark;
 }
 
+/* Bevels (BUILD_SPEC.md §3): plain 1px per-side borders, no shadow, no
+   gradient. Raised = light top/left, dark bottom/right; recessed is the
+   reverse. */
+
 #workspaces {
     padding: 0 4px;
 }
 
+/* Tabs are raised buttons. Every state is set here, so Adwaita's hover
+   and press looks (gradient, border colors, 1px box-shadow line, 1px
+   white text-shadow — BUILD_SPEC.md §2) never show: hover changes
+   nothing. */
 #workspaces button {
     padding: 0 10px;
     margin: 4px 2px;
-    background: transparent;
-    color: @text-dim;
-    border: 1px solid transparent;
-}
-
-#workspaces button.active {
-    color: @text-bright;
-}
-
-#workspaces button:hover {
+    background: @panel;
     color: @text;
-    /* Adwaita adds a 1px hover shadow line (BUILD_SPEC.md §2) */
+    border: 1px solid;
+    border-top-color: @bevel-light;
+    border-left-color: @bevel-light;
+    border-bottom-color: @bevel-dark;
+    border-right-color: @bevel-dark;
     box-shadow: none;
-}
-
-/* Adwaita gives every button a 1px white text-shadow under the text
-   (BUILD_SPEC.md §2: theme defaults count). This clears it. */
-#workspaces button,
-#workspaces button:hover {
     text-shadow: none;
 }
 
-#workspaces button.active:hover {
+/* Active tab: pressed in. */
+#workspaces button.active {
+    background: @field;
     color: @text-bright;
+    border-top-color: @bevel-dark;
+    border-left-color: @bevel-dark;
+    border-bottom-color: @bevel-light;
+    border-right-color: @bevel-light;
 }
 
-/* Module frames: a 1px border on every module (tabs too). */
-#custom-site,
+/* SITE-9: the machine's name, a raised block. */
+#custom-site {
+    padding: 0 10px;
+    margin: 4px 2px;
+    background: @panel;
+    color: @text-bright;
+    border: 1px solid;
+    border-top-color: @bevel-light;
+    border-left-color: @bevel-light;
+    border-bottom-color: @bevel-dark;
+    border-right-color: @bevel-dark;
+}
+
+/* Every module is a recessed field. */
 #clock,
 #custom-met,
 #cpu,
@@ -73,7 +88,12 @@ window#waybar {
 #tray {
     padding: 0 10px;
     margin: 4px 2px;
-    border: 1px solid transparent;
+    background: @field;
+    border: 1px solid;
+    border-top-color: @bevel-dark;
+    border-left-color: @bevel-dark;
+    border-bottom-color: @bevel-light;
+    border-right-color: @bevel-light;
 }
 
 #clock {
