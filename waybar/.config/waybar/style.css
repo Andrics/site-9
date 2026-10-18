@@ -81,8 +81,7 @@ window#waybar {
 #custom-met,
 #cpu,
 #memory,
-#pulseaudio,
-#pulseaudio-slider,
+#volume,
 #network,
 #battery,
 #tray {
@@ -101,9 +100,21 @@ window#waybar {
     color: @text;
 }
 
+/* VOL: the field is on the drawer group (group/volume → #volume), so
+   the open slider sits inside it. The readout and the slider have no
+   frame of their own. */
+#pulseaudio {
+    padding: 0 10px;
+}
+
+#pulseaudio-slider {
+    padding: 0 10px 0 0;
+    border: none;
+}
+
 /* Volume gauge: 80×4 trough in @bevel-dark, fill in @text, no knob. Adwaita
    puts a light border, a blue outline and gradients on these nodes, so all
-   of them are cleared here. The scale keeps its 1px frame border. */
+   of them are cleared here. */
 #pulseaudio-slider,
 #pulseaudio-slider trough,
 #pulseaudio-slider highlight,
