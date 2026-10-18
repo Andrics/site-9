@@ -46,6 +46,8 @@
 @define-color warning_color @warning;
 @define-color error_color @critical;
 @define-color success_color @text;
+/* Entry placeholders (GTK falls back to #808080 without it). */
+@define-color placeholder_text_color @text-dim;
 
 /* ------------------------------------------------------------------
    Base: everything starts flat, square and still
