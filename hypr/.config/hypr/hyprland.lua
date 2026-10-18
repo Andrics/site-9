@@ -70,6 +70,13 @@ hl.env("HYPRCURSOR_SIZE", "24")
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
 
+-- Qt apps (Dolphin, BUILD_SPEC.md §3 "Locked Qt theme"): the SITE-9
+-- Kvantum style, and Qt's GTK3 platform plugin so they take the GTK
+-- font from gsettings (DepartureMono 8.25pt = 11px). Kvantum's
+-- documented env-var route outside Plasma; no qt6ct needed.
+hl.env("QT_STYLE_OVERRIDE", "kvantum")
+hl.env("QT_QPA_PLATFORMTHEME", "gtk3")
+
 -----------------------
 ----- PERMISSIONS -----
 -----------------------
