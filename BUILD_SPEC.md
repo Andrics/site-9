@@ -52,7 +52,11 @@ box-shadows and outlines to some widgets — e.g. a 1px shadow line on
 hovered buttons, a blue focus outline on sliders. Those are drop
 shadows / off-palette decoration by this spec: override them
 (`box-shadow: none`, `outline: none`, explicit borders) wherever they
-show up.
+show up. Also found (2026-10-18): Adwaita gives every `button` a 1px
+white `text-shadow` and tooltips a black one (clear with
+`text-shadow: none`), and buttons a `transition: all 200ms
+cubic-bezier(…)` fade — a custom easing curve, against the motion rule
+in §3 (clear with `transition: none`).
 
 **No `text-shadow` of any kind.** The double-strike weight exception
 (`text-shadow: 1px 0 0 currentColor`, approved 2026-10-06) was
@@ -138,6 +142,9 @@ bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
 - **Tab hover changes nothing** — default set by THE OVERSEER
   (2026-10-18), not asked; the user can change it after seeing the bar
   live. Adwaita's hover decoration stays cleared (§2).
+- **Tab switches are instant** — no fade (`transition: none` clears
+  Adwaita's 200ms eased fade; THE OVERSEER, 2026-10-18, applying the
+  §3 motion rule).
 - **`SITE-9`**: the machine's name, a raised block with `--text-bright`.
 - **Layout (L2):** left — `SITE-9`, workspaces. Center — clock, MET.
   Right — CPU, RAM, VOL, NET, PWR, tray.
@@ -147,7 +154,7 @@ bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
 - **Readouts:** icon, label, gauge, value — `◄ VOL: ██████████  60%`,
   `▂▄▆█ NET: 82%`, `⏻ PWR: ██████████  18%`; CPU/RAM have no icon.
   `PWR:` becomes `CHG:` while charging (no lightning glyph). Muted:
-  `◄ VOL: MUTE`, no gauge. Ethernet: `NET: LINK`, no steps.
+  `◄ VOL: MUTE` in `--text`, no gauge. Ethernet: `NET: LINK`, no steps.
   Percentages fixed-width (fmt `{x:>3}`).
 - **Gauges (VOL, PWR, CPU, RAM):** DOS fill, 10 cells of `█`, lit cells
   in the readout's color, unlit cells `█` in `--bevel-dark`. NET steps
@@ -183,16 +190,26 @@ bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
 - Top-right under the bar, 8px margins.
 - **Opens instantly from NetworkManager's cached list** (`--rescan no`).
   **Refresh:** F5 in the menu (fuzzel `custom-1`, exit code 10 → the
-  script restarts with `--rescan yes`) or right-click NET. **After a
-  successful connect the script starts a background rescan** so the
-  next open isn't short (user, 2026-10-18).
+  script restarts with `--refresh`, which rescans) or right-click NET
+  (`--rescan yes`). A refresh normally takes ~1 s; one run took 12 s
+  (NM's scan wait, likely from back-to-back test scans) — **left as is**
+  (user, 2026-10-18). **After a successful connect the script starts a
+  background rescan** (`setsid -f nmcli device wifi rescan`, all output
+  to `/dev/null`) so the next open isn't short (user, 2026-10-18).
+- fuzzel runs with `--keyboard-focus on-demand` (exit on focus loss is
+  fuzzel's default).
+- The script's lock is released before connecting to a saved or open
+  network, so NET stays clickable during a connect; the new-network
+  path holds it through the password prompt.
 - **Closes** on: Esc, clicking NET again (toggle, tracks its own fuzzel
   only), clicking another window, or the pointer passing over a window
   (`follow_mouse = 1` moves keyboard focus there).
 - **Pointer hand-back:** after fuzzel appears, the script moves the
   pointer to where it already is, so the bar gets it back and a second
-  click on NET closes the menu. Only on launches from a NET click — not
-  on the F5 restart, where the pointer may be anywhere (2026-10-18).
+  click on NET closes the menu. Only on the first menu of a NET click —
+  not on the F5 restart and not on the password prompt (a row clicked
+  with the mouse can leave the pointer over a window, and the nudge
+  would then close the prompt; tested, 2026-10-18).
 - **NET has no tooltip** (user, 2026-10-18 — it covered the menu).
 - Row: `▂▄▆█  NAME  SEC`, padded columns, open networks show `OPEN`,
   names over ~24 chars cut with `…`. Connected network first, tagged
@@ -241,8 +258,7 @@ bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
 
 - **HUD palette** (2026-09-20 → 2026-10-09): `--bg #15140f`,
   `--border #3a3626`, `--text #d6d0bd`, `--text-dim #8f8a76`,
-  `--accent #5fae5a`. Still in `fuzzel.ini` and waybar until round #8
-  replaces them.
+  `--accent #5fae5a`. Gone from waybar and `fuzzel.ini` since round #8.
 - **Corner ticks** (2026-10-06 → 2026-10-09): 9-slice `border-image`
   from an 11×11 SVG, `border: 1px solid transparent`,
   `border-image-slice: 5`, `border-image-width: 5px`, recolored with
@@ -303,7 +319,8 @@ now — no audio dependencies, no hooks, until it's an actual phase.
 - Wallpaper: hyprpaper — not checked yet.
 - Screenshot: grim + slurp + swappy (bound to Print) — grim is in use;
   slurp/swappy not checked.
-- Terminal: foot — **planned, not installed**. Live now: **kitty**.
+- Terminal: **kitty** — kept (user, 2026-10-18; foot is no longer
+  planned). Phase 2.1 themes it.
 - Polkit agent: hyprpolkitagent 0.2.0 — **installed, not running**
   (polkit-gnome is installed too). Nothing needs one yet: NetworkManager
   lets the user scan and connect without it (§6). Start it once
@@ -311,26 +328,31 @@ now — no audio dependencies, no hooks, until it's an actual phase.
 - Network: **NetworkManager 1.58.1** (wpa_supplicant backend), `nmcli`
   and `nmtui` present; iwd not installed, systemd-networkd disabled.
 
-**Open stack question (for whichever phase first needs it):** keep the
-live tools (hyprlauncher, kitty) or switch to the planned ones (fuzzel
-as the launcher, foot)? The user decides; don't install a planned tool
-or remove a live one without asking. The network picker settled only
-that fuzzel is installed; the launcher and terminal stay open (Phase 3
-at the latest).
+**Tool freedom (user, 2026-10-18):** SITE-9 isn't tied to waybar or
+Hyprland — any package or service that's current, maintained and good
+for the job is fine, as long as the Half-Life VOX theme carries on.
+Don't switch working tools without a reason and the user's OK; do
+check current options whenever a phase needs a new tool (e.g. the
+settings panel and sidebar, which waybar can't build).
+
+**Open stack question:** launcher — keep hyprlauncher on Super+R or move
+it to fuzzel (already installed, already VOX-colored)? Phase 3 at the
+latest. The user decides; don't install a planned tool or remove a
+live one without asking.
 
 ## 5. What's already built
 
 - **waybar** (`waybar/.config/waybar/`, stowed live with `stow -t ~`,
-  restow with `-R` when files are added or removed). As of round #7
-  (`b4352b8`, 2026-10-18): layout L2, 30px, one-color state readouts,
-  S1 icons, DOS-fill gauges, fixed-width percentages, thresholds
-  29/14, horizontal 80×4 volume slider (5% scroll), NET → `net-menu`.
-  **Still in the HUD-era look** (near-black, corner ticks, green
-  active tab, double-strike) — round #8 re-skins it to VOX (§3).
+  restow with `-R` when files are added or removed). **VOX look as of
+  round #8 (`105c8fb`, 2026-10-18)** — everything in §3 "Locked bar"
+  and "Locked volume slider": layout A and L2, 30px, regular weight,
+  tokens as hyphenated `@define-color`s, gauges and NET steps with
+  `--bevel-dark` troughs, VOL field on `#volume` (the drawer group) so
+  the open slider sits inside it, VOX tooltips. Phase 1 closed on it.
   - `scripts/net-menu` — the network picker (§3, §6).
-- **fuzzel** (`fuzzel/.config/fuzzel/fuzzel.ini`, stowed): stopgap
-  HUD-era tokens, radius 0, DepartureMono 11px, `[key-bindings]
-  custom-1=F5`. Round #8 recolors it to VOX (§3).
+- **fuzzel** (`fuzzel/.config/fuzzel/fuzzel.ini`, stowed): VOX colors
+  (all 12 color keys; `message` → `--text`), radius 0, DepartureMono
+  11px, `[key-bindings] custom-1=F5`.
 - **hypr** — not stowed from this repo yet. The only change so far is
   `scale = "1"`, made directly in the live `~/.config/hypr/hyprland.lua`
   (Phase 1 fix); otherwise it's Hyprland's stock example config. It
@@ -347,6 +369,31 @@ at the latest).
 
 Behavior checked against the actual installed versions — not training
 data. Recheck if the package version changes. Newest first.
+
+**Round #8 findings (UNIT-1, 2026-10-18):**
+- **Versions:** fuzzel 1.15.0-1, waybar-git 0.15.0.r1019.g3672eee-1,
+  gtk3 3.24.52-2.
+- **GTK3 `@define-color`** accepts hyphenated names (`@bevel-light`
+  renders `#667359`).
+- **GTK3 tooltip node** is `tooltip` (and `tooltip label`) — waybar's
+  `waybar-styles(5)` doesn't name it; confirmed in Adwaita's CSS inside
+  the installed libgtk. Adwaita gives it `text-shadow: 0 1px black`,
+  radius 5px, white text and an rgba(0,0,0,.8) background.
+- **Adwaita `button`** (gresource in `/usr/lib/libgtk-3.so.0`):
+  `text-shadow: 0 1px rgba(255,255,255,0.77)` and
+  `transition: all 200ms cubic-bezier(0.25,0.46,0.45,0.94)`. The old
+  double-strike rule had been hiding the text-shadow.
+- **A drawer group's CSS node** (`#volume` for `group/volume`) can carry
+  a module's field, so the revealed slider sits inside the frame.
+- **`nmcli device wifi rescan`** (1.58.1): returns in ~0.02 s, rc 0
+  (the man page doesn't say). Requests 15–24 s after a scan are held
+  and run late, not dropped (seen via the device's `LastScan` D-Bus
+  property); one 40 s after a scan ran in 1.8 s. It can refuse with
+  "Scanning not allowed at this time". Detached with `setsid -f …
+  </dev/null >/dev/null 2>&1`, nothing is left running (pgrep).
+- **fuzzel `--search=TEXT`** pre-fills the filter — handy for test
+  screenshots.
+- `--rescan yes` once took 12.3 s (NM's scan wait).
 
 **Round #7 findings (UNIT-1, 2026-10-18):**
 - **Pointer focus on new layers (Hyprland 0.56.2):** when fuzzel maps,
@@ -480,8 +527,9 @@ data. Recheck if the package version changes. Newest first.
 - **`format-icons` also accepts threshold objects** in waybar-git
   (ALabel.cpp:222), but it's undocumented in the man page — don't use
   it until it's documented in a tagged release.
-- **Text-shadow placement:** applying it on `window#waybar label`
-  covers bar text and leaves tooltips alone.
+- **Text-shadow placement** (history — double-strike is retired):
+  applying it on `window#waybar label` covered bar text and left
+  tooltips alone.
 - **Group orientation** defaults to `"orthogonal"`, which makes a group
   *vertical* on a horizontal bar. Every group must set
   `"orientation": "horizontal"` (or `"inherit"`).
@@ -507,6 +555,5 @@ data. Recheck if the package version changes. Newest first.
   passed through.
 - **`custom/` with `"interval": "once"` and no `exec`** draws once and
   never starts a process.
-- **GTK3 `text-shadow`** paints the shadow pass first, then the real
-  text on top, and the shadow ignores pango span colors (see §3,
-  Weight).
+- **GTK3 `text-shadow`** (history): paints the shadow pass first, then
+  the real text on top, and the shadow ignores pango span colors.

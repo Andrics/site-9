@@ -43,103 +43,111 @@ the Project instructions, for every Overseer chat:
 | # | Phase | Status |
 |---|-------|--------|
 | 0 | Waybar — functional baseline (modules/layout) | Done |
-| 1 | Waybar — Half-Life / Black Mesa restyle | In progress |
-| 2 | System theme (GTK/icons/cursor/terminal/file manager) | Not started |
+| 1 | Waybar — Half-Life VOX restyle (+ network picker) | Done (2026-10-18) |
+| 2 | System theme (terminal, GTK apps, file manager, Firefox, cursor/icons, window borders/wallpaper) | In progress — round #9 plans 2.1 + 2.2 |
 | 3 | Shell polish (fuzzel/mako/hyprlock) | Not started |
 | 4 | Motion (Hyprland animations/window rules) | Not started |
 | 5 | Login screen (optional — gated on whether a display manager exists) | Not started |
-| 6 | Sidebar | Not started |
+| 6 | Sidebar (+ SITE-9 settings panel) | Not started |
 
 ## Next up for UNIT-1
 
 _Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Round #8 build (2026-10-18): sub-phases 1.3 waybar VOX re-skin + 1.4
-picker/fuzzel VOX re-skin — GO.** Every design pick is locked
-(`BUILD_SPEC.md` §3: "Locked tokens", "Locked look rules", "Locked
-bar", "Locked volume slider", "Locked network picker"). Build straight
-from §3 — no separate plan round. **If a §3 line can't be done as
-written** (a GTK node won't take it, a key isn't in the installed man
-page, the slider won't sit inside the VOL field), stop that piece and
-report options — don't improvise a look. Everything else goes ahead.
-Check config keys against the installed man pages (`zcat
-/usr/share/man/...`), not memory. One commit per step.
+**Round #9 (2026-10-18): PLAN for sub-phases 2.1 terminal (kitty) +
+2.2 GTK app theme, plus one ride-along fix.** Phase 1 is closed. Plan
+only for 2.1/2.2 — no changes to kitty, GTK settings or themes yet.
+Read-only checks and scratch renders go inside the plan (scratch
+configs only; live configs untouched afterwards). Check every key
+against the installed man pages / docs, not memory. The user picks
+from the options; don't pick for them.
 
-0. **Docs sync** — `git diff` the dropped-in docs, read the removed
-   lines (HUD-era §3 sections are condensed on purpose; flag anything
-   of yours that's gone), commit `docs: sync from Overseer (2026-10-18)`.
+0. **Docs sync** — `git diff`, read the removed lines, commit
+   `docs: sync from Overseer (2026-10-18)`.
 
-**1.3 — waybar** (`style.css`, plus `config.jsonc` where pango spans
-or formats change):
+**Ride-along (build now, one commit, push):** `transition: none` on
+waybar's buttons (workspace tabs, and any other button node that has
+Adwaita's 200ms eased fade). The tab switch must be instant. Confirm in
+the log/CSS that no `transition` is left on bar nodes.
 
-1. **Weight:** remove the double-strike `text-shadow`. No `text-shadow`
-   left anywhere (grep for it).
-2. **Corner ticks out:** remove the `border-image` rules and delete
-   `frame/tick-symbolic.svg` (empty `frame/` too); `stow -R -t ~ waybar`.
-3. **Tokens:** replace the HUD color definitions with the §3 token set
-   (`panel`, `field`, `bevel-light`, `bevel-dark`, `text`,
-   `text-bright`, `text-dim`, `warning`, `critical`), using whatever
-   mechanism `style.css` already uses (GTK3 `@define-color`; underscores
-   if GTK rejects hyphens). No HUD token left.
-4. **Surfaces:** bar `--panel` with a 1px `--bevel-dark` bottom edge;
-   every module a recessed field (clock, MET, tray included); tabs as
-   raised buttons with `--text`; active tab pressed in (`--field`,
-   reversed bevel, `--text-bright`); hover changes nothing (Adwaita
-   hover still cleared); `SITE-9` raised with `--text-bright`. Keep the
-   current spacing and 30px height.
-5. **Readout colors in config:** gauge troughs and unlit NET steps →
-   `--bevel-dark`; `--warning` `#e6a84f`, `--critical` `#ff7a5c`
-   wherever spans or CSS use them; each hex in a span keeps a comment
-   naming its token.
-6. **Volume slider:** trough `--bevel-dark`, fill `--text`, Adwaita
-   still cleared on all four nodes; the scale's old tick-frame border
-   goes. The open slider must sit inside the VOL field.
-7. **Tooltips** (modules that still have one — NET doesn't): list
-   look — `--field` background, raised 1px bevel, `--text`, radius 0.
-   Check the tooltip CSS node in the installed `waybar-styles(5)`.
+**2.1 — Terminal: kitty** (user: kitty stays; terminal is the first
+priority in Phase 2). Checks:
+- `pacman -Q kitty`; where the live config is (`~/.config/kitty/`?) and
+  what's in it. Stow plan: a `kitty` package; back up the live file.
+- Color keys from the installed kitty docs: `background`,
+  `foreground`, `cursor`/`cursor_text_color`, `selection_background`/
+  `selection_foreground`, `color0`–`color15`, `url_color`, and the tab
+  bar / window-border keys if kitty's tabs or splits are in use (ask the
+  user whether they use kitty tabs).
+- **Font:** DepartureMono Nerd Font must render on the 11px grid.
+  kitty's `font_size` is in points — find the value that gives exact
+  11px cells at scale 1 (check how kitty gets its DPI on Wayland), and
+  confirm with a 3x crop that strokes are crisp (no partial pixels on
+  text glyphs). Also check `█` and box-drawing come out crisp (kitty
+  draws box/block glyphs itself by default — say which way looks right
+  with this font).
+- **Padding:** `window_padding_width` options (e.g. 0 / 4px — the
+  reference uses 4px).
 
-**1.4 — picker** (`fuzzel.ini`, `scripts/net-menu`):
+Options to render in a scratch kitty (`kitty --config <scratch>`), same
+test content in each — a 16-color swatch (normal + bright, fg on bg and
+as blocks), `ls --color`, a `git diff` and `git log --oneline --graph`
+from this repo, a prompt line, a selection, the cursor:
+- **Background:** `--field` `#303f25` (like the reference's output
+  area) vs `--panel` `#445435`. Text `--text`.
+- **ANSI palette, two sets** (contrast on the chosen background listed
+  for each color):
+  - **P1 muted/olive:** built around the §3 tokens — e.g. red from
+    `--critical`, yellow from `--warning`, greens/greys from the olive
+    ramp; every color readable (≥4.5:1 where possible, flag any below
+    3:1).
+  - **P2 classic DOS/VGA-style:** the familiar bright 16-color set,
+    adjusted only as far as needed to be readable on olive.
+- **Cursor:** block in `--text` vs `--text-bright`. **Selection:**
+  `--panel` + `--text-bright` (same as menus) vs `--bevel-light` +
+  `--text-bright`.
 
-8. **fuzzel colors** per §3 (RRGGBBAA): background `303f25ff`; text,
-   input, prompt `cbcfc8ff`; selection `445435ff`; selection-text,
-   match, selection-match `ffffffff`; placeholder, counter `8f9a85ff`;
-   border `1f2719ff`, width 1, radius 0, selection radius 0. Any other
-   color key → `--text`. Each value gets a comment naming its token.
-   Font and `[key-bindings]` unchanged. `fuzzel --check-config`.
-9. **Pointer nudge on NET clicks only:** skip
-   `hl.dsp.cursor.move(hl.get_cursor_pos())` on the F5 restart (the
-   pointer may not be on the bar; if a shorter list leaves it over a
-   window, `follow_mouse` would close the menu). Also confirm the wait
-   for fuzzel's layer has a timeout and say what it is.
-10. **Background rescan after a successful connect:** start `nmcli
-    device wifi rescan` detached so the next open has the full list.
-    Check in `nmcli(1)` whether it blocks or can fail when scans are
-    rate-limited; it must not hold the menu, print errors at the user,
-    or leave anything running. If there's no clean way, report.
+**2.2 — GTK app theme** (normal app windows: buttons, menus, dialogs;
+feeds the file manager and Firefox later). Checks:
+- Which **file manager** is installed (`pacman -Q` for thunar, nautilus,
+  nemo, pcmanfm(-qt), dolphin, …) — the user uses one. Its toolkit
+  (GTK3 / GTK4+libadwaita / Qt).
+- Which installed apps are GTK3, GTK4, **libadwaita**, or Qt
+  (`pacman -Qi gtk3 gtk4 libadwaita qt6-base` → Required By).
+- Firefox version and whether it follows the system GTK theme now.
+- Current theme settings: `gsettings get org.gnome.desktop.interface
+  gtk-theme` and `color-scheme`, `~/.config/gtk-3.0/settings.ini`,
+  `~/.config/gtk-4.0/`, any `GTK_THEME`; `xdg-desktop-portal*` packages
+  installed (file pickers, dark-mode signal).
+- **libadwaita:** confirm on the installed version that it ignores the
+  `gtk-theme` setting but loads `~/.config/gtk-4.0/gtk.css` on top of
+  its own style (widely used, not officially supported). Say what that
+  means for bevels in libadwaita apps.
 
-**Test** (restart waybar, log clean):
-- `hyprctl layers`: bar 1920×30.
-- 3x crops: bevels as specced, no Adwaita line/outline/gradient, no
-  bright column after the gauges, no tick fragments.
-- Flagged states from a scratch copy (live bar untouched): PWR warning
-  and critical, `NET: OFFLINE`.
-- Slider open: inside the VOL field.
-- Picker: open (instant), type a few letters (matches turn white),
-  F5 with the pointer on the menu and with it on empty desktop (menu
-  stays open), right-click NET. Passphrase prompt look: run the
-  script's prompt step on its own — no connect, no profile changes.
-- The user reconnects to TransworldNet once (ask first) → the next
-  open shows the full list.
+Approach options to lay out (cost, what each covers, risks, your lean):
+- **G1 own SITE-9 theme:** a small hand-written GTK3 theme from the §3
+  tokens (`~/.local/share/themes/SITE-9/gtk-3.0/gtk.css`, stowed),
+  plus a `gtk-4.0/gtk.css` override for GTK4/libadwaita apps.
+- **G2 recolor a maintained existing theme** — name candidates and
+  check they're actively maintained and current; say how close to the
+  VOX bevels each can get.
+- **G3 GTK3 only**, GTK4/libadwaita left on Adwaita dark.
+- Optional proof render: a minimal token CSS on one real GTK3 window
+  (the file manager if it's GTK3) showing a raised button, a recessed
+  entry and a list with a selected row. If it needs a package (e.g.
+  `gtk3-demos` for `gtk3-widget-factory`), ask the user first.
 
-**Screenshots** in `~/Pictures/site-9-phase1/`:
-`1.3-bar-left-x3.png`, `1.3-bar-right-x3.png`, `1.3-vol-open-x3.png`,
-`1.3-states-x3.png`, `1.4-net-menu-x3.png`, `1.4-net-filter-x3.png`,
-`1.4-net-passphrase-x3.png`.
+**Not in this round:** file manager specifics (2.3), Firefox (2.4),
+cursor + icons (2.5), Hyprland window borders + wallpaper (2.6).
 
-**Then** push to `origin/main` and report (pushed hash, screenshot
-paths). Also report `pacman -Q fuzzel` and which `keyboard-focus` mode
-`net-menu` uses. After this round, **Phase 1 closes on the user's
-on-screen confirm of the whole bar and the picker.**
+**Screenshots** in `~/Pictures/site-9-phase2/`: `2.1-kitty-<bg>-<palette>-x3.png`
+for each combination rendered (crop to the test content, nearest-neighbor
+3x), `2.1-kitty-font-x3.png` (font crispness crop), and
+`2.2-gtk-proof-x3.png` if rendered.
+
+**Then:** push (ride-along commit), and send the plan. End with the
+report block for the ride-along and the checks (pushed hash +
+screenshot paths).
 
 ## Phase 1 — Waybar restyle
 
@@ -383,22 +391,33 @@ reasoning behind it; where it disagrees with §3, §3 wins.
   This replaces the earlier "segmented value bars" idea with a fill bar
   and the dim-label rule with one-color readouts.
 
-**Still open:**
-- **1.3 + 1.4 (round #8):** VOX re-skin of waybar and the picker —
-  brief in "Next up". All design picks locked 2026-10-18.
-- **Phase 1 closes** when round #8 is built and the user confirms the
-  whole bar and the picker on screen.
-- **SITE-9 system settings panel** (user request 2026-10-09): a
-  self-built settings surface in the VOX style that takes the network
-  actions dropped from the picker (WiFi/networking/Bluetooth on-off,
-  connection editing, deleting connections, show password) and likely
-  more. Not scoped or placed in a phase — **decide where it goes when
-  Phase 1 closes.** Until then those actions are only reachable via
-  `nmcli`/`nmtui`.
-- **Tab hover:** set to "no change" by THE OVERSEER (2026-10-18), not
-  asked — the user can change it after seeing the bar live.
+**Closed 2026-10-18** on the user's on-screen look at round #8 ("Much
+better"). Carried forward:
+- **The user wants to change some things later** — not listed yet.
+  Ask when they're ready; they'd be a later round, not a reopening.
+- **SITE-9 system settings panel** → moved to **Phase 6** (user,
+  2026-10-18), with the sidebar: both need the same new widget tool.
+- **Tab hover:** "no change" is THE OVERSEER's default, not asked —
+  the user can change it.
+- **Slow refresh** (right-click NET / F5, one 12 s run): left as is
+  (user, 2026-10-18).
 
 **Resolved:**
+- **Round #8 (1.3 waybar + 1.4 picker VOX re-skin) — built, tested,
+  pushed (`105c8fb`, 2026-10-18).** Approved by THE OVERSEER. Commits:
+  a28bb36 docs sync; 28a012a double-strike dropped + Adwaita button
+  text-shadow cleared; 4d78610 corner ticks and `frame/` removed;
+  971e739 VOX tokens (`@define-color`); c423a8d VOX surfaces; d45826a
+  troughs/unlit steps `--bevel-dark`, muted VOL `--text`; 332aa63 VOL
+  field on the drawer group (slider inside it); fd6dbbd VOX tooltips;
+  d35be18 fuzzel VOX colors; 410fcf9 pointer hand-back only on the
+  first menu of a NET click; 105c8fb background rescan after connect.
+  Tests: bar 1920×30, log clean, bevels pixel-exact, no bright column,
+  flagged states as specced, slider inside the field (user saw it
+  live), picker opens in 97 ms 8px under the bar, matches white, toggle
+  works, F5 keeps the menu open with the pointer anywhere, reconnect →
+  full list (user). Ride-along for round #9: Adwaita's 200ms eased fade
+  on tabs → `transition: none` (THE OVERSEER, applying §3 motion).
 - **Round #7 (1.1 picker + 1.2 volume) — built, tested, pushed
   (`b4352b8`, 2026-10-18).** Approved by THE OVERSEER. Commits from
   `cf4319a`: 90ef4f3 / eb72659 / 55d5ef3 / 42b792b docs syncs (removed
@@ -478,35 +497,35 @@ reasoning behind it; where it disagrees with §3, §3 wins.
   (`1920x1080@60Hz`, `scale: 1`).
 
 ## Phase 2 — System theme
-Not scoped. Once Phase 1's palette is locked, ask what "system theme"
-should actually cover before proposing anything — don't assume GTK/icon
-theme scope carries over automatically.
 
-**Reference found for the terminal (2026-09-21) — superseded 2026-10-09: the user now wants this look everywhere (Phase 1 → "Design pivot"); the two open questions below are answered by that.**
-[suchipi/half-life-vox-console](https://github.com/suchipi/half-life-vox-console)
-— a real Black Mesa VOX announcer web console, source added to project
-context (`index.css`, `App.js`, etc.), actual CSS reviewed, not just
-screenshots. Key technique: two-tone beveled borders (light top/left +
-dark bottom/right = raised, reversed = recessed), built from plain
-`border-*-color` — no `box-shadow`, no gradient anywhere in the file, so
-it's naturally compatible with §2's no-blur/no-shadow rule without
-adaptation. Also present: monospace throughout, zero `border-radius`
-anywhere, a single-hue olive-green tonal palette (mid-tone bg, no black —
-different structure from SITE-9's near-black `--bg` + selective `--accent`),
-and substring-match highlighting via a plain `mark` background, no
-special effects.
+Goal: the rest of the desktop in the same VOX look and tokens
+(`BUILD_SPEC.md` §3).
 
-Two open questions for when Phase 2 actually starts, not now:
-- Bring the beveled-border technique in as a new element for the
-  terminal specifically (distinguishing "terminal" from "HUD" within the
-  same family), or keep it on the flat uniform-border look already built
-  for waybar?
-- The reference sits on a mid-tone olive background throughout, no
-  black — keep the terminal on SITE-9's locked near-black `--bg`
-  structure, or let it run a different, lighter tonal register since
-  it's a distinct surface from the HUD bar?
+**Scope (user, 2026-10-18):** all of it — terminal, normal app windows
+(GTK), file manager, Firefox, mouse cursor, icon theme, Hyprland window
+borders, wallpaper. **Terminal first.** Apps the user uses now: the
+file manager, the terminal, Firefox; an editor, music and chat apps
+come later (theme them when they arrive). Terminal stays **kitty**.
 
-Not scoped further than this — still gated behind Phase 1 closing first.
+**Sub-phases:**
+- **2.1 Terminal** — kitty: colors, font on the 11px grid, padding.
+- **2.2 GTK app theme** — buttons, menus, dialogs for GTK3 (and GTK4 /
+  libadwaita as far as it goes).
+- **2.3 File manager** — whichever the user uses; app-specific bits on
+  top of 2.2.
+- **2.4 Firefox** — browser UI.
+- **2.5 Cursor + icon theme.**
+- **2.6 Hyprland window borders + wallpaper** — needs `hypr` stowed
+  from the repo (back up the live file; carry over `scale = "1"` and
+  the mute bind; drop the stray `nm-applet` line — `BUILD_SPEC.md` §5).
+
+Round #9 = plan for 2.1 + 2.2 (brief in "Next up").
+
+**Background (2026-09-21, superseded 2026-10-09):** the VOX reference
+was first found as a terminal-only idea; the two open questions it
+raised (bevels for the terminal only? a lighter register for it?) are
+answered by "the VOX look everywhere". kitty takes colors only — no
+bevels; its window frame comes from Hyprland (2.6).
 
 ## Phase 3 — Shell polish
 Not scoped. Carry-overs: `fuzzel.ini` already gets VOX colors in 1.4
@@ -523,14 +542,38 @@ whatever gets decided here.
 Gated: confirm a display manager is actually installed/wanted before
 scoping this at all — user may be starting Hyprland by hand from a TTY.
 
-## Phase 6 — Sidebar
+## Phase 6 — Sidebar (+ SITE-9 settings panel)
 Not scoped. Ask what "sidebar" should actually cover — content, trigger,
 placement, all of it — before proposing anything; don't assume it carries
 over from waybar's decisions.
 
+**SITE-9 system settings panel** (user request 2026-10-09, placed here
+2026-10-18): a self-built settings surface in the VOX style that takes
+the network actions dropped from the picker (WiFi/networking/Bluetooth
+on-off, connection editing, deleting connections, show password) and
+likely more. Waybar can't build panels, so this phase needs a widget
+toolkit — check what's current and maintained when it's scoped (tool
+freedom, `BUILD_SPEC.md` §4). Until then those actions are only
+reachable via `nmcli`/`nmtui`.
+
 ## Log
 
 _(newest first, short entries)_
+
+- 2026-10-18 — **Round #8 approved; Phase 1 closed; Phase 2 scoped;
+  round #9 briefed.** UNIT-1 built and pushed the VOX re-skin
+  (`105c8fb`, 11 commits) — review in Phase 1 "Resolved". Found:
+  Adwaita's hidden button/tooltip text-shadows (now cleared), its 200ms
+  eased button fade (cleared next round, per §3 motion), tooltip CSS
+  node is GTK's `tooltip`, `nmcli device wifi rescan` behavior. User:
+  "much better", some changes later (unlisted); **tool freedom** — not
+  tied to waybar/Hyprland, any current, good tool is fine, same
+  Half-Life theme (`BUILD_SPEC.md` §4). Picks (leans): slow refresh
+  left as is, settings panel → Phase 6, kitty kept. Phase 2 scope: all
+  of terminal, GTK apps, file manager, Firefox, cursor/icons, window
+  borders/wallpaper — terminal first; apps in use: file manager,
+  terminal, Firefox. Round #9 = plan for 2.1 kitty + 2.2 GTK theme,
+  with the tab-fade fix riding along.
 
 - 2026-10-18 — **Round #7 approved; VOX picks locked; round #8 briefed.
   New Overseer chat.** Picked up from the 2026-10-09 handoff (Project
