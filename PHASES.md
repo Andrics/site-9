@@ -54,202 +54,103 @@ the Project instructions, for every Overseer chat:
 
 _Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Round #7 build (2026-10-09): sub-phases 1.1 + 1.2 — GO, with a
-picker rework mid-round. Design pivot pending (see below): do the
-functional work only, no restyling.**
+**Round #8 build (2026-10-18): sub-phases 1.3 waybar VOX re-skin + 1.4
+picker/fuzzel VOX re-skin — GO.** Every design pick is locked
+(`BUILD_SPEC.md` §3: "Locked tokens", "Locked look rules", "Locked
+bar", "Locked volume slider", "Locked network picker"). Build straight
+from §3 — no separate plan round. **If a §3 line can't be done as
+written** (a GTK node won't take it, a key isn't in the installed man
+page, the slider won't sit inside the VOL field), stop that piece and
+report options — don't improvise a look. Everything else goes ahead.
+Check config keys against the installed man pages (`zcat
+/usr/share/man/...`), not memory. One commit per step.
 
-**Status (2026-10-09, late):** docs sync 55d5ef3; picker rework built
-and committed. User ran the tests — all as expected:
-- VOL: wheel scroll on the readout steps 5% (log shows clean steps);
-  slider opens/closes on click, drag works; Fn+mute shows `MUTE` and
-  empties the gauge. Touchpad on the open slider: up is slow, down is
-  fast — waybar bug (UNIT-1: `pulseaudio_slider.cpp:50` truncates the
-  value instead of rounding). Open question in Phase 1 "Still open".
-- Active-tab hover: moot — the VOX restyle replaces the hover rules.
-- NET: networks only, typing works at once, toggle and click-away work.
-- **Bug to fix (rides along):** after clicking NET without moving the
-  mouse, the cursor drops from pointer to the default arrow and a
-  second click on NET does nothing until the mouse moves 1px. Find
-  which surface gets the click (log it), fix it if there's a clean way
-  (e.g. a zero-distance cursor move after the menu opens — check the
-  dispatcher name in `hl.meta.lua`), and say whether a pointer pass
-  over a window alone closes the menu.
-- **Passphrase test: user picked (a)** — forget TransworldNet and
-  re-add it through the picker (the user knows the WiFi password). Try
-  one wrong password first (check the `WRONG PASSPHRASE` re-prompt and
-  that the failed profile is deleted), then the right one. Ask the user
-  before you forget it.
-- Touchpad slider bug: **left as is** (user, option a) — no issue draft.
-- Still to do: the cursor fix, the passphrase test, the scratch renders
-  below, push, report. After the report, the next Overseer locks weight
-  and tokens on the renders and briefs round #8 (1.3 waybar VOX
-  re-skin + 1.4 picker/fuzzel VOX re-skin).
+0. **Docs sync** — `git diff` the dropped-in docs, read the removed
+   lines (HUD-era §3 sections are condensed on purpose; flag anything
+   of yours that's gone), commit `docs: sync from Overseer (2026-10-18)`.
 
-**Design pivot (2026-10-09) — affects this round:** the user wants the
-VOX console look everywhere (`BUILD_SPEC.md` §3 note; options in
-Phase 1 → "Design pivot"). For this round:
-- Picker rework and VOL/tab behavior tests go ahead — they're function,
-  not style. Keep `fuzzel.ini` as is; don't tune any colors.
-- Skip the style screenshots (`1.2-vol-slider-open`, `1.2-bar30-full`,
-  `1-fix-tab-hover-active`) — that look is being replaced. Keep
-  `1.1-net-menu-x3.png` (rows/format check).
-- **Add: scratch renders for the pivot** (scratch config only, not
-  committed, live bar untouched afterwards). Palette from the reference
-  CSS: panel `#445435`, field `#303f25`, bevel light `#667359`, bevel
-  dark `#1f2719`, text `#cbcfc8`, bright `#ffffff`. Bevels as per-side
-  `border-*-color` (raised = light top/left, dark bottom/right;
-  recessed = reversed). Render the right half of the bar four ways:
-  layout A (raised bar `#445435`, modules recessed, tabs raised
-  buttons, active tab recessed + white) and layout B (recessed bar
-  `#303f25`, modules raised), each with double-strike and with regular
-  weight. Bar troughs `█` in `#1f2719`. No corner ticks. Check GTK3
-  honours per-side border colors on these nodes. Shots:
-  `1-pivot-A-strike-x3.png`, `1-pivot-A-regular-x3.png`,
-  `1-pivot-B-strike-x3.png`, `1-pivot-B-regular-x3.png`, plus the left
-  half (tabs) of A as `1-pivot-A-left-x3.png`. **SCP is dropped and
-  the HUD green is out** (user: one theme only) — no corner ticks, no
-  green anywhere in the renders; the active tab is pressed-in with
-  white text.
+**1.3 — waybar** (`style.css`, plus `config.jsonc` where pango spans
+or formats change):
 
-**Picker rework (2026-10-09, after the user saw it live) — do this
-before the NET tests.** The user wants the menu to list **networks
-only** (the other actions move to a SITE-9 system settings panel built
-later), no clickable blank rows, and it must **close when clicking
-away**. networkmanager-dmenu can't hide its action rows, so it's
-replaced. Steps 3–4 below are superseded by this; steps 1–2 and 5–7
-stand. Spec: `BUILD_SPEC.md` §3 "Locked network picker".
+1. **Weight:** remove the double-strike `text-shadow`. No `text-shadow`
+   left anywhere (grep for it).
+2. **Corner ticks out:** remove the `border-image` rules and delete
+   `frame/tick-symbolic.svg` (empty `frame/` too); `stow -R -t ~ waybar`.
+3. **Tokens:** replace the HUD color definitions with the §3 token set
+   (`panel`, `field`, `bevel-light`, `bevel-dark`, `text`,
+   `text-bright`, `text-dim`, `warning`, `critical`), using whatever
+   mechanism `style.css` already uses (GTK3 `@define-color`; underscores
+   if GTK rejects hyphens). No HUD token left.
+4. **Surfaces:** bar `--panel` with a 1px `--bevel-dark` bottom edge;
+   every module a recessed field (clock, MET, tray included); tabs as
+   raised buttons with `--text`; active tab pressed in (`--field`,
+   reversed bevel, `--text-bright`); hover changes nothing (Adwaita
+   hover still cleared); `SITE-9` raised with `--text-bright`. Keep the
+   current spacing and 30px height.
+5. **Readout colors in config:** gauge troughs and unlit NET steps →
+   `--bevel-dark`; `--warning` `#e6a84f`, `--critical` `#ff7a5c`
+   wherever spans or CSS use them; each hex in a span keeps a comment
+   naming its token.
+6. **Volume slider:** trough `--bevel-dark`, fill `--text`, Adwaita
+   still cleared on all four nodes; the scale's old tick-frame border
+   goes. The open slider must sit inside the VOL field.
+7. **Tooltips** (modules that still have one — NET doesn't): list
+   look — `--field` background, raised 1px bevel, `--text`, radius 0.
+   Check the tooltip CSS node in the installed `waybar-styles(5)`.
 
-- **Script** `waybar/.config/waybar/scripts/net-menu` (in the waybar
-  package, `stow -R`), `nmcli` + fuzzel, runs only when clicked (no
-  polling, nothing left running).
-  - List: `nmcli -t` wifi list (check the fields and the `--rescan`
-    behavior in `nmcli(1)`), skip hidden (empty) SSIDs, one row per SSID
-    (strongest AP), unescape `\:` in `-t` output, sort connected first
-    then by signal.
-  - Row: `▂▄▆█  NAME  SEC` padded into columns, `[ACTIVE]` on the
-    connected one, open networks show `OPEN`. Bars: 4 cells, lit by
-    signal; unlit cells as spaces (fuzzel has no per-character color).
-    Names longer than ~24 chars truncated with `…`. `--width` from the
-    longest row, `--lines` = number of rows (capped ~12).
-  - Pick a saved network → `nmcli connection up`. Pick a new one with
-    security → `fuzzel --password` prompt → connect. **The passphrase
-    must not appear in argv or be written to disk in plain text** —
-    find an nmcli method that takes it on stdin or via a pipe/fd (e.g.
-    `passwd-file` from a pipe) and verify with `ps`/`/proc` while it
-    runs. If there's no clean way, stop and report — don't fall back
-    to `password <pw>` on the command line.
-  - Failed connect: delete the profile the attempt created, reopen the
-    prompt with placeholder `WRONG PASSPHRASE`; Esc cancels cleanly.
-  - Toggle: clicking NET while the menu is open closes it — track the
-    script's own fuzzel (PID/lock file), don't `pkill` every fuzzel.
-  - Close on click-away: try `--keyboard-focus=on-demand` (with
-    exit-on-focus-loss on). Must still take typing immediately when it
-    opens — test both. If on-demand breaks typing, report it.
-- **NET on-click** → the script. Remove the `networkmanager-dmenu`
-  stow package (`stow -D`, then delete it from the repo) and ask the
-  user to run `sudo pacman -Rns networkmanager-dmenu`. fuzzel and
-  `fuzzel.ini` stay.
-- One commit for the script + on-click, one for removing the old
-  package config.
-- NET tests as below, plus: no blank rows, toggle, click-away, and the
-  passphrase test the user picks (see their answer in the relay).
-- Screenshot: `1.1-net-menu-x3.png` (overwrite) and, if tested,
-  `1.1-net-passphrase-x3.png` and `1.1-net-wrong-pass-x3.png`.
+**1.4 — picker** (`fuzzel.ini`, `scripts/net-menu`):
 
-The user took every lean. Locked specs are in `BUILD_SPEC.md` §3
-("Locked network picker", "Locked volume slider", Height). Build it as
-below, one commit per step. Check every config key and flag against the
-installed man pages (`zcat /usr/share/man/...`), not from memory. Hex
-colors in non-CSS files get a comment naming the `style.css` token they
-mirror (same rule as the pango spans).
+8. **fuzzel colors** per §3 (RRGGBBAA): background `303f25ff`; text,
+   input, prompt `cbcfc8ff`; selection `445435ff`; selection-text,
+   match, selection-match `ffffffff`; placeholder, counter `8f9a85ff`;
+   border `1f2719ff`, width 1, radius 0, selection radius 0. Any other
+   color key → `--text`. Each value gets a comment naming its token.
+   Font and `[key-bindings]` unchanged. `fuzzel --check-config`.
+9. **Pointer nudge on NET clicks only:** skip
+   `hl.dsp.cursor.move(hl.get_cursor_pos())` on the F5 restart (the
+   pointer may not be on the bar; if a shorter list leaves it over a
+   window, `follow_mouse` would close the menu). Also confirm the wait
+   for fuzzel's layer has a timeout and say what it is.
+10. **Background rescan after a successful connect:** start `nmcli
+    device wifi rescan` detached so the next open has the full list.
+    Check in `nmcli(1)` whether it blocks or can fail when scans are
+    rate-limited; it must not hold the menu, print errors at the user,
+    or leave anything running. If there's no clean way, report.
 
-1. **Install** (the user runs it — needs sudo):
-   `sudo pacman -S fuzzel networkmanager-dmenu` (from `extra`, not AUR).
-   Confirm binary names with `pacman -Ql`.
-2. **`fuzzel` stow package** — `fuzzel/.config/fuzzel/fuzzel.ini`,
-   locked tokens only: font `DepartureMono Nerd Font` at 11px (pixel
-   size — check the fcft/fontconfig syntax in `fuzzel.ini(5)`);
-   colors as RRGGBBAA — background `15140fff` (`--bg`), text and input
-   `d6d0bdff` (`--text`), border `3a3626ff` (`--border`), selection
-   `3a3626ff` with selection-text `d6d0bdff`, match and selection-match
-   `5fae5aff` (`--accent`), placeholder and counter `8f8a76ff`
-   (`--text-dim`); border width 1, radius 0, selection radius 0. Any
-   other color key fuzzel has → `--text`. `stow -t ~ fuzzel`. Commit.
-3. **`networkmanager-dmenu` stow package** —
-   `networkmanager-dmenu/.config/networkmanager-dmenu/config.ini`:
-   `dmenu_command = fuzzel --anchor top-right --x-margin 8 --y-margin N`
-   (no `--dmenu`; it adds that itself); `wifi_chars = ▂▄▆█` and a
-   `format` that uses `{bars}`; `[dmenu_passphrase] obscure = True`.
-   Find N first: open fuzzel with `--y-margin 8` and check with
-   `hyprctl layers` whether it lands 8px under the bar or 8px from the
-   screen edge — set N so the gap under the 30px bar is 8px.
-   `stow -t ~ networkmanager-dmenu`. Commit.
-4. **NET on-click** — `"on-click": "networkmanager_dmenu"` on the
-   network module. Commit.
-5. **Volume slider (V1)** — slider `"orientation": "horizontal"`;
-   pulseaudio `"scroll-step": 5`; CSS: trough 80×4px (`min-width`/
-   `min-height`), background `--border`; highlight 4px tall, fill
-   `--text`; knob stays hidden; on scale, trough, highlight and knob set
-   `border: none`, `outline: none`, `box-shadow: none`,
-   `background-image: none` — **except the scale's `border`**, which
-   draws the tick frame and stays (corrected after UNIT-1 caught it; see
-   "Progress"). Remove the stale "diagnostic test /
-   restore mute" comment in `config.jsonc` if it's still there. Commit.
-6. **Bar height** — `"height": 30`. Commit.
-7. **Active tab hover** — `#workspaces button.active:hover` keeps its
-   ticks and number `--accent`. Commit.
-
-**Test** (restart waybar, log must be clean):
+**Test** (restart waybar, log clean):
 - `hyprctl layers`: bar 1920×30.
-- VOL: reveal on click, drag sets volume, scroll changes it 5% a step
-  (on the touchpad too — add `smooth-scrolling-threshold` only if it
-  jumps, and report the value), mute empties the gauge. 3x crop of the
-  open slider: no light border, blue outline or gradient left.
-- NET: run `networkmanager_dmenu` yourself to screenshot the open menu
-  (placement, palette, `▂▄▆█`, radius 0), then close it. Then ask the
-  user to click NET and connect for real while you watch the logs. A
-  passphrase prompt only shows for a network that isn't saved — ask
-  the user whether they want to test one (e.g. forget and re-add a
-  network they know the passphrase for); don't forget a connection
-  without asking. Report what they saw, including whether a failed
-  connect shows anything (no notification daemon yet — expected
-  silent; report, don't install one).
-- Hover on the active tab: still `--accent`.
+- 3x crops: bevels as specced, no Adwaita line/outline/gradient, no
+  bright column after the gauges, no tick fragments.
+- Flagged states from a scratch copy (live bar untouched): PWR warning
+  and critical, `NET: OFFLINE`.
+- Slider open: inside the VOL field.
+- Picker: open (instant), type a few letters (matches turn white),
+  F5 with the pointer on the menu and with it on empty desktop (menu
+  stays open), right-click NET. Passphrase prompt look: run the
+  script's prompt step on its own — no connect, no profile changes.
+- The user reconnects to TransworldNet once (ask first) → the next
+  open shows the full list.
 
-**Screenshots** in `~/Pictures/site-9-phase1/`: `1.1-net-menu-x3.png`
-(crop of the menu area + the bar above it), `1.1-net-passphrase-x3.png`
-(if tested), `1.2-vol-slider-open-x3.png`, `1.2-bar30-full-x3.png`
-(whole bar, left and right halves are fine as two files),
-`1-fix-tab-hover-active-x3.png`.
+**Screenshots** in `~/Pictures/site-9-phase1/`:
+`1.3-bar-left-x3.png`, `1.3-bar-right-x3.png`, `1.3-vol-open-x3.png`,
+`1.3-states-x3.png`, `1.4-net-menu-x3.png`, `1.4-net-filter-x3.png`,
+`1.4-net-passphrase-x3.png`.
 
-**Then** push to `origin/main` and end with the report block (pushed
-hash + screenshot paths). After this round Phase 1 closes on the user's
-on-screen confirm of the whole bar.
-
-**Progress (mid-round, 2026-10-09):** 90ef4f3 docs sync (removed lines
-checked), c854b79 volume slider V1, b6925bc height 30, 63ece26 active
-tab hover. Waiting on the user's install for steps 1–4, then the user's
-clicks for the tests. UNIT-1 kept the border on `#pulseaudio-slider`
-(it draws the tick frame) and cleared only outline/box-shadow/
-background-image there — **approved**: the brief was wrong, the spec
-was right. Leftover `dmenu-open.png` moved out of the repo root to
-`~/Pictures/site-9-phase1/1-prev-hyprlauncher-dmenu-open.png`.
-**Notices:** mako runs but libnotify isn't installed, so picker
-notices are silent — left that way (option (a), applied by default;
-the user didn't pick otherwise).
-
-**After steps 1–7 (UNIT-1, mid-round):** built and committed, bar
-1920×30, log clean. Picker built as networkmanager-dmenu first; the
-user saw it live and asked for the rework above. UNIT-1's format
-options A/B/C for the cut-off bars are superseded by the script's
-padded bars-first format. `y-margin` result (screen edge vs bar) still
-to report.
+**Then** push to `origin/main` and report (pushed hash, screenshot
+paths). Also report `pacman -Q fuzzel` and which `keyboard-focus` mode
+`net-menu` uses. After this round, **Phase 1 closes on the user's
+on-screen confirm of the whole bar and the picker.**
 
 ## Phase 1 — Waybar restyle
 
-Goal: match the **Half-Life / Black Mesa** direction (see `BUILD_SPEC.md`
-§3) — replacing the old placeholder "generic dark minimal" styling, not
-just building on top of it.
+Goal: the bar (and its network picker) in the **Half-Life VOX console**
+look (`BUILD_SPEC.md` §3) — replacing the old placeholder styling and,
+since 2026-10-09, the HUD-era restyle too.
+
+**Current look:** the VOX re-skin locked 2026-10-18 — `BUILD_SPEC.md`
+§3 is the source of truth. Much of "Decided so far" below is HUD-era
+history (green accent, corner ticks, double-strike), kept for the
+reasoning behind it; where it disagrees with §3, §3 wins.
 
 **Decided so far:**
 - Color direction: fusion — HEV-style green as primary accent, Black Mesa
@@ -482,195 +383,66 @@ just building on top of it.
   This replaces the earlier "segmented value bars" idea with a fill bar
   and the dim-label rule with one-color readouts.
 
-**Still open — remaining sub-phases (earlier Phase 1 work predates
-sub-phase numbering):**
-- **Round #7 plan review (2026-10-09, THE OVERSEER): 1.1 + 1.2.**
-  Verdict: approved in structure. The checks are thorough and the
-  build steps (one commit per piece, real connect test, screenshots,
-  push) are right. Build waits on the picks below. Machine facts from
-  the plan are in `BUILD_SPEC.md` §6.
-
-  **1.1 Network picker** (user request: click NET → list of networks,
-  passphrase prompt if needed; NET has no drawer, so `on-click` is
-  safe). N2 `nm-applet` stays rejected.
-  - **N1a** `networkmanager-dmenu` + **fuzzel** (install fuzzel +
-    networkmanager-dmenu, ~0.4 MB): list top-right under the bar, signal
-    shown per network, masked passphrase via `fuzzel --password`, no
-    process left running. **THE OVERSEER's lean.**
-  - **N1b** `networkmanager-dmenu` + hyprlauncher `-m`: menu stuck in
-    the screen centre, no prompt text, passphrase in a separate pinentry
-    window that tiles (needs a rule in the unstowed `hyprland.lua`), and
-    may not work at all (stdout unconfirmed). Weakest option.
-  - **N3** `nmtui connect` in a floating kitty (tested placement, no
-    installs): a terminal screen in newt blue/grey, not a list; needs a
-    toggle wrapper against double-clicks.
-  - N1c (wofi) only flagged by UNIT-1 — not offered: it would be a third
-    launcher on the machine for one menu.
-
-  Sub-choices if N1a:
-  - **Styling until Phase 3.** fuzzel's defaults are Solarized light
-    with a 10px border radius — the radius breaks `BUILD_SPEC.md` §3, so
-    some override is required, not optional. (a) A minimal `fuzzel`
-    stow package (`fuzzel.ini`) with locked tokens only: font
-    `DepartureMono Nerd Font` at 11px, background `--bg`, text `--text`,
-    1px `--border` border, radius 0, selected row `--border` background
-    with `--text`, match highlight `--accent`. Phase 3 refines this same
-    file. (b) The same values as flags inside `dmenu_command`, scoped to
-    the picker only. **Lean (a).** fuzzel can't do the double-strike, so
-    the menu text is the light weight until Phase 3 decides otherwise.
-  - **Placement:** top-right under the bar, 8px margins (UNIT-1's
-    proposal). **Lean: as proposed.**
-  - **Wifi icons:** (a) Nerd wifi glyphs (soft, like the rejected S2
-    icons) or (b) `▂▄▆█` via `wifi_chars` + `{bars}`, matching NET.
-    **Lean (b).**
-  - **Package source:** (a) `extra` — 2.6.3 now, 2.7.2 already in
-    `extra-testing` and arriving through normal updates; (b) AUR `-git`.
-    **Lean (a).**
-  - **Super+R:** installing fuzzel doesn't have to move the launcher.
-    (a) Leave Super+R on hyprlauncher until Phase 3 (when `hypr` gets
-    stowed and fuzzel gets real styling); (b) switch now. **Lean (a)** —
-    the §4 launcher question stays open until then.
-
-  **1.2 Volume slider** (now: vertical 14×24 trough, Adwaita border +
-  blue outline, forces the bar to 36px). Note: scroll-on-VOL works with
-  **either** option — pulseaudio scrolls natively; V1 only adds a drag
-  gauge on top.
-  - **V1** fix the slider: horizontal, drawer kept (click VOL reveals
-    it). **THE OVERSEER's lean** — the user asked for a slider, and this
-    keeps scroll too. Sub-choices: width 60 / **80** / 100px; height 2 /
-    **4** / 6px (lean 80×4, as in UNIT-1's render); fill **cream
-    `--text`** (lean — follows the locked one-color readout rule; VOL is
-    cream everywhere else) or `--accent` green (today's fill; §3 uses
-    `--accent` for the active workspace).
-  - **V2** drop the slider: `group/volume`, the slider block, its CSS
-    and the stale drawer comments go; `pulseaudio` goes straight into
-    `modules-right`. Loses drag-to-set. Left-click: nothing, or mute
-    toggle (reverses the 2026-09-21 "mute not on the bar" call — that
-    was made because of the drawer conflict, which V2 removes).
-  - **Scroll step** (both): 1% (default) or **5%** (lean — same as the
-    media keys; touchpad feel checked at build).
-
-  **Bar height** (both): 24px (natural — ticks sit nearly against the
-  bar edges), **30px** (lean — the original spec, frames get a gap from
-  the bar edge; see `1.2-v2-scroll-bar30-right-x3.png`), or keep 36px.
-
-  **Small one (rides along):** hovering the active workspace tab turns
-  its number from `--accent` to `--text`. §3 says the active tab is
-  `--accent`. **Lean: keep `--accent` on hover** (one CSS rule).
-
-  **Choices made (user, 2026-10-09): "your lean" — all of them.** N1a
-  (fuzzel + `extra/networkmanager-dmenu`), stopgap `fuzzel.ini` with
-  locked tokens (a), top-right under the bar, `▂▄▆█`, Super+R stays on
-  hyprlauncher until Phase 3; V1 at 80×4 in cream `--text`, scroll 5%;
-  bar 30px; active tab keeps `--accent` on hover. Locked in
-  `BUILD_SPEC.md` §3–§4; build brief in "Next up for UNIT-1".
-
-  Review notes that bind the build:
-  - V1 CSS: override Adwaita on every node of the scale — `border`,
-    `outline`, `box-shadow` and `background-image: none` on the scale,
-    trough, highlight and knob — then confirm with a 3x crop that no
-    light border, blue outline or gradient remains.
-  - V1: confirm scrolling on VOL still changes volume inside the drawer
-    group.
-  - N1a: check `y-margin` against the bar (screen edge vs reserved
-    area) and set it so the menu sits just under the bar; check the
-    fuzzel flag/key names in the installed `fuzzel.ini(5)`, not from
-    memory.
-  - N1a: connect/fail notices need a notification daemon (mako isn't
-    installed) — silent for now, that's expected; report it, don't
-    install one.
-  - Real connect test includes a passphrase network, and a wrong
-    passphrase (check the failure is visible somehow, or report that
-    it isn't).
-- **Picker notices (found mid-round #7, 2026-10-09):** mako 1.11.0 is
-  installed and running unstyled; libnotify isn't, so networkmanager-
-  dmenu's connect/fail notices are silent. Options: (a) leave silent
-  until Phase 3 — NET on the bar already shows connected / disconnected
-  (red), **THE OVERSEER's lean**; (b) install `libnotify` now and accept
-  mako's blue default popups until Phase 3; (c) install it plus a
-  stopgap mako config with locked tokens (pulls Phase 3 work forward).
-  Default if the user doesn't pick: (a).
-- **Design pivot picks (user, 2026-10-09):** layout **A** — raised bar
-  `--panel`, recessed modules, workspace tabs as raised buttons, the
-  active one pressed in with white text. SCP leftovers: `SITE-9` tag
-  kept as the machine's name, styled as a plain raised title; `CPU:`
-  labels kept; MET kept as uptime. Picker tag: the user took the lean
-  "dim `connected`", **but fuzzel can't color part of a row** (no
-  markup) — THE OVERSEER's mistake. Re-ask in round #8 (1.4): plain
-  `connected` / keep `[ACTIVE]` / no tag. `[ACTIVE]` stays until then.
-  Still open: weight (double-strike vs regular) on the renders.
-- **Design pivot, update (user, later 2026-10-09):** "Ditch the SCP
-  right now", hyper-focus on the VOX picture; loved the blocky button
-  style in THE OVERSEER's mockup; mixing themes causes inconsistency;
-  update the README (done). Read as settled: SCP aesthetic and the
-  HEV/HUD look dropped, so **no HUD green accent and no corner ticks**
-  (active = pressed button + white text); amber/red stay for flagged
-  states only. `BUILD_SPEC.md` §3 rewritten around the VOX direction
-  with the proposed token table. Still open (leans in bold):
-  - Bar layout from the mockup: **A** (raised bar, recessed modules) /
-    B (recessed bar, raised modules) — confirm on the renders.
-  - Font weight: double-strike / regular — on the renders. **Keep
-    Departure Mono 11px** either way.
-  - On-screen SCP leftovers: `SITE-9` tag — **keep as the machine's
-    name, styled as a plain raised title** / drop it. `CPU:`-style
-    labels — **keep, they're just labels**. MET `T+DDD:HH:MM` — **keep
-    as uptime** / drop. Picker `[ACTIVE]` — keep / **dim `connected`**
-    / no tag (listed first only).
-- **Design pivot: VOX console look everywhere** (user, 2026-10-09,
-  reference `index.css` in project context). Proposed tokens, taken
-  exactly from the reference: panel `#445435` (raised/window), field
-  `#303f25` (recessed), bevel light `#667359` (the reference's
-  `#687360` merged in — visually identical), bevel dark `#1f2719`, text
-  `#cbcfc8` (its 75% white flattened onto the field), bright text
-  `#ffffff` (active/selected/titles), match highlight `#667359`. A dim
-  text token for placeholders/inactive isn't in the reference —
-  proposed `#8f9a85`. Bevels are plain per-side borders: no shadow, no
-  gradient, §2-clean. Options (THE OVERSEER's lean in bold, picks
-  pending — confirm on UNIT-1's real renders):
-  - Bar structure: **A** raised bar, recessed modules, tabs as raised
-    buttons, active tab pressed in / B recessed bar, raised modules.
-  - Accent: **none** — active = pressed bevel + white text (pure VOX) /
-    keep HUD green `#5fae5a` for the active tab.
-  - Warning / critical: **keep `#c98a3c` / `#b8452e`**, check contrast on
-    olive in the render.
-  - Corner ticks: **drop** (bevels do the framing) / keep both.
-  - Font: **keep Departure Mono 11px**; weight double-strike vs regular —
-    decide on the renders (the reference is regular-weight).
-  - SCP content (`SITE-9` tag, `FIELD:` labels, MET, `[ACTIVE]`):
-    **keep** — the visual changes, the content stays.
-  - Limits: fuzzel, mako and Hyprland window borders take one border
-    color only (no bevel) — they'd get a flat `#1f2719` border; GTK
-    apps and waybar get real bevels. kitty is colors only.
-  - Rollout once locked: re-skin waybar + picker as the last Phase 1
-    round; Phases 2–3 apply the same tokens to GTK, kitty, fuzzel,
-    mako, hyprlock. The old Phase 2 terminal questions (bevels for the
-    terminal only? lighter register for the terminal?) are answered by
-    "everywhere".
-- **Volume slider touchpad bug** (found 2026-10-09): waybar's
-  `pulseaudio/slider` truncates its value (`pulseaudio_slider.cpp:50`),
-  so touchpad swipes on the open slider go up slowly and down fast.
-  Wheel, drag and scroll-on-readout are fine. No duplicate found in a
-  quick search of open Alexays/Waybar issues (THE OVERSEER, 2026-10-09).
-  **Decided (user, 2026-10-09): (a) leave it.** It is a code issue —
-  the fix is about one line in waybar (round instead of truncate); an
-  upstream report or PR would reach this machine on the next
-  waybar-git update if the user ever wants it. Options were: (a) leave
-  it; (b) report it upstream — UNIT-1 drafts
-  the issue (source line, repro, expected rounding), the user files it
-  or has THE OVERSEER file it through the user's GitHub connector;
-  (c) patch locally (rejected in advance: a maintained patch on an AUR
-  -git build).
+**Still open:**
+- **1.3 + 1.4 (round #8):** VOX re-skin of waybar and the picker —
+  brief in "Next up". All design picks locked 2026-10-18.
+- **Phase 1 closes** when round #8 is built and the user confirms the
+  whole bar and the picker on screen.
 - **SITE-9 system settings panel** (user request 2026-10-09): a
-  self-built settings surface in the same BMRF style, which takes the
-  network actions dropped from the picker (WiFi/networking/Bluetooth
-  on-off, connection editing, deleting connections, rescan, show
-  password) and likely more. Not scoped and not placed in a phase yet —
-  decide where it goes when Phase 1 closes. Until then those actions
-  are only reachable via `nmcli`/`nmtui`.
-- Phase 1 closes when 1.1 and 1.2 are built and the user confirms the
-  whole bar on-screen.
+  self-built settings surface in the VOX style that takes the network
+  actions dropped from the picker (WiFi/networking/Bluetooth on-off,
+  connection editing, deleting connections, show password) and likely
+  more. Not scoped or placed in a phase — **decide where it goes when
+  Phase 1 closes.** Until then those actions are only reachable via
+  `nmcli`/`nmtui`.
+- **Tab hover:** set to "no change" by THE OVERSEER (2026-10-18), not
+  asked — the user can change it after seeing the bar live.
 
 **Resolved:**
+- **Round #7 (1.1 picker + 1.2 volume) — built, tested, pushed
+  (`b4352b8`, 2026-10-18).** Approved by THE OVERSEER. Commits from
+  `cf4319a`: 90ef4f3 / eb72659 / 55d5ef3 / 42b792b docs syncs (removed
+  lines checked each time); c854b79 volume gauge 80×4 cream, Adwaita
+  cleared, 5% scroll; b6925bc height 30; 63ece26 active tab keeps
+  accent on hover (moot under VOX); 5b8ca6b stopgap `fuzzel.ini`;
+  1f1d77e / 61ea7f8 networkmanager-dmenu (then replaced); 2876cec
+  `net-menu` script behind NET; 088cf43 networkmanager-dmenu removed
+  (also uninstalled); c341142 pointer hand-back after fuzzel opens,
+  menu 2 chars wider (`[ACTIVE]` was cut off); b4352b8 instant open
+  from NM's cache, F5 / right-click rescan, NET tooltip off. Results:
+  - Cursor/second-click bug: traced with `WAYLAND_DEBUG` to Hyprland
+    giving the new fuzzel layer pointer focus; fixed with a
+    zero-distance pointer move (`BUILD_SPEC.md` §6).
+  - Passphrase test (a), run by the user 2026-10-18: wrong password →
+    `WRONG PASSPHRASE` re-prompt, failed profile deleted; right password
+    connected; one TransworldNet profile left; the password never
+    appeared in any argv (watcher log). No popups from the picker.
+  - Slow open traced to nmcli's 30 s auto-rescan (hung ~30 s twice);
+    fixed by opening from the cache. Cache can be thin right after a
+    reconnect → background rescan after connect added in round #8.
+  - Scratch renders of layouts A/B × double-strike/regular
+    (`1-pivot-*-x3.png`); live bar untouched. Ignore the two old
+    `1.1-net-menu-alt-*` files in `~/Pictures/site-9-phase1/`.
+- **Design picks for the VOX re-skin (user, 2026-10-18): "all leans".**
+  Regular weight everywhere (double-strike and its §2 exception
+  retired); render details kept (inactive tabs `--text`, `SITE-9`
+  raised + white, 1px bevels, dark bar bottom edge); warning/critical
+  brightened to `#e6a84f` / `#ff7a5c` (old red was 2.1:1 on the field);
+  rest of the token table locked as proposed; picker keeps `[ACTIVE]`;
+  fuzzel colors mirror the reference's drop-down list; background
+  rescan after connect. Earlier: layout A, SCP leftovers kept as
+  content, no accent, no corner ticks (2026-10-09). All in
+  `BUILD_SPEC.md` §3.
+- **User picks during round #7 (2026-10-09/18):** picker lists networks
+  only, closes on click-away, NET toggle; passphrase test (a); notices
+  silent until Phase 3 (option (a)); touchpad slider bug left as is
+  (waybar's `pulseaudio_slider.cpp:50` truncates instead of rounding —
+  a one-line upstream fix if ever wanted; no issue filed); instant open
+  + both refresh triggers; NET tooltip off.
+- **Round #7 plan review and pivot options (2026-10-09):** the long
+  option lists (N1a/N1b/N3, V1/V2, bar heights, pivot A/B, accent,
+  ticks, notices) are settled; full text in git history (docs as of
+  `42b792b`).
 - Fix pass (2026-10-09): 26db176 ticked workspace tabs (active =
   `--accent`), 3ad0eb1 battery thresholds 29/14, 49b5ab6 fixed-width
   percentages via fmt `{x:>3}`. Log clean, 1920×36. Approved on
@@ -737,7 +509,10 @@ Two open questions for when Phase 2 actually starts, not now:
 Not scoped further than this — still gated behind Phase 1 closing first.
 
 ## Phase 3 — Shell polish
-Not scoped.
+Not scoped. Carry-overs: `fuzzel.ini` already gets VOX colors in 1.4
+(the launcher question in `BUILD_SPEC.md` §4 is still open); mako is
+unstyled, and kitty's notices (e.g. Claude Code's "waiting for your
+input") show in mako's default blue until it gets a config.
 
 ## Phase 4 — Motion
 Not scoped. User (2026-10-09): wants animations later, in the VOX
@@ -756,6 +531,25 @@ over from waybar's decisions.
 ## Log
 
 _(newest first, short entries)_
+
+- 2026-10-18 — **Round #7 approved; VOX picks locked; round #8 briefed.
+  New Overseer chat.** Picked up from the 2026-10-09 handoff (Project
+  docs matched UNIT-1's `42b792b` sync). UNIT-1's report: 13 commits,
+  pushed `b4352b8`; cursor/second-click bug fixed (Hyprland gives a new
+  layer pointer focus; zero-distance pointer move); passphrase test
+  passed (re-prompt, cleanup, no password in argv); slow open fixed by
+  opening from NM's cache, F5 / right-click NET rescan; NET tooltip
+  off; networkmanager-dmenu uninstalled; scratch renders of layouts
+  A/B in both weights. Review: approved, one ride-along fix (skip the
+  pointer nudge on F5). THE OVERSEER measured the renders: tokens
+  pixel-exact; red `#b8452e` only 2.1:1 on the field. User: "all
+  leans" — regular weight everywhere (double-strike and its §2
+  exception retired), render details kept, warning/critical brightened
+  to `#e6a84f` / `#ff7a5c`, tokens locked, `[ACTIVE]` kept, fuzzel
+  colors from the reference's drop-down list, background rescan after
+  connect. `BUILD_SPEC.md` §3 rewritten as the locked VOX spec (HUD-era
+  sections condensed under "Retired"), §4–§6 updated. Round #8 brief
+  (1.3 + 1.4) in "Next up".
 
 - 2026-10-09 — **Layout A picked; Overseer handoff.** User picked bar
   layout A, took the leans on the SCP leftovers (SITE-9 tag as a plain

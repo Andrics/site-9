@@ -54,23 +54,20 @@ shadows / off-palette decoration by this spec: override them
 (`box-shadow: none`, `outline: none`, explicit borders) wherever they
 show up.
 
-**Exception — double-strike text weight (user-approved 2026-10-06).**
-Exactly `text-shadow: 1px 0 0 currentColor` is allowed: zero blur, 1px
-horizontal offset, same color as the text. It renders as a 1px-wider
-stroke (the font has no bold), not as a shadow, and it's static with
-negligible cost. Allowed for font weight only. Any other `text-shadow`,
-any blur, any offset in another direction or color, and any
-`box-shadow` stay banned.
+**No `text-shadow` of any kind.** The double-strike weight exception
+(`text-shadow: 1px 0 0 currentColor`, approved 2026-10-06) was
+**retired 2026-10-18** with the move to regular weight (§3). Any blur,
+any `box-shadow`, any `text-shadow` stays banned.
 
 ## 3. Design language: Half-Life VOX console
 
 **Direction (user, 2026-10-09):** one look, everywhere — the
 [suchipi/half-life-vox-console](https://github.com/suchipi/half-life-vox-console)
-style (its `index.css` is in project context; picture in chat
-2026-10-09). Valve-era olive panels, two-tone bevelled edges, blocky
-buttons, monospace text. **The SCP report aesthetic and the HEV/HUD
-look are dropped** — the user wants a single theme so nothing reads
-inconsistent. Animations come later (Phase 4), in the same style.
+style (its `index.css` is in project context). Valve-era olive panels,
+two-tone bevelled edges, blocky buttons, monospace text. **The SCP
+report aesthetic and the HEV/HUD look are dropped** — one theme only, so
+nothing reads inconsistent. Animations come later (Phase 4), in the same
+style.
 
 What defines it (from the reference CSS):
 - Mid-tone olive surfaces, no near-black: a raised panel tone and a
@@ -81,277 +78,195 @@ What defines it (from the reference CSS):
 - Buttons and tags are raised blocks; text fields, lists and output
   areas are recessed.
 - Off-white text; pure white for the selected/active item and titles.
-  Selection and match highlights are flat background swaps, nothing
-  glowing.
+  Selection highlights are flat background swaps, nothing glowing.
 
-**Locked so far (user, 2026-10-09):**
-- **Bar layout A:** bar background `--panel` (raised); every module a
-  recessed field; workspace tabs are raised buttons, the active tab is
-  pressed in (recessed) with `--text-bright` text.
-- **No accent color** and **no corner ticks** — bevels do the framing,
-  pressed-in + white marks "active". Amber/red only for flagged states.
-- `SITE-9` tag stays as the machine's name, styled as a plain raised
-  title. `CPU:`-style labels and the MET uptime clock stay.
-- Font stays Departure Mono 11px; weight decided on the renders.
+**Rule that still holds: palette, accent and fonts are NOT decided by
+the agent** — they're personal choices, made by asking the user. Propose
+2–3 concrete options and ask; record the pick here once made.
 
-**Status:** tokens below are proposed and get locked on UNIT-1's real
-renders (`PHASES.md` → Phase 1 "Design pivot"). Until then the old
-HUD-era sections further down stay on screen, but they're **being
-replaced** — their technical findings (font pixel grid, double-strike,
-glyph crispness, corner-tick technique, GTK quirks) remain valid
-reference.
+### Locked tokens (user, 2026-10-18 — on UNIT-1's renders)
 
-| Token (proposed) | Value | Use |
-|---|---|---|
-| `--panel` | `#445435` | raised surfaces, window/bar background, buttons |
-| `--field` | `#303f25` | recessed surfaces: fields, lists, pressed buttons |
-| `--bevel-light` | `#667359` | light edge (raised top/left, recessed bottom/right); also match highlight |
-| `--bevel-dark` | `#1f2719` | dark edge; also bar troughs |
-| `--text` | `#cbcfc8` | normal text (the reference's 75% white, flattened) |
-| `--text-bright` | `#ffffff` | active/selected item, titles |
-| `--text-dim` | `#8f9a85` | placeholders, inactive (not in the reference — proposed) |
-| `--warning` / `--critical` | `#c98a3c` / `#b8452e` | flagged states only (kept from the HUD era, contrast to check) |
+Taken from the reference CSS, checked pixel-exact on the renders.
+Contrast is against `--field`, where most text sits.
+
+| Token | Value | Use | Contrast on `--field` |
+|---|---|---|---|
+| `--panel` | `#445435` | raised surfaces: bar background, buttons, `SITE-9`, selected list row | — |
+| `--field` | `#303f25` | recessed surfaces: modules, lists, menus, pressed buttons | — |
+| `--bevel-light` | `#667359` | light edge (raised top/left, recessed bottom/right) | — |
+| `--bevel-dark` | `#1f2719` | dark edge; gauge troughs, unlit NET steps; flat border of single-color tools | — |
+| `--text` | `#cbcfc8` | normal text (the reference's 75% white, flattened) | 7.1:1 |
+| `--text-bright` | `#ffffff` | active/selected item, titles, typed-letter matches | 11.3:1 |
+| `--text-dim` | `#8f9a85` | placeholders only (e.g. `PASSPHRASE`) — **not on `--panel`** (2.8:1) | 3.8:1 |
+| `--warning` | `#e6a84f` | flagged state | 5.4:1 |
+| `--critical` | `#ff7a5c` | flagged state | 4.4:1 |
+
+Warning/critical were brightened from the HUD-era `#c98a3c` / `#b8452e`
+(user, 2026-10-18): the old red was 2.1:1 on `--field`, too hard to
+read (`NET: OFFLINE`).
 
 Single-color-border tools (fuzzel, mako, Hyprland window borders) can't
 bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
 
-**Rule that still holds: palette, accent and fonts are NOT
-decided by the agent** — they're personal choices, made by asking the user, not
-assumed by the agent. See `PHASES.md` Phase 1 for the open questions and
-where decisions get recorded once made. Don't invent a palette and present
-it as done — propose 2–3 concrete options and ask which lands.
+### Locked look rules (user, 2026-10-09 and 2026-10-18)
 
----
+- **Bevels 1px**, radius 0, no shadow, no gradient.
+- **No accent color, no corner ticks.** Bevels do the framing;
+  pressed-in + `--text-bright` marks "active".
+- **Flagged states are text color only**, one color per readout: label,
+  icon, gauge fill and value all turn `--warning` / `--critical`
+  together. Backgrounds and bevels don't change.
+- **Lists and menus** (picker, tooltips): `--field` background,
+  selected row `--panel` with `--text-bright`, matched letters
+  `--text-bright`.
+- **Font: DepartureMono Nerd Font, 11px, regular weight, everywhere**
+  (user, 2026-10-18). Double-strike is retired: only waybar could draw
+  it (fuzzel, mako, kitty and GTK apps can't), so it would have meant
+  two weights on screen; it also clogged the `W` in `PWR` and left a
+  bright 1px column after every gauge. Regular matches the reference.
 
-*HUD-era sections (being replaced by the VOX lock):*
+### Locked bar (waybar)
 
-### Locked palette (decided Phase 1 — 2026-09-20) — HUD era, being replaced
+- **Layout A** (user, 2026-10-09; confirmed on renders 2026-10-18): bar
+  background `--panel`, 1px `--bevel-dark` bottom edge (the bar is
+  raised and sits flush at the top, so only its dark edge shows).
+  Every module is a recessed field — clock and MET included; the tray
+  is one field around all its icons.
+- **Workspace tabs** are raised buttons with `--text` (not dim — dim is
+  unreadable on `--panel`). The active tab is pressed in: recessed
+  bevel, `--field` background, `--text-bright`.
+- **Tab hover changes nothing** — default set by THE OVERSEER
+  (2026-10-18), not asked; the user can change it after seeing the bar
+  live. Adwaita's hover decoration stays cleared (§2).
+- **`SITE-9`**: the machine's name, a raised block with `--text-bright`.
+- **Layout (L2):** left — `SITE-9`, workspaces. Center — clock, MET.
+  Right — CPU, RAM, VOL, NET, PWR, tray.
+- **MET:** uptime as `T+DDD:HH:MM`, every 60s, no seconds.
+- **Tray:** icons 14px, keep their app colors. Hidden when empty.
+- **Height: 30px**, set explicitly (natural height is 24px).
+- **Readouts:** icon, label, gauge, value — `◄ VOL: ██████████  60%`,
+  `▂▄▆█ NET: 82%`, `⏻ PWR: ██████████  18%`; CPU/RAM have no icon.
+  `PWR:` becomes `CHG:` while charging (no lightning glyph). Muted:
+  `◄ VOL: MUTE`, no gauge. Ethernet: `NET: LINK`, no steps.
+  Percentages fixed-width (fmt `{x:>3}`).
+- **Gauges (VOL, PWR, CPU, RAM):** DOS fill, 10 cells of `█`, lit cells
+  in the readout's color, unlit cells `█` in `--bevel-dark`. NET steps
+  `▂▄▆█`: lit in the readout's color, unlit in `--bevel-dark`. No NET
+  gauge.
+- **Thresholds:** PWR `--warning` <30%, `--critical` <15% (waybar's ≤
+  values: `"warning": 29`, `"critical": 14`); NET `--critical` on
+  disconnect (`NET: OFFLINE`).
+- Hex colors inside pango spans or non-CSS files get a comment naming
+  the token they mirror.
 
-Fusion direction: HEV-style green as the primary signal color, Black Mesa
-institutional olive/tan as the structural base.
+### Locked volume slider (decided Phase 1.2)
 
-| Token | Value | Use |
-|---|---|---|
-| `--bg` | `#15140f` | main background, warm near-black |
-| `--border` | `#3a3626` | structural borders, module dividers |
-| `--text` | `#d6d0bd` | primary text |
-| `--text-dim` | `#8f8a76` | inactive/secondary text |
-| `--accent` | `#5fae5a` | primary accent (HUD green) |
-| `--warning` | `#c98a3c` | warning state |
-| `--critical` | `#b8452e` | critical state |
+- Kept as a drawer: click VOL reveals `pulseaudio/slider`; it sits
+  inside the VOL field.
+- Horizontal gauge, **80×4px**: trough `--bevel-dark`, fill `--text`,
+  no knob. Adwaita decoration removed on scale, trough, highlight and
+  knob (`border`, `outline`, `box-shadow`, `background-image`). (The
+  scale's border used to draw the tick frame; with ticks gone it has no
+  job.)
+- Mute empties the gauge (`zero-on-mute`, default). Mute itself is the
+  `XF86AudioMute` key.
+- **Scroll on VOL: 5% per step**, same as the media keys. Touchpad
+  swipes on the open slider are uneven (waybar truncation bug, left as
+  is — `PHASES.md`).
 
-Font: Departure Mono Nerd Font (`otf-departure-mono-nerd`, AUR — not
-`[extra]`, Nerd Fonts patch v3.4.0) — swapped 2026-09-21 from JetBrains
-Mono Nerd Font per Overseer direction, applied to waybar. Carry this font
-into every later phase rather than re-deciding per app.
+### Locked network picker (decided Phase 1.1, updated 2026-10-18)
 
-- **Family confirmed by the user 2026-10-06**, with an ask for a bolder,
-  MS-DOS / terminal blocky feel — met by the 11px + double-strike lock
-  below. Live on the bar since 2026-10-09.
-- **Exact family name:** `DepartureMono Nerd Font` (no space). Use that
-  in CSS; the spaced name only works through fontconfig fuzzy matching.
-- **Pixel grid:** 550 units per em, 50 units per pixel, so the font is
-  drawn on an **11px grid**. It renders pixel-crisp only at multiples of
-  11px (11, 22, …). Other sizes (e.g. the current 13px) give uneven
-  strokes. Pick sizes on the grid unless a deliberate exception is
-  decided and recorded here.
-- **Locked 2026-10-06: 11px, double-strike weight** (`text-shadow: 1px
-  0 0 currentColor`, the §2 exception). Crisp 2px strokes, the
-  MS-DOS/terminal blocky look the user asked for.
-- **Weight background:** only Regular is installed (confirmed with `fc-list`
-  2026-10-06: Regular in the Nerd Font, Nerd Font Mono, and Nerd Font
-  Propo variants). Tested ways to look bolder, at 11px:
-  - Synthetic bold (`font-weight: bold`): bolder but smeared, with gray
-    fringe pixels. Fails the pixel-crisp standard.
-  - Double-strike (`text-shadow: 1px 0 0 currentColor`): crisp 2px
-    strokes, no layout change. **But in GTK3 the doubled copy is always
-    drawn in the widget's CSS color and ignores pango span colors**, so
-    anything colored by a span (the dim `FIELD:` labels, dim bar parts)
-    gets a bright extra column. Also uses the `text-shadow` property,
-    which §2 rules out unless an exception is decided.
-  - 22px: an exact 2× of 11px — bigger, not bolder.
-  Weight decision is in `PHASES.md` (Phase 1 plan review).
+- Click NET → the SITE-9 script `waybar/.config/waybar/scripts/net-menu`
+  (`nmcli` + fuzzel). **Networks only** — the other network actions
+  move to a future SITE-9 settings panel. No blank rows. Runs only when
+  clicked; nothing left running.
+- Top-right under the bar, 8px margins.
+- **Opens instantly from NetworkManager's cached list** (`--rescan no`).
+  **Refresh:** F5 in the menu (fuzzel `custom-1`, exit code 10 → the
+  script restarts with `--rescan yes`) or right-click NET. **After a
+  successful connect the script starts a background rescan** so the
+  next open isn't short (user, 2026-10-18).
+- **Closes** on: Esc, clicking NET again (toggle, tracks its own fuzzel
+  only), clicking another window, or the pointer passing over a window
+  (`follow_mouse = 1` moves keyboard focus there).
+- **Pointer hand-back:** after fuzzel appears, the script moves the
+  pointer to where it already is, so the bar gets it back and a second
+  click on NET closes the menu. Only on launches from a NET click — not
+  on the F5 restart, where the pointer may be anywhere (2026-10-18).
+- **NET has no tooltip** (user, 2026-10-18 — it covered the menu).
+- Row: `▂▄▆█  NAME  SEC`, padded columns, open networks show `OPEN`,
+  names over ~24 chars cut with `…`. Connected network first, tagged
+  **`[ACTIVE]`** (re-asked 2026-10-18: fuzzel can't dim part of a row,
+  so "dim `connected`" wasn't possible; user kept `[ACTIVE]`).
+- Wrong password: prompt reopens with placeholder `WRONG PASSPHRASE`,
+  the failed profile is deleted; Esc cancels. **The password never goes
+  on a command line or to disk in plain text** — it goes in through
+  `passwd-file /dev/fd/3` (§6).
+- **fuzzel colors (user, 2026-10-18 — mirrors the reference's drop-down
+  list):** background `--field`; text, input and prompt `--text`;
+  selected row `--panel` with `--text-bright`; match and
+  selection-match `--text-bright`; placeholder and counter
+  `--text-dim`; 1px flat `--bevel-dark` border; radius 0, selection
+  radius 0; DepartureMono Nerd Font 11px, regular.
+- Super+R stays on hyprlauncher until Phase 3.
 
-### Locked module framing & state color (decided Phase 1 — 2026-09-21) — HUD era, being replaced
+### Typography & glyph findings (still valid)
 
-First on-screen pass read as a generic dark-mode bar with one green accent,
-not Half-Life/SCP — traced to missing module separation and no
-state-driven color use. Direction chosen: primarily bracketed-HUD framing
-+ HEV-style state color, with SCP report influence kept to labeling only
-(not structural — the module boxes already provide separation a hairline
-treatment would have given).
+- **Exact family name:** `DepartureMono Nerd Font` (no space). The
+  spaced name only works through fontconfig fuzzy matching.
+  Package: `otf-departure-mono-nerd` (AUR, Nerd Fonts patch v3.4.0).
+- **Pixel grid:** 550 units per em, 50 per pixel → an **11px grid**.
+  Crisp only at multiples of 11px (11, 22, …). Pick sizes on the grid.
+- Only Regular is installed (Nerd Font, Mono and Propo variants).
+  Synthetic bold smears (fails the pixel-crisp standard). Double-strike
+  was tried and retired (see Locked look rules); in GTK3 its doubled
+  copy also ignores pango span colors.
+- What the font has: all Box Drawing and Block Elements, all Nerd Font
+  MD and FA icons, progress-bar glyphs U+EE00–EE0B (one outlined
+  continuous bar). **Not** in the font: `▮ ▯ ▰ ▱ ■ □`.
+- Crispness at 11px: text glyphs fully crisp. `█` is the sharpest bar
+  glyph, with a faint ≤10% font-level fringe on its outer edges (left
+  as is). `⏻` and `▂▄▆` have soft edges. `▌`, `▏`–`▉` and `┃` land on
+  half pixels (soft). `░` is a soft dot texture at every size. Nerd
+  icons render soft and slightly small next to the pixel text.
+  Letter-spacing tweaks push glyphs onto fractional pixels — avoid.
+- Emoji-default codepoints (e.g. `⚡` U+26A1) can come from a color
+  emoji font; pin with U+FE0E or avoid. None installed as of
+  2026-10-06.
+- New glyphs must be confirmed present in the installed font itself and
+  proposed as options, not picked. A glyph only available via a
+  fallback font is a design question to raise.
 
-- **Framing:** every module gets its own frame, small gap between frames
-  so they read as discrete panel segments rather than one continuous
-  strip. **Frame style updated 2026-10-06: corner ticks** (5px L-shaped
-  ticks at each corner, technique below) instead of full rectangles.
-  **Workspace tabs get corner ticks too** (user, 2026-10-09): each
-  number is its own ticked tab; the active tab's ticks and number are
-  `--accent`.
-- **State color (updated 2026-10-06):** each readout is one color — label,
-  icon, bar fill, value, and frame ticks all default to `--text`/
-  `--border` and the **whole readout** shifts to `--warning` or
-  `--critical` when the module is in a flagged state (HEV-style: the
-  entire reading turns amber/red). `--accent` marks the active
-  workspace. Thresholds (adjustable once seen live): PWR `--warning`
-  <30%, `--critical` <15% — in waybar's ≤ terms, `"warning": 29`,
-  `"critical": 14`; NET `--critical` on disconnect.
-- **Fixed-width values:** percentages are padded to a fixed width so a
-  readout doesn't shift sideways when a value crosses 9→10 or 99→100.
-- **Labels (updated 2026-10-06):** `FIELD: value` formatting, uppercase
-  label — **same color as its value**, no separate dim color. Replaces
-  the original dim-label rule: with the double-strike weight, GTK3 draws
-  the doubled stroke in the module color and ignores span colors, so
-  dim labels would come out two-tone (see Weight above). The SCP report
-  influence is carried by the `FIELD:` format, the `SITE-9` tag, and the
-  mission clock.
-- Outer bar getting a top/bottom hairline rule (echoing a report-page
-  header) is a nice-to-have, not required.
+### Retired (kept for reference)
 
-Status: full-box version built 2026-09-21; corner ticks and one-color
-readouts built and live since 2026-10-09.
+- **HUD palette** (2026-09-20 → 2026-10-09): `--bg #15140f`,
+  `--border #3a3626`, `--text #d6d0bd`, `--text-dim #8f8a76`,
+  `--accent #5fae5a`. Still in `fuzzel.ini` and waybar until round #8
+  replaces them.
+- **Corner ticks** (2026-10-06 → 2026-10-09): 9-slice `border-image`
+  from an 11×11 SVG, `border: 1px solid transparent`,
+  `border-image-slice: 5`, `border-image-width: 5px`, recolored with
+  `-gtk-recolor(url("…-symbolic.svg"), success <hex>)`. +0px height.
+  Proven to work; dropped with the HUD look.
+- **Double-strike weight** (2026-10-06 → 2026-10-18):
+  `text-shadow: 1px 0 0 currentColor`. See Locked look rules.
+- **SCP influence**: now content only — the `FIELD:` labels, `SITE-9`
+  and MET stay as content, styled VOX.
 
-**Corner ticks — proven feasible (probe, 2026-10-06):** 9-slice
-`border-image` from an 11×11 SVG with 1px L-shaped corners and
-transparent edges: `border: 1px solid transparent`,
-`border-image-slice: 5`, `border-image-width: 5px`,
-`border-image-repeat: stretch`. Ticks measured 5px long, 1px thick,
-exact color, and add **0px** to the bar height. State colors via one
-SVG named `*-symbolic.svg` and `-gtk-recolor(url("…"), success <hex>)`
-(amber swap tested). Fallback if recoloring ever breaks: one plain SVG
-per state with the color hard-coded. Relies on gdk-pixbuf's SVG loader
-(present: glycin-svg 2.1.5 with librsvg 2.62.4). Static, nothing
-animated — §2-clean.
-
-### Icon direction (decided Phase 1 — 2026-10-06) — glyph findings still valid
-
-HUD/gauge-style glyphs for the VOL/NET/PWR modules: boxy, segmented or
-bracket-like forms that lean into the HEV HUD — **not** the default
-rounded, Font-Awesome-style icon-font look. Chosen over minimal outline
-glyphs and over going icon-less.
-
-- Icons and the value bars (content-density pass) are **one
-  visual system**: same blocky, geometric register. Don't pick them
-  independently.
-- What the font actually has (checked 2026-10-06 with `fc-query` and
-  `pango-view` renders): all Box Drawing (128/128) and Block Elements
-  (32/32) characters, all Nerd Font MD and FA icons, progress-bar glyphs
-  U+EE00–EE0B. **Not** in the font: `▮ ▯ ▰ ▱ ■ □` — don't use them,
-  they'd only render via a fallback font. Nerd Font icons render
-  soft-edged and slightly small next to the pixel text.
-- **Crispness at 11px (measured 2026-10-06 by counting partial
-  pixels):** `█` (full block) is the sharpest bar glyph, but not
-  perfectly crisp: the font's own `█` has a faint ≤10% fringe on its
-  outer edges (top/bottom ~8–10%, left ~6%; confirmed in a bare
-  `pango-view` render, so it's the font, not waybar). Left as-is
-  (THE OVERSEER, 2026-10-09 — barely visible at 1x; the user can reopen
-  it, the alternative being antialiasing off for this font). Text glyphs measure fully crisp
-  (0 partial pixels). `⏻` and the `▂▄▆` steps have soft edges. `▌`, the other partial blocks `▏`–`▉`, and `┃` land on half
-  pixels and come out soft-edged (`▌` is 3.5px wide). `░` is a soft dot
-  texture at every size tested (11/22/33px). Letter-spacing tweaks push
-  glyphs onto fractional pixels — avoid them.
-- Watch emoji-default codepoints (e.g. `⚡` U+26A1): Pango can draw them
-  from a color emoji font. Pin them with U+FE0E or avoid them. (No color
-  emoji font is installed as of 2026-10-06, so `⚡` currently renders as
-  Departure's own small, thin text glyph.)
-- **Locked 2026-10-06 (user's picks):**
-  - VOL: `◄` U+25C4, static. PWR: `⏻` U+23FB. NET: signal steps
-    `▂▄▆█` (U+2582/2584/2586/2588), lit steps in the module color,
-    unlit in `--border`. NET gets no separate bar.
-  - Bars (VOL, PWR, CPU, RAM): **DOS fill** — 10 cells of `█`, lit
-    cells in the module color, empty cells `█` in `--border` (dark
-    trough). Not `▌` segments (soft at 11px) and not `░` (soft, and
-    busy under double-strike). Accepted side effect: one 1px column in
-    the module color right after the bar's end (double-strike
-    overhang).
-  - Charging: the `PWR:` label becomes `CHG:` while charging. No
-    lightning glyph.
-  - Readout order: icon, label, bar, value — e.g. `◄ VOL: ██████████
-    60%`, `▂▄▆█ NET: 82%`, `⏻ PWR: ██████████ 18%`.
-- New glyphs later must still be confirmed present in the installed
-  font (check the font itself, not a cheat-sheet) and proposed as
-  options, not picked.
-- If a good glyph only exists via a fallback font, that's a design
-  question to raise, not something to quietly wire in.
-
-### Locked bar layout & content (decided Phase 1 — 2026-10-06)
-
-- **Layout (L2):** left — `SITE-9` tag, workspaces. Center — clock,
-  mission clock. Right — CPU, RAM, VOL, NET, PWR, tray.
-- **Mission clock (MET):** system uptime as `T+DDD:HH:MM`, updated every
-  60s. No seconds (they'd sit stale between updates).
-- **Tray:** one frame around the whole tray, icons at 14px. Tray icons
-  keep their app colors.
-- **Height: 30px**, set explicitly (user, 2026-10-09 — back to the
-  original spec). The earlier 36px came only from the vertical slider
-  trough; the bar's natural height is 24px, and 30 gives the frames a
-  gap from the bar edge.
-- **Active workspace tab** stays `--accent` (ticks and number) while
-  hovered (2026-10-09).
-
-### Locked volume slider (decided Phase 1.2 — 2026-10-09)
-
-- Kept as a drawer: click VOL reveals `pulseaudio/slider`.
-- **Horizontal gauge, 80×4px** trough in `--border`, fill in **`--text`
-  cream** (one-color readout — VOL is cream everywhere), no knob, inside
-  the existing tick frame. Adwaita decoration removed: trough,
-  highlight and knob get `border: none`, `outline: none`,
-  `box-shadow: none`, `background-image: none`. The scale itself
-  (`#pulseaudio-slider`) **keeps its border — that border draws the tick
-  frame** — and only clears outline, box-shadow and background-image
-  (corrected 2026-10-09; the first brief wrongly said border too).
-- Mute empties the gauge (`zero-on-mute`, default). Mute itself stays
-  on the `XF86AudioMute` key.
-- **Scroll on VOL: 5% per step**, same as the media keys.
-
-### Locked network picker (decided Phase 1.1 — 2026-10-09)
-
-- Click NET → a **SITE-9 script** (`nmcli` + **fuzzel**) — replaces
-  networkmanager-dmenu (user, 2026-10-09: the menu shows **networks
-  only**; its other actions move to a SITE-9 system settings panel,
-  built later). List under the bar, top-right, 8px margins; masked
-  passphrase via fuzzel's password mode.
-- **No blank or non-network rows** — every row is a network.
-- **Closes when you click away** (another window) and when NET is
-  clicked again (toggle). Esc closes too.
-- Row format: `▂▄▆█  NAME  SEC`, bars first, columns padded so they line
-  up; connected network listed first and tagged `[ACTIVE]`. Menu width
-  fits the rows; long names truncated with `…` so the bars are never
-  cut off.
-- Signal as **`▂▄▆█`**, matching NET — not the Nerd wifi glyphs.
-- Wrong passphrase: the prompt reopens with the placeholder
-  `WRONG PASSPHRASE`; Esc cancels and the failed profile is deleted.
-- The passphrase never goes on a command line (argv) or to disk in
-  plain text.
-- **fuzzel stopgap styling** (until Phase 3 refines the same file):
-  locked tokens only — DepartureMono Nerd Font 11px, background `--bg`,
-  text `--text`, 1px `--border` border, radius 0, selected row
-  `--border` background with `--text`, match highlight `--accent`,
-  placeholder/counter `--text-dim`. Light weight (fuzzel has no
-  double-strike) — a Phase 3 question.
-- Super+R stays on hyprlauncher until Phase 3; fuzzel is installed for
-  the picker only for now.
-
-### What IS fixed regardless of which palette gets picked
+### What IS fixed regardless
 
 **Shape language**
-- Border radius: 0px, or at most 1–2px if 0 looks visually broken
-  somewhere. No soft rounded corners anywhere.
-- Borders: thin (1px), hard, high-contrast. No soft shadows, ever.
-- No gradients.
+- Border radius: 0px. No soft rounded corners anywhere.
+- Borders: thin (1px), hard. No soft shadows, ever. No gradients.
 
 **Typography**
-- Monospace, everywhere, no exceptions — this is a stated requirement,
-  not a default. Font: Departure Mono Nerd Font (see §3 locked palette) —
-  whatever's picked, verify actual glyph rendering at bar-scale text size
-  looks right on this specific screen before finalizing, don't just trust
-  it on name recognition. Locked: 11px with double-strike weight (§3
-  font notes above). Sizes on the 11px grid.
+- Monospace, everywhere, no exceptions — a stated requirement, not a
+  default. DepartureMono Nerd Font 11px regular (above). Verify actual
+  rendering on this screen before finalizing any new use.
 
 **Motion**
 - Short, linear/snap transitions. No easing flourishes, no bounce, no
-  multi-stage animations. Motion should feel abrupt and mechanical, not
-  smooth — consistent with "raw, no soft edges."
+  multi-stage animations — abrupt and mechanical, not smooth.
 
 ### Sound (deferred, not in scope yet)
 User wants to add sound later (UI feedback sounds, alerts). Don't build
@@ -367,18 +282,23 @@ now — no audio dependencies, no hooks, until it's an actual phase.
   Recheck at each phase start; switch back to `extra/waybar` once a
   tagged release includes the fix. Background in `PHASES.md` Log
   (2026-09-21).
-- Launcher: fuzzel — **planned, not installed** (2026-10-09). Live now:
-  **hyprlauncher** 0.1.6 (Hyprland's first-party launcher, bound to
-  Super+R in `hyprland.lua`); wofi 1.5.3 is also installed (maintenance
-  status not checked). **fuzzel is being installed in round #7 for the
-  network picker only** (user, 2026-10-09); Super+R stays on
-  hyprlauncher until Phase 3 decides the launcher.
+- Launcher: **hyprlauncher** 0.1.6 (Hyprland's first-party launcher,
+  bound to Super+R in `hyprland.lua`). **fuzzel is installed** (round
+  #7, from `extra`; exact version to be reported in round #8) and used
+  **for the network picker only**; Super+R stays on hyprlauncher until
+  Phase 3 decides the launcher. wofi 1.5.3 is also installed
+  (maintenance status not checked).
+  networkmanager-dmenu was installed in round #7, replaced by the
+  SITE-9 `net-menu` script and **uninstalled** (`pacman -Q`: not found,
+  2026-10-18).
 - Notifications: **mako 1.11.0 — installed and running, no config**
   (found 2026-10-09). **libnotify isn't installed**, so there's no
-  `notify-send` and apps that use it (e.g. networkmanager-dmenu's
-  connect/fail notices) stay silent. Unstyled, mako uses its upstream
-  defaults (blue `#285577` background, white text, 2px `#4C7899`
-  border) — off-palette; Phase 3 styles it.
+  `notify-send`. Apps that talk to the notification service directly
+  still show up: kitty does — Claude Code's "waiting for your input"
+  notice appears through it (seen 2026-10-18). Unstyled, mako uses its
+  upstream defaults (blue `#285577` background, white text, 2px
+  `#4C7899` border) — off-palette; Phase 3 styles it. The network
+  picker sends no notifications.
 - Idle/lock: hypridle + hyprlock — **planned, not installed**.
 - Wallpaper: hyprpaper — not checked yet.
 - Screenshot: grim + slurp + swappy (bound to Print) — grim is in use;
@@ -392,22 +312,25 @@ now — no audio dependencies, no hooks, until it's an actual phase.
   and `nmtui` present; iwd not installed, systemd-networkd disabled.
 
 **Open stack question (for whichever phase first needs it):** keep the
-live tools (hyprlauncher, kitty) or switch to the planned ones (fuzzel,
-foot)? The user decides; don't install a planned tool or remove a live
-one without asking. The network picker (Phase 1.1) is the first thing
-that touches this.
+live tools (hyprlauncher, kitty) or switch to the planned ones (fuzzel
+as the launcher, foot)? The user decides; don't install a planned tool
+or remove a live one without asking. The network picker settled only
+that fuzzel is installed; the launcher and terminal stay open (Phase 3
+at the latest).
 
 ## 5. What's already built
 
 - **waybar** (`waybar/.config/waybar/`, stowed live with `stow -t ~`,
-  restow with `-R` when files are added): final Phase 1 pass deployed
-  2026-10-09 — layout L2 (`SITE-9`, workspaces | clock, MET | CPU, RAM,
-  VOL, NET, PWR, tray), 11px double-strike, corner ticks
-  (`frame/tick-symbolic.svg`), one-color state readouts, S1 icons,
-  DOS-fill bars, 36px. Seen live by the user. Fix pass done 2026-10-09:
-  ticked workspace tabs, thresholds 29/14, fixed-width percentages.
-  Remaining Phase 1 work (1.1 network picker, 1.2 volume slider) is in
-  `PHASES.md`.
+  restow with `-R` when files are added or removed). As of round #7
+  (`b4352b8`, 2026-10-18): layout L2, 30px, one-color state readouts,
+  S1 icons, DOS-fill gauges, fixed-width percentages, thresholds
+  29/14, horizontal 80×4 volume slider (5% scroll), NET → `net-menu`.
+  **Still in the HUD-era look** (near-black, corner ticks, green
+  active tab, double-strike) — round #8 re-skins it to VOX (§3).
+  - `scripts/net-menu` — the network picker (§3, §6).
+- **fuzzel** (`fuzzel/.config/fuzzel/fuzzel.ini`, stowed): stopgap
+  HUD-era tokens, radius 0, DepartureMono 11px, `[key-bindings]
+  custom-1=F5`. Round #8 recolors it to VOX (§3).
 - **hypr** — not stowed from this repo yet. The only change so far is
   `scale = "1"`, made directly in the live `~/.config/hypr/hyprland.lua`
   (Phase 1 fix); otherwise it's Hyprland's stock example config. It
@@ -424,6 +347,48 @@ that touches this.
 
 Behavior checked against the actual installed versions — not training
 data. Recheck if the package version changes. Newest first.
+
+**Round #7 findings (UNIT-1, 2026-10-18):**
+- **Pointer focus on new layers (Hyprland 0.56.2):** when fuzzel maps,
+  Hyprland sends it `wl_pointer.enter` even though the pointer is
+  outside it (logged at (167, −23), above its surface, pointer still on
+  NET). Waybar gets `leave`, so the cursor turns into fuzzel's arrow and
+  the next click goes to fuzzel. **Fix:** once `hyprctl -j layers` shows
+  fuzzel's pid, `hyprctl dispatch 'hl.dsp.cursor.move(hl.get_cursor_pos())'`
+  (checked in `hl.meta.lua`: `HL.DspCursorNamespace.move`,
+  `hl.get_cursor_pos(): HL.Vec2`) → waybar gets `enter` and the hand
+  cursor back; fuzzel keeps keyboard focus.
+- **`follow_mouse = 1`:** the pointer passing over a window moves
+  keyboard focus to it, so fuzzel (exit on keyboard-focus loss) closes.
+  That's also why the pointer nudge is only safe when the pointer is
+  known to be on the bar.
+- **A non-exclusive scratch waybar** (`"layer": "overlay"`,
+  `"exclusive": false`) is placed below the live bar's reserved zone
+  (y=30), not over it.
+- **Waybar's `"name"` key** renames the CSS window node, so
+  `window#waybar` rules stop matching. Don't use it.
+- **GTK3 honours per-side `border-*-color`** on waybar's nodes
+  (pixel-sampled): raised top/left `#667359`, bottom/right `#1f2719`;
+  recessed reversed. The corner pixel where a light side meets a dark
+  side is blended (`#3a4630`, GTK antialiasing) — accepted.
+- **nmcli (NetworkManager 1.58.1):**
+  - `nmcli device wifi list` rescans by default if the AP list is over
+    30 s old (`nmcli(1)`); that scan hung ~30 s twice. `--rescan no`
+    takes 0.04 s; `--rescan yes` ~1 s when it doesn't hang.
+  - Right after a reconnect the cached list can be thin (1 AP instead
+    of 10).
+  - `nmcli connection up uuid … passwd-file /dev/fd/3` takes the
+    password from a file descriptor — nothing in argv (checked with a
+    watcher logging every nmcli argv).
+  - Wrong password → `Error: Connection activation failed: Secrets were
+    required, but not provided`.
+  - A profile created by the picker matches a hand-made one except
+    runtime seen-bssids and `auth-alg` left at its default (open).
+- **fuzzel:** in dmenu mode, `custom-1`…`custom-19` key bindings exit
+  with codes 10…28; no default binding uses F-keys;
+  `fuzzel --check-config` validates the file. In `[colors]`, `match` and
+  `selection-match` are text colors — there's no match background
+  (THE OVERSEER, Arch `fuzzel.ini(5)`, 2026-10-18).
 
 **Machine (2026-10-09):**
 - `man` isn't installed (no man-db). Read man pages with
@@ -446,48 +411,27 @@ data. Recheck if the package version changes. Newest first.
   the app's own anchor/margin options can.
 
 **Network & menus (2026-10-09):**
-- **networkmanager-dmenu has no option to hide its action rows**
-  (Disable WiFi, Launch Connection Manager, …) or the blank separator
-  rows between sections — not in the README's config table (UNIT-1 to
-  confirm in the installed source). In fuzzel the blank rows are
-  clickable. It also prints 4 `GLib-GObject-CRITICAL` lines per launch
-  (works anyway), and "Launch Connection Manager" runs `xterm -e nmtui`
-  unless `[editor] terminal` is set (xterm isn't installed). Being
-  replaced by a SITE-9 script (§3).
+- **networkmanager-dmenu** (tried in round #7, uninstalled
+  2026-10-18): no option to hide its action rows or the blank,
+  clickable separator rows — why it was replaced by `net-menu`. Its
+  source notes are in git history if ever needed.
 - **fuzzel, observed 2026-10-09:** default width is 30 characters (rows
   get cut off). With the default `keyboard-focus=exclusive`, clicking
   another window **doesn't** close it; `keyboard-focus=on-demand` +
   `exit-on-keyboard-focus-loss` (default yes) is the documented way to
-  close on focus loss — to be checked on this machine.
+  close on focus loss. Click-away works in the built picker; which mode
+  `net-menu` uses is to be reported in round #8.
 - **NetworkManager permissions** (`nmcli general permissions`):
   network-control, wifi.scan and settings.modify.own are `yes` for the
   user, so any picker can scan and connect **without a polkit agent**.
-- `extra/networkmanager-dmenu` 2.6.3, not installed (upstream
-  latest 2.7.2; **2.7.2-1 is in `extra-testing`**, built 2026-09-29, so
-  it reaches `extra` through normal updates — no AUR build needed).
-  `-git` on AUR is maintained by upstream. Read in the v2.6.3 source
-  (recheck after the 2.7.x upgrade):
-  - Strips `-d`, `-dmenu` and `--dmenu` from `dmenu_command`, then adds
-    its own flags for launchers it knows.
-  - Knows fuzzel: adds `--dmenu --placeholder <prompt>`, and with
-    `[dmenu_passphrase] obscure = True` adds `--password` (masked
-    passphrase).
-  - Launchers it doesn't know (e.g. hyprlauncher) get no prompt text and
-    no masking — only a `pinentry` program can hide the passphrase.
-  - Config keys (upstream README): `wifi_chars` (4 characters, used by
-    `{bars}` in `format`), `wifi_icons` (used by `{icon}`), `format`,
-    `compact`, `pinentry`. Default icons are Nerd wifi glyphs
-    (󰤯󰤟󰤢󰤥󰤨), present in DepartureMono Nerd Font.
-  - Uses `notify-send` for connect/fail notices if libnotify is present;
-    with no notification daemon running they don't show.
 - `extra/network-manager-applet` 1.36.0 does SNI/tray via `--indicator`,
   but depends on Canonical's **libappindicator** (unmaintained upstream,
   not the maintained libayatana-appindicator) — treat as deprecated,
   don't use.
-- `extra/fuzzel` 1.15.0 (upstream man page; not installed yet):
-  `anchor=top-right` with `x-margin`/`y-margin` can place it under the
-  bar — whether `y-margin` counts from the bar's edge or the screen's is
-  **unchecked on this machine**. Defaults are off-spec: **Solarized
+- `extra/fuzzel` 1.15.0 (upstream man page, checked before install):
+  `anchor=top-right` with `x-margin`/`y-margin` places it under the
+  bar (built and seen; which edge `y-margin` counts from wasn't
+  reported). Defaults are off-spec: **Solarized
   light colors** (background `fdf6e3`) and **`border-radius` 10** —
   rounded, breaks §3. Any use must override radius (0) and colors.
   Default layer `overlay`. No text-shadow, so no double-strike weight.
