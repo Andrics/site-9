@@ -166,3 +166,23 @@ window#waybar {
     padding: 0 8px;
 }
 
+
+/* Tooltips: list look — @field background, raised 1px bevel, @text.
+   `tooltip` is GTK3's own node (waybar-styles(5) doesn't name one).
+   Adwaita draws it translucent black with 5px corners, white text and a
+   1px black text-shadow; all of that is overridden here. */
+tooltip {
+    background: @field;
+    border: 1px solid;
+    border-top-color: @bevel-light;
+    border-left-color: @bevel-light;
+    border-bottom-color: @bevel-dark;
+    border-right-color: @bevel-dark;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+tooltip label {
+    color: @text;
+    text-shadow: none;
+}
