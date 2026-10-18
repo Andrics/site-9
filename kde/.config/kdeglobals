@@ -1,0 +1,147 @@
+# kde/.config/kdeglobals — SITE-9 colors and fonts for KDE apps (Dolphin)
+# (BUILD_SPEC.md §3 "Locked Qt theme: Dolphin"). Kvantum styles the
+# widgets; KDE apps also read these color groups (views, places panel,
+# capacity bars, message bars), which otherwise default to Breeze blue.
+# Colors are "R,G,B" of the §3 tokens:
+#   --panel 68,84,53   --field 48,63,37   --bevel-light 102,115,89
+#   --bevel-dark 31,39,25   --text 203,207,200   --text-bright 255,255,255
+#   --text-dim 143,154,133   --warning 230,168,79   --critical 255,122,92
+# Hover decoration = the background it sits on (hover changes nothing).
+
+[General]
+ColorScheme=SITE-9
+Name=SITE-9
+# DepartureMono Nerd Font 8.25pt = 11px (Qt's QFont string format)
+font=DepartureMono Nerd Font,8.25,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+fixed=DepartureMono Nerd Font,8.25,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+smallestReadableFont=DepartureMono Nerd Font,8.25,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+toolBarFont=DepartureMono Nerd Font,8.25,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+menuFont=DepartureMono Nerd Font,8.25,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+
+[WM]
+activeFont=DepartureMono Nerd Font,8.25,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+activeBackground=68,84,53
+activeForeground=255,255,255
+inactiveBackground=68,84,53
+inactiveForeground=203,207,200
+
+[KDE]
+widgetStyle=kvantum
+contrast=0
+
+# No dimming/fading effects: they would blend colors off the tokens.
+[ColorEffects:Disabled]
+ChangeSelectionColor=false
+Color=143,154,133
+ColorAmount=0
+ColorEffect=0
+ContrastAmount=0
+ContrastEffect=0
+IntensityAmount=0
+IntensityEffect=0
+
+[ColorEffects:Inactive]
+ChangeSelectionColor=false
+Enable=false
+
+# Lists and views (Dolphin's file view): --field
+[Colors:View]
+BackgroundNormal=48,63,37
+BackgroundAlternate=48,63,37
+ForegroundNormal=203,207,200
+ForegroundInactive=143,154,133
+ForegroundActive=255,255,255
+ForegroundLink=255,255,255
+ForegroundVisited=255,255,255
+ForegroundNegative=255,122,92
+ForegroundNeutral=230,168,79
+ForegroundPositive=203,207,200
+DecorationFocus=203,207,200
+DecorationHover=48,63,37
+
+# Window surfaces: --panel
+[Colors:Window]
+BackgroundNormal=68,84,53
+BackgroundAlternate=68,84,53
+ForegroundNormal=203,207,200
+ForegroundInactive=143,154,133
+ForegroundActive=255,255,255
+ForegroundLink=255,255,255
+ForegroundVisited=255,255,255
+ForegroundNegative=255,122,92
+ForegroundNeutral=230,168,79
+ForegroundPositive=203,207,200
+DecorationFocus=203,207,200
+DecorationHover=68,84,53
+
+[Colors:Button]
+BackgroundNormal=68,84,53
+BackgroundAlternate=68,84,53
+ForegroundNormal=203,207,200
+ForegroundInactive=143,154,133
+ForegroundActive=255,255,255
+ForegroundLink=255,255,255
+ForegroundVisited=255,255,255
+ForegroundNegative=255,122,92
+ForegroundNeutral=230,168,79
+ForegroundPositive=203,207,200
+DecorationFocus=203,207,200
+DecorationHover=68,84,53
+
+[Colors:Header]
+BackgroundNormal=68,84,53
+BackgroundAlternate=68,84,53
+ForegroundNormal=203,207,200
+ForegroundInactive=143,154,133
+ForegroundActive=255,255,255
+ForegroundLink=255,255,255
+ForegroundVisited=255,255,255
+ForegroundNegative=255,122,92
+ForegroundNeutral=230,168,79
+ForegroundPositive=203,207,200
+DecorationFocus=203,207,200
+DecorationHover=68,84,53
+
+# Selected rows: --panel + --text-bright
+[Colors:Selection]
+BackgroundNormal=68,84,53
+BackgroundAlternate=68,84,53
+ForegroundNormal=255,255,255
+ForegroundInactive=255,255,255
+ForegroundActive=255,255,255
+ForegroundLink=255,255,255
+ForegroundVisited=255,255,255
+ForegroundNegative=255,122,92
+ForegroundNeutral=230,168,79
+ForegroundPositive=255,255,255
+DecorationFocus=203,207,200
+DecorationHover=68,84,53
+
+# Tooltips: --field, like waybar's
+[Colors:Tooltip]
+BackgroundNormal=48,63,37
+BackgroundAlternate=48,63,37
+ForegroundNormal=203,207,200
+ForegroundInactive=143,154,133
+ForegroundActive=255,255,255
+ForegroundLink=255,255,255
+ForegroundVisited=255,255,255
+ForegroundNegative=255,122,92
+ForegroundNeutral=230,168,79
+ForegroundPositive=203,207,200
+DecorationFocus=203,207,200
+DecorationHover=48,63,37
+
+[Colors:Complementary]
+BackgroundNormal=48,63,37
+BackgroundAlternate=48,63,37
+ForegroundNormal=203,207,200
+ForegroundInactive=143,154,133
+ForegroundActive=255,255,255
+ForegroundLink=255,255,255
+ForegroundVisited=255,255,255
+ForegroundNegative=255,122,92
+ForegroundNeutral=230,168,79
+ForegroundPositive=203,207,200
+DecorationFocus=203,207,200
+DecorationHover=48,63,37
