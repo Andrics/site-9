@@ -15,12 +15,6 @@ window#waybar {
     border-bottom: 1px solid #3a3626;
 }
 
-/* Double-strike weight — the BUILD_SPEC.md §2 exception, exactly this value
-   and nothing else. The font ships Regular only. */
-window#waybar label {
-    text-shadow: 1px 0 0 currentColor;
-}
-
 #workspaces {
     padding: 0 4px;
 }
@@ -52,6 +46,13 @@ window#waybar label {
     color: #d6d0bd;
     /* Adwaita adds a 1px hover shadow line (BUILD_SPEC.md §2) */
     box-shadow: none;
+}
+
+/* Adwaita gives every button a 1px white text-shadow under the text
+   (BUILD_SPEC.md §2: theme defaults count). This clears it. */
+#workspaces button,
+#workspaces button:hover {
+    text-shadow: none;
 }
 
 #workspaces button.active:hover {
