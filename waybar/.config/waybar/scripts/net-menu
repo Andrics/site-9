@@ -12,12 +12,20 @@
 # The list comes from NetworkManager's cache, so the menu opens at once
 # (nmcli's default rescans when the cache is over 30 s old, and that scan
 # has hung for ~30 s here). `net-menu --rescan` (right click on NET), or
-# F5 in the menu (fuzzel.ini: custom-1, exit code 10), scans first.
+# F5 in the menu (fuzzel.ini: custom-1, exit code 10 → `--refresh`),
+# scans first. After a successful connect it asks NetworkManager for a
+# rescan in the background, so the next open has the full list.
 
 set -u
 
+# --refresh is the F5 restart: rescan, but the pointer may be anywhere,
+# so no pointer hand-back (see give_pointer_back).
 rescan=no
-[[ ${1:-} == --rescan ]] && rescan=yes
+nudge=yes
+case ${1:-} in
+    --rescan) rescan=yes ;;
+    --refresh) rescan=yes; nudge=no ;;
+esac
 
 max_name=24    # longer names are cut with … so the bars never are
 max_lines=12
@@ -48,7 +56,9 @@ menu() {
     fuzzel --dmenu --anchor top-right --x-margin 8 --y-margin 8 \
         --keyboard-focus on-demand "$@" <&0 9>&- &
     local pid=$!
-    give_pointer_back "$pid" >/dev/null 2>&1 9>&- &
+    if [[ $nudge == yes ]]; then
+        give_pointer_back "$pid" >/dev/null 2>&1 9>&- &
+    fi
     wait "$pid"
 }
 
@@ -57,9 +67,14 @@ menu() {
 # cursor turns into fuzzel's arrow and the next click on NET goes to
 # fuzzel, so the toggle doesn't fire until the mouse moves. A warp to
 # where the pointer already is makes Hyprland pick the surface under it
-# again. Keyboard focus stays with fuzzel. (Only safe because the script
-# runs from a click on NET: over a window, the warp would hand that
-# window focus via follow_mouse and fuzzel would close.)
+# again. Keyboard focus stays with fuzzel.
+#
+# Only for the first menu of a run started by a click on NET, when the
+# pointer is known to be on the bar. Not after F5 (--refresh), and not
+# for the passphrase prompt: there the pointer may be over a window, the
+# warp would hand that window focus via follow_mouse, and fuzzel would
+# close. Gives up after 50 tries, about 1.25 s (hyprctl ~5 ms + 20 ms
+# sleep each), or as soon as fuzzel exits.
 give_pointer_back() {
     local i
     for (( i = 0; i < 50; i++ )); do
@@ -100,7 +115,7 @@ done | sort -t $'\t' -k1,1nr -k2,2nr)
 # doesn't take itself for an open menu.
 refresh() {
     exec 9>&-
-    exec "$0" --rescan
+    exec "$0" --refresh
 }
 
 if (( ${#ssids[@]} == 0 )); then
@@ -176,6 +191,8 @@ case $sec in
     *) exit 0 ;;
 esac
 
+# The prompt follows a pick in the list, so the pointer can be anywhere.
+nudge=no
 placeholder=PASSPHRASE
 while :; do
     pass=$(menu --password --lines 0 --placeholder "$placeholder" </dev/null) || exit 0
