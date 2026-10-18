@@ -166,6 +166,18 @@ esac
 ssid=${ssids[pick]}
 sec=${security[$ssid]}
 
+# After a successful connect: ask NetworkManager to rescan, so the next
+# open has the full list (right after a reconnect its cache can be down
+# to one AP). `wifi rescan` only sends the request and returns in ~0.02 s;
+# a request inside NM's rate-limit window is held and run late, not
+# dropped (seen via the device's LastScan). It can still be refused
+# ("Scanning not allowed at this time") — that's silent here, and the
+# next open just shows the cached list. Detached, output discarded.
+rescan_later() {
+    setsid -f nmcli device wifi rescan ifname "$dev" \
+        </dev/null >/dev/null 2>&1 9>&-
+}
+
 # Already connected: nothing to do.
 [[ -n ${active[$ssid]:-} ]] && exit 0
 
@@ -173,13 +185,19 @@ sec=${security[$ssid]}
 while IFS=: read -r uuid type; do
     [[ $type == 802-11-wireless ]] || continue
     if [[ $(nmcli --escape no -g 802-11-wireless.ssid connection show uuid "$uuid") == "$ssid" ]]; then
-        exec nmcli --wait 30 connection up uuid "$uuid" 9>&-
+        exec 9>&-    # menu's closed: a NET click may open a new one
+        nmcli --wait 30 connection up uuid "$uuid" || exit
+        rescan_later
+        exit 0
     fi
 done < <(nmcli -t -f UUID,TYPE connection show)
 
 # Open network: no passphrase.
 if [[ -z $sec ]]; then
-    exec nmcli --wait 30 device wifi connect "$ssid" ifname "$dev" 9>&-
+    exec 9>&-    # menu's closed: a NET click may open a new one
+    nmcli --wait 30 device wifi connect "$ssid" ifname "$dev" || exit
+    rescan_later
+    exit 0
 fi
 
 # New secured network. PSK only; WPA3-only networks use SAE. 802.1X
@@ -211,6 +229,7 @@ while :; do
         # Autoconnect only once it has worked, so NetworkManager can't
         # race the first attempt with a profile that has no key yet.
         nmcli connection modify uuid "$uuid" connection.autoconnect yes 9>&-
+        rescan_later
         exit 0
     fi
     unset pass
