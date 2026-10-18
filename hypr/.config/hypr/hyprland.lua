@@ -99,11 +99,13 @@ hl.config({
         gaps_in  = 5,
         gaps_out = 20,
 
-        border_size = 2,
+        -- SITE-9 (BUILD_SPEC.md §3 "Locked window borders"): flat 1px,
+        -- no gradient. Same colors as kitty's split borders.
+        border_size = 1,
 
         col = {
-            active_border   = { colors = {"rgba(33ccffee)", "rgba(00ff99ee)"}, angle = 45 },
-            inactive_border = "rgba(595959aa)",
+            active_border   = "rgb(667359)", -- --bevel-light
+            inactive_border = "rgb(1f2719)", -- --bevel-dark
         },
 
         -- Set to true to enable resizing windows by clicking and dragging on borders and gaps
@@ -116,7 +118,8 @@ hl.config({
     },
 
     decoration = {
-        rounding       = 10,
+        -- Square corners; no shadow, no blur (BUILD_SPEC.md §2).
+        rounding       = 0,
         rounding_power = 2,
 
         -- Change transparency of focused and unfocused windows
@@ -124,14 +127,14 @@ hl.config({
         inactive_opacity = 1.0,
 
         shadow = {
-            enabled      = true,
+            enabled      = false,
             range        = 4,
             render_power = 3,
             color        = 0xee1a1a1a,
         },
 
         blur = {
-            enabled   = true,
+            enabled   = false,
             size      = 3,
             passes    = 1,
             vibrancy  = 0.1696,
