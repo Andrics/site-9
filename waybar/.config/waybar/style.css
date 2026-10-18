@@ -1,6 +1,18 @@
 /* waybar/.config/waybar/style.css
-   Half-Life / Black Mesa control-room readout.
-   Palette + shape decisions locked in BUILD_SPEC.md §3 / PHASES.md Phase 1. */
+   Half-Life VOX console look (BUILD_SPEC.md §3). Tokens, bevels and
+   readout rules are locked there. */
+
+/* Tokens (BUILD_SPEC.md §3, "Locked tokens"). Hex copies of these in
+   config.jsonc pango spans carry a comment naming the token. */
+@define-color panel #445435;       /* raised surfaces */
+@define-color field #303f25;       /* recessed surfaces */
+@define-color bevel-light #667359; /* light edge */
+@define-color bevel-dark #1f2719;  /* dark edge, gauge troughs */
+@define-color text #cbcfc8;
+@define-color text-bright #ffffff;
+@define-color text-dim #8f9a85;    /* placeholders only */
+@define-color warning #e6a84f;
+@define-color critical #ff7a5c;
 
 * {
     font-family: "DepartureMono Nerd Font";
@@ -10,9 +22,9 @@
 }
 
 window#waybar {
-    background: #15140f;
-    color: #d6d0bd;
-    border-bottom: 1px solid #3a3626;
+    background: @panel;
+    color: @text;
+    border-bottom: 1px solid @bevel-dark;
 }
 
 #workspaces {
@@ -23,16 +35,16 @@ window#waybar {
     padding: 0 10px;
     margin: 4px 2px;
     background: transparent;
-    color: #8f8a76;
+    color: @text-dim;
     border: 1px solid transparent;
 }
 
 #workspaces button.active {
-    color: #5fae5a;
+    color: @text-bright;
 }
 
 #workspaces button:hover {
-    color: #d6d0bd;
+    color: @text;
     /* Adwaita adds a 1px hover shadow line (BUILD_SPEC.md §2) */
     box-shadow: none;
 }
@@ -45,8 +57,7 @@ window#waybar {
 }
 
 #workspaces button.active:hover {
-    color: #5fae5a;
-    /* --accent */
+    color: @text-bright;
 }
 
 /* Module frames: a 1px border on every module (tabs too). */
@@ -67,10 +78,10 @@ window#waybar {
 
 #clock {
     padding: 0 12px;
-    color: #d6d0bd;
+    color: @text;
 }
 
-/* Volume gauge: 80×4 trough in --border, fill in --text, no knob. Adwaita
+/* Volume gauge: 80×4 trough in @bevel-dark, fill in @text, no knob. Adwaita
    puts a light border, a blue outline and gradients on these nodes, so all
    of them are cleared here. The scale keeps its 1px frame border. */
 #pulseaudio-slider,
@@ -97,30 +108,28 @@ window#waybar {
 #pulseaudio-slider trough {
     min-width: 80px;
     min-height: 4px;
-    /* --border */
-    background: #3a3626;
+    background: @bevel-dark;
 }
 
 #pulseaudio-slider highlight {
     min-height: 4px;
-    /* --text */
-    background: #d6d0bd;
+    background: @text;
 }
 
 #pulseaudio.muted {
-    color: #8f8a76;
+    color: @text-dim;
 }
 
 #network.disconnected {
-    color: #b8452e;
+    color: @critical;
 }
 
 #battery.warning {
-    color: #c98a3c;
+    color: @warning;
 }
 
 #battery.critical {
-    color: #b8452e;
+    color: @critical;
 }
 
 #tray {
