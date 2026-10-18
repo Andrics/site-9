@@ -109,8 +109,9 @@ Warning/critical were brightened from the HUD-era `#c98a3c` / `#b8452e`
 (user, 2026-10-18): the old red was 2.1:1 on `--field`, too hard to
 read (`NET: OFFLINE`).
 
-Single-color-border tools (fuzzel, mako, Hyprland window borders) can't
-bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
+Single-color-border tools (fuzzel, mako) can't bevel; they get a flat
+`--bevel-dark` edge. Hyprland window borders and kitty splits are flat
+too, but show focus: active `--bevel-light`, inactive `--bevel-dark`.
 
 ### Locked look rules (user, 2026-10-09 and 2026-10-18)
 
@@ -153,6 +154,12 @@ bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
   spec: MET was uptime as `T+DDD:HH:MM`, every 60s; CPU/RAM were DOS
   gauges with no icon.
 - **Tray:** icons 14px, keep their app colors. Hidden when empty.
+- **Same inner padding in every field** (~7px each side, as NET and PWR
+  have). VOL measured ~15px each side on `2.0-bar-trimmed-x3.png` —
+  likely padding on both the drawer group `#volume` and `#pulseaudio`
+  inside it (user, 2026-10-18; fix rides along in round #11). The
+  wider gap before a 1-digit VOL value is the fixed-width number, by
+  spec.
 - **Height: 30px**, set explicitly (natural height is 24px).
 - **Readouts:** icon, label, gauge, value — `◄ VOL: ██████████  60%`,
   `▂▄▆█ NET: 82%`, `⏻ PWR: ██████████  18%`.
@@ -230,40 +237,114 @@ bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
   radius 0; DepartureMono Nerd Font 11px, regular.
 - Super+R stays on hyprlauncher until Phase 3.
 
-### Locked terminal: kitty (Phase 2.1 — user, 2026-10-18)
+### Locked terminal: kitty (Phase 2.1 — user, 2026-10-18; built round #10, `b3011ea`)
 
 Picked on UNIT-1's render `2.1-kitty-field-P2-x3.png`:
 - **Background `--field`**, text `--text`.
 - **ANSI palette P2** — the classic DOS/VGA 16 colors, lightened only
   as far as needed to read on olive (bright green, yellow and cyan stay
   true DOS; bright black held ~3:1 so it stays darker than white).
-  Exact hexes live in `kitty.conf`, each with a comment.
-- **Cursor:** block in `--text`, `cursor_text_color background`.
-  Blinking: being asked in round #10.
-- **Selection:** S1 (`--panel` + `--text-bright`) or S2
-  (`--bevel-light` + `--text-bright`) — being asked in round #10.
+  Each hex has a comment in `kitty.conf`:
+  normal 0 `#000000` · 1 `#da9191` · 2 `#36bc36` · 3 `#cd9b69` ·
+  4 `#9e9edf` · 5 `#d88ad8` · 6 `#24b6b6` · 7 `#aaaaaa`;
+  bright 8 `#8a8a8a` · 9 `#ff7c7c` · 10 `#55ff55` · 11 `#ffff55` ·
+  12 `#9b9bff` · 13 `#ff61ff` · 14 `#55ffff` · 15 `#ffffff`.
+  `url_color` `#9b9bff` (P2 bright blue).
+- **Cursor:** block in `--text`, `cursor_text_color background`,
+  **no blinking** (user, 2026-10-18).
+- **Selection: S1** — `--panel` + `--text-bright`, same as menus (user,
+  2026-10-18).
 - **Split borders:** active `--bevel-light`, inactive `--bevel-dark`,
   1px, `draw_minimal_borders yes`. Bell border `--warning`.
 - **Padding 4px.** Font DepartureMono Nerd Font **`font_size 8.25`**
   (= 11px at kitty's 96 DPI, scale 1).
 - `shell_integration no-cursor` (keeps the block cursor at the prompt),
   `url_style straight`.
-- **Tab bar** (kitty tabs and splits are in use) — on top, titles
-  `N:TITLE` upper-case, regular weight. **User, 2026-10-18:** the whole
-  strip is the uniform `--panel` olive (no dark area after the last
-  tab), and tabs must read as buttons the way the bar's workspace tabs
-  do — active pressed in. kitty's tab bar is one text row, so how close
-  it can get to 1px bevels is being worked out in round #10.
+- **Tab bar: T3** (user, 2026-10-18, picked from three renders) — on
+  top, `tab_bar_style custom` with a small commented `tab_bar.py`.
+  - The whole strip is `--panel`, margins included
+    (`tab_bar_margin_width 3`, `tab_bar_margin_height 3 3`, margin color
+    `--panel`) — no dark area after the last tab.
+  - Each tab reads `▏ N:TITLE ▕` (upper-case title, regular weight).
+    kitty draws the side edges itself, 1px each.
+  - Bottom edge: a colored straight underline (SGR `4:1` + `58`),
+    lowered with `modify_font underline_position 2px`.
+  - Inactive tab: `--panel`, `--text`, light left edge, dark right and
+    bottom edges. Active tab: `--field`, `--text-bright`, edges
+    reversed (pressed in).
+  - **No top edge** — kitty has no overline. Accepted with the pick.
+  - Side effects, accepted with the pick: the side edges reach 1px
+    below the bottom edge (kitty clamps the underline inside the cell),
+    and every underline in the terminal (e.g. URL hover) sits 2px lower.
+  - The strip is 14px tall (one text row), about half the height of
+    waybar's buttons. Noted, not changed.
+  - **A config reload (ctrl+shift+F5) doesn't apply tab-bar changes**;
+    only a newly started kitty shows them.
+- **Window frame — being worked out in round #11** (user, 2026-10-18).
+  The VOX console is an 8px `--panel` frame around a recessed `--field`
+  box; kitty is field edge to edge. UNIT-1 renders options at 8px and
+  the user picks on screen:
+  - F1: kitty draws it — margin in `--panel` around the field, 1px
+    `--bevel-dark` line around the field. Only if kitty can color its
+    margin separately from the text area.
+  - F2: Hyprland draws it — an 8px `--panel` window border on kitty
+    windows only (window rule), kitty draws the 1px line inside.
+  - Variant: tab strip always shown (`tab_bar_min_tabs 1`), so the top
+    reads like the reference's "VOX Console" title row.
+  - Neither tool can draw a two-tone edge, so the inner line is flat
+    `--bevel-dark` (the single-color-tool rule, §3 tokens).
 
-### Locked window borders: Hyprland (Phase 2.6 — 2026-10-18)
+### Locked window borders: Hyprland (Phase 2.6 — built round #10, `7ff55e8`)
 
 - **No gradient** (user, 2026-10-18: Hyprland's default two-color
-  gradient border is on every window and has to go).
-- Flat 1px border, rounding 0, no shadow, no blur — §2/§3, not
-  choices. Colors: active `--bevel-light` / inactive `--bevel-dark`
-  (lean) or all `--bevel-dark` — being asked in round #10.
-- Gaps and animations stay at Hyprland's defaults for now (gaps: ask
-  later; animations: Phase 4).
+  gradient border was on every window).
+- **Flat 1px border: active `--bevel-light`, inactive `--bevel-dark`**
+  (user, 2026-10-18 — same as kitty's splits). Rounding 0, shadow off,
+  blur off (§2/§3). Set as plain `"rgb(…)"` strings.
+- **Grouped windows** (`group.col.*`) get the same two colors — round
+  #11 ride-along (they still had Hyprland's defaults).
+- **On-screen color shift — fix being tested in round #11.** Hyprland
+  draws the borders a few values off: active `#667259` (want
+  `#667359`), inactive `#242b1f` (want `#1f2719`); kitty's own pixels
+  are exact. The numbers match, to the value, a color read as
+  piecewise sRGB and written out as gamma 2.2 (THE OVERSEER,
+  2026-10-18 — §6). Fix to test: the monitor's `sdr_eotf = "srgb"`.
+- **Gaps and animations stay at Hyprland's stock values for now**
+  (gaps `gaps_in 5` / `gaps_out 20`: ask later; animations: Phase 4 —
+  current values recorded in `PHASES.md` Phase 4).
+
+### Locked app theme: GTK3 (Phase 2.2 — user, 2026-10-18: "all leans")
+
+- **G1: SITE-9's own GTK3 theme, written from the §3 tokens** — not a
+  recolor of an existing theme (Adwaita-dark + overrides loses to
+  Adwaita's selectors, §6; Chicago95's bevels are 2px with grey image
+  assets). GTK4/libadwaita: none installed; covered when an app needs
+  it.
+- Widgets follow the look rules above: buttons, tabs and toolbars
+  raised; entries, lists, views and menus recessed; active/pressed =
+  recessed + `--text-bright`; selected rows `--panel` + `--text-bright`;
+  tooltips like waybar's; scrollbars like the reference (raised `--panel`
+  thumb, `--field` track, 12px).
+- Hard rules inside the theme (§2): no `box-shadow`, `text-shadow`,
+  `-gtk-icon-shadow`, gradients (`background-image: none`), blur or
+  transitions; radius 0; 1px bevels; no off-palette outlines.
+- Settings: `gtk-theme 'SITE-9'`, `color-scheme 'prefer-dark'`, GTK
+  font DepartureMono Nerd Font at 11px (8.25pt, as in kitty — to
+  confirm on a crop), in both gsettings and
+  `~/.config/gtk-3.0/settings.ini`.
+- **`xdg-desktop-portal-gtk` gets installed** (user, 2026-10-18) — adds
+  the Settings portal (dark-mode signal) and the GTK file chooser.
+- Open, asked by UNIT-1 in round #11: GTK title-bar buttons, check/radio
+  shape, keyboard-focus marker, text-cursor blinking.
+
+### Locked Qt theme: Dolphin (Phase 2.3 — user, 2026-10-18: "all leans")
+
+- **Q1: Kvantum** with a SITE-9 Kvantum theme (SVG + `.kvconfig`) from
+  the §3 tokens — it can draw 1px two-tone bevels. Same widget rules
+  as GTK above. (Not Q2 qt6ct + Fusion + stylesheet, not Q3
+  kdeglobals colors on Breeze shapes.)
+- Covers every Qt app, so it should also style hyprpolkitagent's
+  password window — to be checked (it may use its own Qt Quick style).
 
 ### Typography & glyph findings (still valid)
 
@@ -330,7 +411,9 @@ now — no audio dependencies, no hooks, until it's an actual phase.
 
 ## 4. Stack (current, confirm nothing here has gone stale)
 
-- Compositor: Hyprland
+- Compositor: Hyprland 0.56.2 (re-checked 2026-10-18). Started by hand,
+  **not through uwsm**, so systemd's `graphical-session.target` is
+  never active (§6).
 - Bar: waybar — installed as **`aur/waybar-git`**, not `extra/waybar`.
   The fix for Hyprland's Lua dispatch (Waybar PR #5013) isn't in a
   tagged release yet: latest tag is still 0.15.0 (checked 2026-10-06).
@@ -359,29 +442,35 @@ now — no audio dependencies, no hooks, until it's an actual phase.
 - Screenshot: grim + slurp + swappy (bound to Print) — grim is in use;
   slurp/swappy not checked.
 - Terminal: **kitty 0.49.2** — kept (user, 2026-10-18; foot is no
-  longer planned). Tabs and splits in use. Ran on defaults (empty
-  `~/.config/kitty/`) until Phase 2.1.
+  longer planned). Tabs and splits in use. SITE-9 config since round
+  #10 (§5).
 - File manager: **Dolphin 26.08.2 — Qt6/KDE**, so GTK theming doesn't
   reach it. No Qt theming set up (no qt6ct, Kvantum, breeze style,
   kdeglobals or `QT_*` variables). Available, maintained: kvantum
   1.1.8 (`extra`), qt6ct 0.11 (`extra`), breeze 6.8.0 (not installed).
+  **Kvantum picked** (user, 2026-10-18) — installed in round #11.
 - GTK: **GTK3 only — no GTK4, no libadwaita installed** (2026-10-18).
   GTK3 apps: Firefox, swappy, wofi, polkit-gnome, rustdesk-bin, waybar.
   Settings now: `gtk-theme 'Adwaita'`, `color-scheme 'default'`
   (light), font Adwaita Sans 11; no `settings.ini`, no `GTK_THEME`.
+  **SITE-9's own GTK3 theme picked** (user, 2026-10-18) — built in
+  round #11 (§3).
 - Browser: **Firefox 158** — uses its own built-in dark theme
   (`firefox-compact-dark`), not the system theme; a GTK theme only
   reaches its file and print dialogs.
 - Portals: only `xdg-desktop-portal` + `-hyprland` — **no Settings and
   no FileChooser interface**, so apps get no dark-mode signal (waybar
   logs "No such interface org.freedesktop.portal.Settings").
-  `xdg-desktop-portal-gtk` 1.15.3 would add both — not installed.
+  `xdg-desktop-portal-gtk` 1.15.3 would add both — **picked (user,
+  2026-10-18), installed in round #11**.
 - Display manager: **sddm 0.21.0 is installed** (Phase 5's gate).
-- Polkit agent: hyprpolkitagent 0.2.0 — **installed, not running**
-  (polkit-gnome is installed too; neither autostarts, so no GUI
-  password prompts appear — confirmed 2026-10-18). Nothing needs one yet: NetworkManager
-  lets the user scan and connect without it (§6). Start it once
-  something does (Phase 3/4, when `hypr` is stowed).
+- Polkit agent: **hyprpolkitagent 0.2.0 — autostarted since round #10**
+  (user's pick, 2026-10-18), launched directly from `hyprland.lua`'s
+  autostart, not through its systemd unit (the unit waits for
+  `graphical-session.target`, §6). Logged "registered polkit agent for
+  session 2". polkit-gnome is still installed, unused. Its password
+  window is Qt — styled by the Kvantum theme if it takes it (round #11
+  check).
 - Network: **NetworkManager 1.58.1** (wpa_supplicant backend), `nmcli`
   and `nmtui` present; iwd not installed, systemd-networkd disabled.
 
@@ -407,26 +496,68 @@ live one without asking.
   `--bevel-dark` troughs, VOL field on `#volume` (the drawer group) so
   the open slider sits inside it, VOX tooltips. Phase 1 closed on it.
   - `scripts/net-menu` — the network picker (§3, §6).
-  - Round #10 removes CPU, RAM and MET from the bar (§3).
+  - CPU, RAM and MET removed in round #10 (`f96c6a8`); the `{x:>3}`
+    width-spec comment now sits on VOL (VOL, NET and PWR use it).
 - **fuzzel** (`fuzzel/.config/fuzzel/fuzzel.ini`, stowed): VOX colors
   (all 12 color keys; `message` → `--text`), radius 0, DepartureMono
   11px, `[key-bindings] custom-1=F5`.
-- **hypr** — not stowed from this repo yet. The only change so far is
-  `scale = "1"`, made directly in the live `~/.config/hypr/hyprland.lua`
-  (Phase 1 fix); otherwise it's Hyprland's stock example config. It
-  includes the stock `XF86AudioMute` → `wpctl set-mute
-  @DEFAULT_AUDIO_SINK@ toggle` bind (around line 308, `locked = true,
-  repeating = true`), which is where mute lives now. When `hypr` is first stowed, back up
-  the live file and carry both over.
-  - **Stray autostart:** `hyprland.lua:55` starts `nm-applet`, which
-    isn't installed (and is rejected — §6), so it fails silently at
-    every login. Drop that line when `hypr` is stowed.
+- **kitty** (`kitty/.config/kitty/`, stowed, round #10 `b3011ea`):
+  `kitty.conf` + `tab_bar.py` — everything in §3 "Locked terminal".
+  Live dir was empty, nothing backed up.
+- **hypr** (`hypr/.config/hypr/hyprland.lua`, **stowed since round #10**,
+  `4472245`). The pre-stow live file is backed up at
+  `~/.config/hypr/hyprland.lua.pre-stow.bak` (outside the repo). Still
+  mostly Hyprland's stock example config, plus:
+  - `scale = "1"` and the stock `XF86AudioMute` → `wpctl set-mute
+    @DEFAULT_AUDIO_SINK@ toggle` bind (`locked = true, repeating =
+    true`) — carried over unchanged; that bind is where mute lives.
+  - Autostart (`91773c0`): hyprpolkitagent only. The stray `nm-applet`
+    line and the terminal autostart are gone (user, 2026-10-18).
+  - Flat 1px borders, rounding 0, shadow and blur off (`7ff55e8`, §3).
+  - Gaps and animations untouched (stock values).
 - Everything else starts from scratch.
 
 ## 6. Verified tooling facts
 
 Behavior checked against the actual installed versions — not training
 data. Recheck if the package version changes. Newest first.
+
+**Round #10 findings (UNIT-1, 2026-10-18; math by THE OVERSEER):**
+- **Versions:** kitty 0.49.2, Hyprland 0.56.2, hyprpolkitagent 0.2.0.
+- **kitty tab bar:** every key used is in the installed `conf.html` —
+  `tab_bar_style custom` (loads `draw_tab` from `tab_bar.py` in the
+  config dir), `tab_bar_margin_width`, `tab_bar_margin_height`,
+  `tab_bar_margin_color`, `modify_font underline_position`,
+  `url_style straight`, `selection_*`. `tab_bar.py` can call
+  `screen.apply_sgr(…)`, which is how the colored underline (SGR
+  `4:1;58…`) is drawn. kitty has **no overline**. The underline is
+  clamped inside the cell, so 2px and 3px positions look the same.
+  `modify_font underline_position` moves **every** underline. A config
+  reload doesn't rebuild the tab bar — only a new kitty does. kitty's
+  only stderr line is the known missing-portal message.
+- **Hyprland `general.col.*_border`** accepts `string|HL.Gradient`
+  (`hl.meta.lua`) — a plain `"rgb(…)"` string gives a flat color.
+  `hyprctl getoption` after reload: border_size 1, active `ff667359`,
+  inactive `ff1f2719`, rounding 0, shadow false, blur false;
+  `decoration.glow.enabled` was already false. `hyprctl configerrors`
+  empty. `group.col.*` unset → Hyprland's default group colors.
+- **Hyprland border color shift:** with color management on
+  (`render.cm_enabled true`, monitor preset `srgb`), Hyprland draws its
+  own border colors slightly off — sampled active `#667259` (set
+  `#667359`), inactive `#242b1f` (set `#1f2719`). App surfaces (kitty)
+  come out exact. Setting `sdr_min_luminance = 0` changed nothing
+  (reverted). **Cause (THE OVERSEER's arithmetic):** every sampled
+  channel equals the set value decoded with the piecewise sRGB curve
+  and re-encoded with gamma 2.2 — e.g. `0x1f`→`0x24`, `0x27`→`0x2b`,
+  `0x19`→`0x1f`, `0x73`→`0x72`; the dark end shifts most. The current
+  wiki lists a per-monitor `sdr_eotf` (`default` / `gamma22` / `srgb`;
+  `default` follows `render:cm_sdr_eotf`) — `"srgb"` should make the
+  two ends match. **Unverified on the machine** — round #11 test.
+- **hyprpolkitagent's systemd user unit doesn't start here:** it waits
+  for `graphical-session.target`, which stays inactive because
+  Hyprland isn't launched through uwsm. Starting the binary directly
+  from the autostart works.
+- **waybar** after the trim: log clean, bar 1920×30.
 
 **Round #9 findings (UNIT-1, 2026-10-18):**
 - **kitty 0.49.2** (options checked in the installed
@@ -446,9 +577,9 @@ data. Recheck if the package version changes. Newest first.
   (`window.background`, `button.flat`, button radius) win, so buttons
   stayed rounded — a from-scratch theme avoids the fight.
 - **Hyprland:** floating windows show a rounded corner and the default
-  gradient border (seen live; fixed in 2.6).
-- The live `hyprland.lua` also autostarts `$terminal` (besides the
-  stray `nm-applet` line, §5).
+  gradient border (seen live; fixed in 2.6, round #10).
+- The live `hyprland.lua` also autostarted `$terminal` (besides the
+  stray `nm-applet` line) — both dropped in round #10.
 
 **Round #8 findings (UNIT-1, 2026-10-18):**
 - **Versions:** fuzzel 1.15.0-1, waybar-git 0.15.0.r1019.g3672eee-1,

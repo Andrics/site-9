@@ -121,10 +121,12 @@ them at once**:
   "Report for THE OVERSEER" block — THE OVERSEER writes them into
   `PHASES.md`. (Before 2026-10-06 you edited `PHASES.md` directly; that's
   no longer the process.)
-- **Screenshots for review:** crop to the bar and upscale with
-  nearest-neighbor (`grim -g "0,0 1920x<bar height>"` then `ffmpeg`
-  with `flags=neighbor`, ~3x) — a full-desktop capture is too small to
-  judge font weight or framing.
+- **Screenshots for review:** crop to the part being judged (the bar,
+  a window region) and upscale with nearest-neighbor (`grim -g
+  "<x>,<y> <w>x<h>"` then `ffmpeg` with `flags=neighbor`, ~3x; more
+  for 1px detail) — a full-desktop capture is too small to judge font
+  weight or framing. **Name the file by its real scale** (`-x3`,
+  `-x6`).
 - **Screenshots go in `~/Pictures/site-9-phase<N>/`** (create it if
   missing), never `/tmp` or the scratchpad — the user needs to find and
   upload them. Prefix filenames with the sub-phase (e.g.
@@ -145,10 +147,15 @@ structure it targets:
 
 ```
 site-9/
-├── waybar/.config/waybar/   → stow waybar
-├── hypr/.config/hypr/       → stow hypr
-└── (future packages follow the same pattern: fuzzel/, mako/, etc.)
+├── waybar/.config/waybar/   → stow -t ~ waybar
+├── fuzzel/.config/fuzzel/   → stow -t ~ fuzzel
+├── kitty/.config/kitty/     → stow -t ~ kitty
+├── hypr/.config/hypr/       → stow -t ~ hypr
+└── (future packages follow the same pattern: gtk/, kvantum/, mako/, etc.)
 ```
 
+The repo lives at `~/Development/site-9`, so always pass `-t ~` —
+bare `stow <package>` targets the parent folder (`~/Development`).
+
 New app configs get their own top-level folder in this same shape, then
-`stow <name>` from the repo root symlinks it into place.
+`stow -t ~ <name>` from the repo root symlinks it into place.

@@ -54,7 +54,7 @@ the Project instructions, for every Overseer chat:
 |---|-------|--------|
 | 0 | Waybar — functional baseline (modules/layout) | Done |
 | 1 | Waybar — Half-Life VOX restyle (+ network picker) | Done (2026-10-18) |
-| 2 | System theme (terminal, GTK apps, file manager, Firefox, cursor/icons, window borders/wallpaper) | In progress — round #10 builds 2.1 kitty + 2.6 borders |
+| 2 | System theme (terminal, GTK apps, file manager, Firefox, cursor/icons, window borders/wallpaper) | In progress — 2.1 kitty + 2.6 borders built (round #10); round #11 builds 2.2 GTK + 2.3 Dolphin |
 | 3 | Shell polish (fuzzel/mako/hyprlock) | Not started |
 | 4 | Motion (Hyprland animations/window rules) | Not started |
 | 5 | Login screen (optional — gated on whether a display manager exists) | Not started |
@@ -64,82 +64,132 @@ the Project instructions, for every Overseer chat:
 
 _Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Round #10 build (2026-10-18): 2.1 kitty + 2.6 Hyprland window
-borders (pulled forward, with stowing `hypr`), plus one ride-along.**
-The user picked the kitty look on `2.1-kitty-field-P2-x3.png`
-(`BUILD_SPEC.md` §3 "Locked terminal: kitty") and wants the window
-gradient gone. Check every key against the installed docs (kitty
-`conf.html`, `/usr/share/hypr/stubs/hl.meta.lua`), not memory. One
-commit per step. If a spec line can't be done as written, stop that
-piece and report options.
+**Round #11 build (2026-10-18): 2.2 GTK3 theme + 2.3 Dolphin (Kvantum),
+plus the kitty window frame (2.1 follow-up) and four ride-alongs.** The
+user took every lean: SITE-9's own GTK3 theme (G1), install
+`xdg-desktop-portal-gtk`, Kvantum for Qt (Q1), and frame options to pick
+on screen. Spec: `BUILD_SPEC.md` §3 "Locked terminal", "Locked window
+borders", "Locked app theme: GTK3", "Locked Qt theme: Dolphin". Check
+every key against the installed docs/stubs (kitty `conf.html` and
+source, `/usr/share/hypr/stubs/hl.meta.lua`, Kvantum's installed docs),
+not memory. One commit per step. If a piece can't be done as written,
+stop that piece and report options; carry on with the rest.
 
 0. **Docs sync** — `git diff`, read the removed lines, commit
    `docs: sync from Overseer (2026-10-18)`.
 
-**Ask the user first** (before writing configs; THE OVERSEER's leans
-in bold; record the answers in the report):
-- a. kitty selection: **S1 `--panel` + white** (same as menus) / S2
-  `--bevel-light` + white.
-- b. Cursor blinking: **off** / on.
-- c. Window border colors: **active `--bevel-light`, inactive
-  `--bevel-dark`** (same as kitty's splits) / all `--bevel-dark`.
-- d. Polkit agent to autostart (needed for GUI password prompts):
-  **hyprpolkitagent** (Hyprland's own) / polkit-gnome / not yet.
-- e. Keep autostarting a terminal at login? **keep** / drop.
+**Ask the user first** (THE OVERSEER's leans in bold; record the
+answers in the report):
+- a. Title-bar buttons on GTK apps that draw their own title bar:
+  **none** (Hyprland closes windows by key) / close button only.
+- b. Check boxes and radio buttons: **both square** — recessed box,
+  mark in `--text-bright`, radio = small filled square / radio stays
+  round (the only round shape on screen).
+- c. Keyboard-focus marker: **1px dotted `--text` box inside the
+  focused widget** (Win95-style, no glow) / none.
+- d. Text-cursor blinking in apps: **off, same as kitty** / on.
+- e. Disabled controls: **text in `--text-dim`** (2.8:1 on `--panel` —
+  meant to recede; contrast rules exempt disabled controls; §3 gains
+  this one exception) / `--bevel-light` text (fainter, more Win95).
+- f. Test bench: **install `gtk3-demos`** (`gtk3-widget-factory` shows
+  every GTK3 widget; removable afterwards) / test on the real apps only.
 
-**Ride-along — bar trim:** remove CPU, RAM and MET (uptime) from
-waybar — config, CSS and anything only they use. Center = clock only;
-right = VOL, NET, PWR, tray. Log clean, 1920×30.
+**Ride-alongs:**
+- R1. **VOL padding** (user): the VOL field has ~15px inside each edge,
+  NET and PWR ~7px (measured on `2.0-bar-trimmed-x3.png`). Likely
+  padding on both `#volume` and `#pulseaudio` (or the group's
+  spacing) — find it, make VOL match NET/PWR on both edges (measure),
+  slider still inside the field when open.
+- R2. **Border color shift:** check `hl.meta.lua` for the monitor's
+  `sdr_eotf` (and `render.cm_sdr_eotf`); set `sdr_eotf = "srgb"` on
+  eDP-1. Re-sample Hyprland's active/inactive borders, a kitty field
+  pixel, and a waybar field + bevel. Keep it only if all are exact;
+  otherwise revert and report what each setting gives.
+- R3. **Group borders:** `group.col.*` (active, inactive, locked
+  variants — names from `hl.meta.lua`) → same flat colors as window
+  borders. Report the groupbar's defaults (rounding, gradients, colors,
+  font) against §2/§3; change nothing there.
+- R4. Confirm `~/.config/hypr` is a real directory (stow linked the
+  file, didn't fold the folder), so `hyprland.lua.pre-stow.bak` stays
+  out of the repo.
 
-**2.1 — kitty (live):**
-1. New stow package `kitty/.config/kitty/kitty.conf` (live dir is
-   empty — nothing to back up). Everything from §3 "Locked terminal":
-   field background, `--text` foreground, the P2 palette exactly as
-   rendered, cursor `--text` block + `cursor_text_color background`,
-   blink and selection per a/b, split borders active `--bevel-light` /
-   inactive `--bevel-dark`, 1px, `draw_minimal_borders yes`, bell
-   border `--warning`, padding 4px, `font_size 8.25`,
-   `shell_integration no-cursor`, `url_style straight`. Every hex gets
-   a comment (token name, or `P2 <color>`).
-2. **Tab bar — user feedback on the renders:** the whole strip must be
-   the uniform `--panel` olive (no dark area after the last tab, margins
-   included), and tabs must read as **buttons like waybar's workspace
-   tabs**: inactive raised (`--panel`, `--text`, light top/left, dark
-   bottom/right), active pressed in (`--field`, `--text-bright`,
-   reversed edges). kitty's tab bar is one text row, so find out how
-   close it can get, e.g. `tab_bar_style custom` with a small
-   `tab_bar.py` using kitty's own pixel-drawn edge glyphs (`▏ ▕ ▔ ▁`),
-   `tab_bar_margin_height`/`tab_bar_margin_color`, `tab_bar_align`.
-   Render up to 3 options in a scratch kitty (x3 crops), **show them to
-   the user, let them pick**, then put the pick in the live config. No
-   continuous redraws; keep any Python small and commented.
+**2.1 follow-up — kitty window frame:**
+1. Find out from kitty's installed source (its borders code under
+   `/usr/lib/kitty`) and `conf.html` whether kitty can paint its margin
+   in a different color from the text area (F1). Check in
+   `hl.meta.lua` that window rules can set a per-window border size and
+   color (F2), and whether kitty draws its own border around a single
+   window and in an unfocused window.
+2. In a scratch kitty (live config untouched), render at 8px: F1 (if
+   possible), F2, and the better of the two with `tab_bar_min_tabs 1`
+   (tab strip always shown). Show an active and an inactive window,
+   one with a split. **Show the user, let them pick**, then put the pick
+   live (kitty and/or hypr commit).
 
-**2.6 — Hyprland window borders (stow `hypr`):**
-3. Stow `hypr` from the repo: back up the live `~/.config/hypr/
-   hyprland.lua` outside the repo first, copy it in, `stow -t ~ hypr`.
-   Carry over `scale = "1"` and the `XF86AudioMute` bind; drop the
-   `nm-applet` line; terminal autostart per e; polkit agent per d.
-4. Borders: no gradient — flat colors per c; border size 1; rounding 0;
-   shadows off; blur off (§2). Leave gaps and animations as they are;
-   list their current values in the report.
+**2.2 — GTK3 theme (G1):**
+3. Install `xdg-desktop-portal-gtk` (and `gtk3-demos` per f). Check:
+   the Settings portal answers (waybar's "No such interface
+   org.freedesktop.portal.Settings" line is gone) and the GTK file
+   chooser opens (e.g. Firefox → Open File).
+4. New stow package `gtk/`:
+   `gtk/.local/share/themes/SITE-9/gtk-3.0/gtk.css`, written from
+   scratch from the §3 tokens (`@define-color`, commented by widget
+   group). Cover what GTK3 apps here use: window background, labels,
+   buttons (normal, pressed, toggled, disabled per e), entries, spin
+   buttons, combo boxes and popovers, menus and menubars, notebook
+   tabs, lists and tree views (rows, headers, selection), scrollbars,
+   check/radio per b, scales and progress bars, toolbars and header
+   bars per a, tooltips, dialogs, info bars, the file chooser. Hover
+   changes nothing (same as the bar's tabs). Focus per c. No
+   `box-shadow`, `text-shadow`, `-gtk-icon-shadow`, gradients,
+   transitions; radius 0.
+5. Settings: gsettings `gtk-theme 'SITE-9'`, `color-scheme
+   'prefer-dark'`, `font-name` DepartureMono Nerd Font at 11px,
+   `cursor-blink` per d; the same in `gtk/.config/gtk-3.0/settings.ini`
+   (plus `gtk-decoration-layout` per a). Confirm the 11px em on a crop
+   (8.25pt, or Pango's `px` size if that's cleaner).
+6. Waybar sits on top of the GTK theme: after the switch, compare the
+   bar's pixels with `2.0-bar-trimmed-x3.png` (fix anything that
+   changed in waybar's own CSS), log clean.
 
-**Test:** `hyprctl configerrors` empty after reload; `hyprctl
-getoption` (or the Lua equivalent) shows the new border values; the
-polkit agent is running (if picked); kitty opens with the new config
-and no errors.
+**2.3 — Dolphin (Kvantum, Q1):**
+7. Install `kvantum`. From its installed docs, use the current,
+   documented way to select it outside Plasma (e.g.
+   `QT_STYLE_OVERRIDE`, qt6ct, or other) — report which and why. Env
+   vars go in `hyprland.lua` via the Lua env API from `hl.meta.lua`.
+8. New stow package `kvantum/.config/Kvantum/`: `SITE-9/SITE-9.kvconfig`
+   + `SITE-9/SITE-9.svg` + `kvantum.kvconfig` selecting it. Same
+   widget rules as 2.2; hexes commented with token names; 1px bevels,
+   radius 0. Everything off that §2 bans: translucency, blur, menu and
+   tooltip shadows, state animations.
+9. If Dolphin still shows non-token colors (views, selection, places
+   panel) because KDE apps read `kdeglobals`, add a SITE-9 color scheme
+   from the tokens as stow package `kde/.config/kdeglobals` — colors and
+   fonts only (11px).
+10. Check hyprpolkitagent's password window (e.g. `pkexec true`, then
+    cancel). If it ignores Kvantum (its own Qt Quick style), report
+    options — don't force it.
 
-**Screenshots** in `~/Pictures/site-9-phase2/`:
-`2.0-bar-trimmed-x3.png` (right half and center of the bar),
-`2.1-kitty-live-x3.png` (tab bar + a split + P2 swatch),
-`2.1-kitty-tabs-<option>-x3.png` (each tab-bar option rendered),
-`2.6-borders-x3.png` (one active and one inactive window, tiled, plus a
-floating window corner).
+**Test:** `hyprctl configerrors` empty; waybar log clean, 1920×30;
+Settings portal present; sampled GTK and Dolphin pixels on token values
+(button, field, bevels, selection, tab); no rounded corners, shadows or
+blends beyond GTK's known 1px bevel-corner blend (§6) in any crop;
+Firefox's file dialog themed; kitty unchanged except the frame.
+
+**Screenshots** in `~/Pictures/site-9-phase2/` — **name each file by its
+real scale** (`-x3`, `-x6`):
+`2-fix-vol-padding-x3.png` (right side of the bar, slider closed and
+open), `2.6-borders-eotf-x6.png`, `2.1-frame-<option>-x3.png` (each
+option), `2.2-gtk-widgets-x3.png` (buttons, entry, list with
+selection, tabs, check/radio, menu), `2.2-gtk-filechooser-x3.png`,
+`2.3-dolphin-x3.png` (toolbar, places panel, list with a selected row),
+`2.3-polkit-x3.png` (if it takes the theme).
 
 **Then** push to `origin/main` and report (pushed hash, screenshot
-paths, the a–e answers, the P2 hex list, gaps/animation values).
+paths, the a–f answers, the frame pick, how Kvantum is selected).
 
-**Next round (#11), for planning only:** 2.2 GTK theme + 2.3 Dolphin/Qt
-— the user's picks are pending (Phase 2 "Waiting on the user").
+**Next round (#12), for planning only:** 2.4 Firefox + 2.5 cursor and
+icon theme.
 
 ## Phase 1 — Waybar restyle
 
@@ -501,6 +551,7 @@ come later (theme them when they arrive). Terminal stays **kitty**.
 
 **Sub-phases:**
 - **2.1 Terminal** — kitty: colors, font on the 11px grid, padding.
+  Built round #10; the window frame follows in round #11.
 - **2.2 GTK app theme** — buttons, menus, dialogs for GTK3 (and GTK4 /
   libadwaita as far as it goes).
 - **2.3 File manager** — whichever the user uses; app-specific bits on
@@ -508,9 +559,8 @@ come later (theme them when they arrive). Terminal stays **kitty**.
 - **2.4 Firefox** — browser UI.
 - **2.5 Cursor + icon theme.**
 - **2.6 Hyprland window borders** — pulled forward to round #10 (user
-  dislikes the gradient border on every window). Stows `hypr` from the
-  repo (back up the live file; carry over `scale = "1"` and the mute
-  bind; drop the stray `nm-applet` line — `BUILD_SPEC.md` §5).
+  dislikes the gradient border on every window) and built there, with
+  `hypr` stowed. Open: the color-shift fix (round #11, R2).
 - **2.7 Wallpaper.**
 
 **Round #9 plan (2026-10-18) — reviewed by THE OVERSEER.** Pushed
@@ -523,23 +573,38 @@ installed. **User picked kitty `field` + P2** (render
 `2.1-kitty-field-P2-x3.png`), with tab-bar and border feedback — now
 round #10.
 
-**Waiting on the user (for round #11 = 2.2 + 2.3), leans in bold:**
-- **GTK approach:** **G1 own SITE-9 GTK3 theme from the tokens**
-  (proof render showed square raised buttons, recessed entry/list,
-  `--panel` selection; ~300–500 lines to cover every widget) / G2
-  recolor Chicago95 (Win95 bevels, but 2px and grey image assets) / G3
-  = G1 while no GTK4 is installed. G1b (Adwaita-dark + overrides) is
-  ruled out — Adwaita's selectors win.
-- **Install `xdg-desktop-portal-gtk`** (dark-mode signal + GTK file
-  picker): **yes** / no.
-- **Qt for Dolphin:** goes in **2.3 (file manager)**, not 2.2.
-  Approach: **Q1 Kvantum** (SVG theme engine, can draw 1px bevels;
-  needs a SITE-9 Kvantum theme) / Q2 qt6ct + Fusion + QSS stylesheet
-  (QSS takes per-side border colors) / Q3 kdeglobals + Breeze (colors
-  only, Breeze shapes aren't VOX).
-- GTK settings that come with any approach: `gtk-theme`,
-  `color-scheme 'prefer-dark'`, `settings.ini`, GTK font DepartureMono
-  Nerd Font at the 11px size (decimal value to check).
+**Round #10 (2.1 kitty + 2.6 borders + bar trim) — built, tested,
+pushed (`7ff55e8`, 2026-10-18).** Approved by THE OVERSEER. Commits:
+c99efb3 docs sync (removed lines checked: old round #9 brief and the
+CPU/RAM/MET spec; no UNIT-1 commits lost); f96c6a8 CPU, RAM, MET off
+the bar; b3011ea kitty stow package (`kitty.conf` + `tab_bar.py`);
+4472245 live `hyprland.lua` added as-is (backup
+`~/.config/hypr/hyprland.lua.pre-stow.bak`); 91773c0 hyprpolkitagent
+autostart, `nm-applet` and terminal autostarts dropped, stray
+`.gitkeep` removed; 7ff55e8 flat 1px borders. Tests: configerrors
+empty, getoption reads back the new values, polkit agent registered,
+kitty's only stderr is the known portal line, waybar log clean at
+1920×30. Findings in `BUILD_SPEC.md` §6 (tab-bar mechanics, border
+color shift and its likely cause, polkit unit vs uwsm). Nit: the
+`2.6-borders` crop is ×6 but was named `-x3`.
+- **User's picks in round #10:** selection S1, cursor blink off, borders
+  active `--bevel-light` / inactive `--bevel-dark`, hyprpolkitagent,
+  terminal autostart dropped (THE OVERSEER had leaned keep), tab bar T3.
+  All in `BUILD_SPEC.md` §3.
+- **User feedback after round #10:** VOL field has too much inner
+  padding next to NET/PWR (→ R1); the terminal should look like the
+  VOX console — olive frame around a darker box — not field edge to
+  edge (→ frame options F1/F2).
+- **Border color shift:** a/b/c from UNIT-1 (accept / CM off /
+  pre-compensate) are superseded by the `sdr_eotf` test (R2).
+
+**Picks for round #11 (user, 2026-10-18: "all leans"):** G1 SITE-9's own
+GTK3 theme; install `xdg-desktop-portal-gtk`; Kvantum (Q1) for Dolphin
+in 2.3; kitty frame options rendered at 8px and picked on screen. GTK
+settings (`gtk-theme`, `prefer-dark`, `settings.ini`, 11px font) come
+with G1. Recorded in `BUILD_SPEC.md` §3–§4. The options not picked: G2
+recolor Chicago95 (2px bevels, grey assets), G3 (= G1 without GTK4 — moot,
+none installed), Q2 qt6ct + Fusion + QSS, Q3 kdeglobals + Breeze.
 
 **Background (2026-09-21, superseded 2026-10-09):** the VOX reference
 was first found as a terminal-only idea; the two open questions it
@@ -557,6 +622,29 @@ input") show in mako's default blue until it gets a config.
 Not scoped. User (2026-10-09): wants animations later, in the VOX
 style. `BUILD_SPEC.md` §2 performance constraints still govern
 whatever gets decided here.
+
+**Starting point — Hyprland's stock values, left as they are in round
+#10** (UNIT-1, 2026-10-18). Gaps: `gaps_in 5`, `gaps_out 20`.
+Animations on. Curves: easeOutQuint, easeInOutCubic, linear,
+almostLinear, quick, and spring `easy` (mass 1, stiffness 238.1191,
+dampening 24.21279333). Leaves (speed / curve; speed is in
+100 ms units):
+- global 10 / default · border 5.39 / easeOutQuint
+- windows 4.79 / easy · windowsIn 4.1 / easy, popin 87% · windowsOut
+  1.49 / linear, popin 87%
+- fadeIn 1.73, fadeOut 1.46 / almostLinear · fade 3.03 / quick
+- layers 3.81 / easeOutQuint · layersIn 4 / easeOutQuint, fade ·
+  layersOut 1.5 / linear, fade · fadeLayersIn 1.79, fadeLayersOut 1.39
+  / almostLinear
+- workspaces 1.94, workspacesIn 1.21, workspacesOut 1.94 /
+  almostLinear, fade · zoomFactor 7 / quick
+
+**Against the spec (THE OVERSEER, 2026-10-18):** the `easy` spring is
+slightly underdamped (critical damping is 2·√238 ≈ 31, set 24), so
+windows overshoot a little — a bounce, which §3 "Motion" rules out —
+and windows take ~0.4–0.5 s, not "short". Easing curves beyond linear
+are also against §3. Left alone on purpose until this phase; also set
+`misc.vfr = true` explicitly here (§2).
 
 ## Phase 5 — Login screen
 Gated: confirm a display manager is actually installed/wanted before
@@ -580,6 +668,21 @@ reachable via `nmcli`/`nmtui`.
 ## Log
 
 _(newest first, short entries)_
+
+- 2026-10-18 — **Round #10 approved; round #11 briefed.** New Overseer
+  chat, picked up from the 2026-10-18 handoff (Project docs matched
+  UNIT-1's `c99efb3` sync). UNIT-1 built and pushed round #10
+  (`7ff55e8`, 6 commits): bar trimmed to clock / VOL NET PWR tray,
+  kitty live with T3 tab bar, `hypr` stowed with hyprpolkitagent and
+  flat 1px borders. User's round #10 picks recorded (S1, no blink,
+  light/dark borders, hyprpolkitagent, no terminal autostart, T3).
+  THE OVERSEER traced the border color shift to an sRGB → gamma 2.2
+  conversion (numbers match exactly) — `sdr_eotf = "srgb"` to test.
+  User: VOL field padding too big; terminal should have the VOX
+  console's olive frame around the field. Picks: "all leans" — own
+  GTK3 theme, portal-gtk, Kvantum, frame renders at 8px. Round #11 =
+  2.2 GTK + 2.3 Dolphin + kitty frame + ride-alongs (VOL padding,
+  `sdr_eotf`, group borders, hypr dir check).
 
 - 2026-10-18 — **Round #9 plan reviewed; kitty look picked; round #10
   briefed.** UNIT-1: plan for 2.1/2.2 with renders, ride-along
