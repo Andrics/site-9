@@ -144,6 +144,17 @@ hl.config({
     animations = {
         enabled = true,
     },
+
+    -- Grouped windows: same flat colors as plain window borders
+    -- (Hyprland's defaults are translucent yellow/orange gradients).
+    group = {
+        col = {
+            border_active          = "rgb(667359)", -- --bevel-light
+            border_inactive        = "rgb(1f2719)", -- --bevel-dark
+            border_locked_active   = "rgb(667359)", -- --bevel-light
+            border_locked_inactive = "rgb(1f2719)", -- --bevel-dark
+        },
+    },
 })
 
 -- Default curves and animations, see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
