@@ -51,8 +51,10 @@ local menu        = "hyprlauncher"
 --
 hl.on("hyprland.start", function () 
 hl.exec_cmd("dbus-update-activation-environment --systemd --all")
-hl.exec_cmd(terminal)
-hl.exec_cmd("nm-applet")
+-- Polkit agent for GUI password prompts. Started directly: its systemd
+-- unit waits for graphical-session.target, which this session never
+-- reaches (Hyprland isn't started through uwsm).
+hl.exec_cmd("/usr/lib/hyprpolkitagent/hyprpolkitagent")
 hl.exec_cmd("waybar & hyprpaper")
 end)
 
