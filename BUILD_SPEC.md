@@ -134,7 +134,7 @@ bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
 - **Layout A** (user, 2026-10-09; confirmed on renders 2026-10-18): bar
   background `--panel`, 1px `--bevel-dark` bottom edge (the bar is
   raised and sits flush at the top, so only its dark edge shows).
-  Every module is a recessed field — clock and MET included; the tray
+  Every module is a recessed field — the clock included; the tray
   is one field around all its icons.
 - **Workspace tabs** are raised buttons with `--text` (not dim — dim is
   unreadable on `--panel`). The active tab is pressed in: recessed
@@ -146,17 +146,20 @@ bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
   Adwaita's 200ms eased fade; THE OVERSEER, 2026-10-18, applying the
   §3 motion rule).
 - **`SITE-9`**: the machine's name, a raised block with `--text-bright`.
-- **Layout (L2):** left — `SITE-9`, workspaces. Center — clock, MET.
-  Right — CPU, RAM, VOL, NET, PWR, tray.
-- **MET:** uptime as `T+DDD:HH:MM`, every 60s, no seconds.
+- **Layout (L2, trimmed 2026-10-18):** left — `SITE-9`, workspaces.
+  Center — clock. Right — VOL, NET, PWR, tray. **CPU, RAM and MET
+  (uptime) are off the bar** (user, 2026-10-18) — they move to the
+  SITE-9 settings panel as "system diagnostics" (Phase 6). Their old
+  spec: MET was uptime as `T+DDD:HH:MM`, every 60s; CPU/RAM were DOS
+  gauges with no icon.
 - **Tray:** icons 14px, keep their app colors. Hidden when empty.
 - **Height: 30px**, set explicitly (natural height is 24px).
 - **Readouts:** icon, label, gauge, value — `◄ VOL: ██████████  60%`,
-  `▂▄▆█ NET: 82%`, `⏻ PWR: ██████████  18%`; CPU/RAM have no icon.
+  `▂▄▆█ NET: 82%`, `⏻ PWR: ██████████  18%`.
   `PWR:` becomes `CHG:` while charging (no lightning glyph). Muted:
   `◄ VOL: MUTE` in `--text`, no gauge. Ethernet: `NET: LINK`, no steps.
   Percentages fixed-width (fmt `{x:>3}`).
-- **Gauges (VOL, PWR, CPU, RAM):** DOS fill, 10 cells of `█`, lit cells
+- **Gauges (VOL, PWR):** DOS fill, 10 cells of `█`, lit cells
   in the readout's color, unlit cells `█` in `--bevel-dark`. NET steps
   `▂▄▆█`: lit in the readout's color, unlit in `--bevel-dark`. No NET
   gauge.
@@ -227,6 +230,41 @@ bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
   radius 0; DepartureMono Nerd Font 11px, regular.
 - Super+R stays on hyprlauncher until Phase 3.
 
+### Locked terminal: kitty (Phase 2.1 — user, 2026-10-18)
+
+Picked on UNIT-1's render `2.1-kitty-field-P2-x3.png`:
+- **Background `--field`**, text `--text`.
+- **ANSI palette P2** — the classic DOS/VGA 16 colors, lightened only
+  as far as needed to read on olive (bright green, yellow and cyan stay
+  true DOS; bright black held ~3:1 so it stays darker than white).
+  Exact hexes live in `kitty.conf`, each with a comment.
+- **Cursor:** block in `--text`, `cursor_text_color background`.
+  Blinking: being asked in round #10.
+- **Selection:** S1 (`--panel` + `--text-bright`) or S2
+  (`--bevel-light` + `--text-bright`) — being asked in round #10.
+- **Split borders:** active `--bevel-light`, inactive `--bevel-dark`,
+  1px, `draw_minimal_borders yes`. Bell border `--warning`.
+- **Padding 4px.** Font DepartureMono Nerd Font **`font_size 8.25`**
+  (= 11px at kitty's 96 DPI, scale 1).
+- `shell_integration no-cursor` (keeps the block cursor at the prompt),
+  `url_style straight`.
+- **Tab bar** (kitty tabs and splits are in use) — on top, titles
+  `N:TITLE` upper-case, regular weight. **User, 2026-10-18:** the whole
+  strip is the uniform `--panel` olive (no dark area after the last
+  tab), and tabs must read as buttons the way the bar's workspace tabs
+  do — active pressed in. kitty's tab bar is one text row, so how close
+  it can get to 1px bevels is being worked out in round #10.
+
+### Locked window borders: Hyprland (Phase 2.6 — 2026-10-18)
+
+- **No gradient** (user, 2026-10-18: Hyprland's default two-color
+  gradient border is on every window and has to go).
+- Flat 1px border, rounding 0, no shadow, no blur — §2/§3, not
+  choices. Colors: active `--bevel-light` / inactive `--bevel-dark`
+  (lean) or all `--bevel-dark` — being asked in round #10.
+- Gaps and animations stay at Hyprland's defaults for now (gaps: ask
+  later; animations: Phase 4).
+
 ### Typography & glyph findings (still valid)
 
 - **Exact family name:** `DepartureMono Nerd Font` (no space). The
@@ -267,7 +305,8 @@ bevel; they get a flat `--bevel-dark` edge. kitty takes colors only.
 - **Double-strike weight** (2026-10-06 → 2026-10-18):
   `text-shadow: 1px 0 0 currentColor`. See Locked look rules.
 - **SCP influence**: now content only — the `FIELD:` labels, `SITE-9`
-  and MET stay as content, styled VOX.
+  and (until 2026-10-18) MET stayed as content, styled VOX; MET
+  moves to the settings panel.
 
 ### What IS fixed regardless
 
@@ -319,10 +358,28 @@ now — no audio dependencies, no hooks, until it's an actual phase.
 - Wallpaper: hyprpaper — not checked yet.
 - Screenshot: grim + slurp + swappy (bound to Print) — grim is in use;
   slurp/swappy not checked.
-- Terminal: **kitty** — kept (user, 2026-10-18; foot is no longer
-  planned). Phase 2.1 themes it.
+- Terminal: **kitty 0.49.2** — kept (user, 2026-10-18; foot is no
+  longer planned). Tabs and splits in use. Ran on defaults (empty
+  `~/.config/kitty/`) until Phase 2.1.
+- File manager: **Dolphin 26.08.2 — Qt6/KDE**, so GTK theming doesn't
+  reach it. No Qt theming set up (no qt6ct, Kvantum, breeze style,
+  kdeglobals or `QT_*` variables). Available, maintained: kvantum
+  1.1.8 (`extra`), qt6ct 0.11 (`extra`), breeze 6.8.0 (not installed).
+- GTK: **GTK3 only — no GTK4, no libadwaita installed** (2026-10-18).
+  GTK3 apps: Firefox, swappy, wofi, polkit-gnome, rustdesk-bin, waybar.
+  Settings now: `gtk-theme 'Adwaita'`, `color-scheme 'default'`
+  (light), font Adwaita Sans 11; no `settings.ini`, no `GTK_THEME`.
+- Browser: **Firefox 158** — uses its own built-in dark theme
+  (`firefox-compact-dark`), not the system theme; a GTK theme only
+  reaches its file and print dialogs.
+- Portals: only `xdg-desktop-portal` + `-hyprland` — **no Settings and
+  no FileChooser interface**, so apps get no dark-mode signal (waybar
+  logs "No such interface org.freedesktop.portal.Settings").
+  `xdg-desktop-portal-gtk` 1.15.3 would add both — not installed.
+- Display manager: **sddm 0.21.0 is installed** (Phase 5's gate).
 - Polkit agent: hyprpolkitagent 0.2.0 — **installed, not running**
-  (polkit-gnome is installed too). Nothing needs one yet: NetworkManager
+  (polkit-gnome is installed too; neither autostarts, so no GUI
+  password prompts appear — confirmed 2026-10-18). Nothing needs one yet: NetworkManager
   lets the user scan and connect without it (§6). Start it once
   something does (Phase 3/4, when `hypr` is stowed).
 - Network: **NetworkManager 1.58.1** (wpa_supplicant backend), `nmcli`
@@ -350,6 +407,7 @@ live one without asking.
   `--bevel-dark` troughs, VOL field on `#volume` (the drawer group) so
   the open slider sits inside it, VOX tooltips. Phase 1 closed on it.
   - `scripts/net-menu` — the network picker (§3, §6).
+  - Round #10 removes CPU, RAM and MET from the bar (§3).
 - **fuzzel** (`fuzzel/.config/fuzzel/fuzzel.ini`, stowed): VOX colors
   (all 12 color keys; `message` → `--text`), radius 0, DepartureMono
   11px, `[key-bindings] custom-1=F5`.
@@ -369,6 +427,28 @@ live one without asking.
 
 Behavior checked against the actual installed versions — not training
 data. Recheck if the package version changes. Newest first.
+
+**Round #9 findings (UNIT-1, 2026-10-18):**
+- **kitty 0.49.2** (options checked in the installed
+  `/usr/share/doc/kitty/html/conf.html`): at scale 1 kitty uses 96 DPI
+  (measured) — `font_size 8.25` gives an exact 11px em and 7×14 px
+  cells; text rows contain only exact palette colors (no blends). Nerd
+  icons (◄ ⏻) stay slightly soft. kitty's own box/block drawing and the
+  font's glyphs (`symbol_map U+2500-U+259F`) are pixel-identical —
+  default kept. Shell integration switches the cursor to a thin bar at
+  the prompt unless `shell_integration no-cursor`. `tab_separator`
+  doesn't take `{fmt…}` codes (prints them); `tab_title_template`
+  does. Session-file keywords `focus_matching_window` and `focus_tab`
+  work.
+- **GTK3** picks up a theme from `$XDG_DATA_HOME/themes` via
+  `GTK_THEME` (scratch-only proofs possible). An Adwaita-dark base with
+  plain overrides loses: Adwaita's more specific selectors
+  (`window.background`, `button.flat`, button radius) win, so buttons
+  stayed rounded — a from-scratch theme avoids the fight.
+- **Hyprland:** floating windows show a rounded corner and the default
+  gradient border (seen live; fixed in 2.6).
+- The live `hyprland.lua` also autostarts `$terminal` (besides the
+  stray `nm-applet` line, §5).
 
 **Round #8 findings (UNIT-1, 2026-10-18):**
 - **Versions:** fuzzel 1.15.0-1, waybar-git 0.15.0.r1019.g3672eee-1,

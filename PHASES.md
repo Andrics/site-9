@@ -38,13 +38,23 @@ the Project instructions, for every Overseer chat:
 - Explain things in plain words; the user isn't always familiar with
   the jargon (e.g. "passphrase" = WiFi password).
 
+**Added 2026-10-18:**
+- **Chat-size check, every reply:** estimate how much context the chat
+  has built up and how fast each round is adding to it (screenshots
+  and full doc rewrites are the big ones), and say whether the user
+  should start a new Overseer chat in this Project. Every reply re-reads
+  the whole chat, so a long one burns usage on every turn.
+- **When recommending a switch,** include a short paste-ready prompt
+  for the new OVERSEER that says where things were left off (the docs
+  carry the details).
+
 ## Status
 
 | # | Phase | Status |
 |---|-------|--------|
 | 0 | Waybar — functional baseline (modules/layout) | Done |
 | 1 | Waybar — Half-Life VOX restyle (+ network picker) | Done (2026-10-18) |
-| 2 | System theme (terminal, GTK apps, file manager, Firefox, cursor/icons, window borders/wallpaper) | In progress — round #9 plans 2.1 + 2.2 |
+| 2 | System theme (terminal, GTK apps, file manager, Firefox, cursor/icons, window borders/wallpaper) | In progress — round #10 builds 2.1 kitty + 2.6 borders |
 | 3 | Shell polish (fuzzel/mako/hyprlock) | Not started |
 | 4 | Motion (Hyprland animations/window rules) | Not started |
 | 5 | Login screen (optional — gated on whether a display manager exists) | Not started |
@@ -54,100 +64,82 @@ the Project instructions, for every Overseer chat:
 
 _Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Round #9 (2026-10-18): PLAN for sub-phases 2.1 terminal (kitty) +
-2.2 GTK app theme, plus one ride-along fix.** Phase 1 is closed. Plan
-only for 2.1/2.2 — no changes to kitty, GTK settings or themes yet.
-Read-only checks and scratch renders go inside the plan (scratch
-configs only; live configs untouched afterwards). Check every key
-against the installed man pages / docs, not memory. The user picks
-from the options; don't pick for them.
+**Round #10 build (2026-10-18): 2.1 kitty + 2.6 Hyprland window
+borders (pulled forward, with stowing `hypr`), plus one ride-along.**
+The user picked the kitty look on `2.1-kitty-field-P2-x3.png`
+(`BUILD_SPEC.md` §3 "Locked terminal: kitty") and wants the window
+gradient gone. Check every key against the installed docs (kitty
+`conf.html`, `/usr/share/hypr/stubs/hl.meta.lua`), not memory. One
+commit per step. If a spec line can't be done as written, stop that
+piece and report options.
 
 0. **Docs sync** — `git diff`, read the removed lines, commit
    `docs: sync from Overseer (2026-10-18)`.
 
-**Ride-along (build now, one commit, push):** `transition: none` on
-waybar's buttons (workspace tabs, and any other button node that has
-Adwaita's 200ms eased fade). The tab switch must be instant. Confirm in
-the log/CSS that no `transition` is left on bar nodes.
+**Ask the user first** (before writing configs; THE OVERSEER's leans
+in bold; record the answers in the report):
+- a. kitty selection: **S1 `--panel` + white** (same as menus) / S2
+  `--bevel-light` + white.
+- b. Cursor blinking: **off** / on.
+- c. Window border colors: **active `--bevel-light`, inactive
+  `--bevel-dark`** (same as kitty's splits) / all `--bevel-dark`.
+- d. Polkit agent to autostart (needed for GUI password prompts):
+  **hyprpolkitagent** (Hyprland's own) / polkit-gnome / not yet.
+- e. Keep autostarting a terminal at login? **keep** / drop.
 
-**2.1 — Terminal: kitty** (user: kitty stays; terminal is the first
-priority in Phase 2). Checks:
-- `pacman -Q kitty`; where the live config is (`~/.config/kitty/`?) and
-  what's in it. Stow plan: a `kitty` package; back up the live file.
-- Color keys from the installed kitty docs: `background`,
-  `foreground`, `cursor`/`cursor_text_color`, `selection_background`/
-  `selection_foreground`, `color0`–`color15`, `url_color`, and the tab
-  bar / window-border keys if kitty's tabs or splits are in use (ask the
-  user whether they use kitty tabs).
-- **Font:** DepartureMono Nerd Font must render on the 11px grid.
-  kitty's `font_size` is in points — find the value that gives exact
-  11px cells at scale 1 (check how kitty gets its DPI on Wayland), and
-  confirm with a 3x crop that strokes are crisp (no partial pixels on
-  text glyphs). Also check `█` and box-drawing come out crisp (kitty
-  draws box/block glyphs itself by default — say which way looks right
-  with this font).
-- **Padding:** `window_padding_width` options (e.g. 0 / 4px — the
-  reference uses 4px).
+**Ride-along — bar trim:** remove CPU, RAM and MET (uptime) from
+waybar — config, CSS and anything only they use. Center = clock only;
+right = VOL, NET, PWR, tray. Log clean, 1920×30.
 
-Options to render in a scratch kitty (`kitty --config <scratch>`), same
-test content in each — a 16-color swatch (normal + bright, fg on bg and
-as blocks), `ls --color`, a `git diff` and `git log --oneline --graph`
-from this repo, a prompt line, a selection, the cursor:
-- **Background:** `--field` `#303f25` (like the reference's output
-  area) vs `--panel` `#445435`. Text `--text`.
-- **ANSI palette, two sets** (contrast on the chosen background listed
-  for each color):
-  - **P1 muted/olive:** built around the §3 tokens — e.g. red from
-    `--critical`, yellow from `--warning`, greens/greys from the olive
-    ramp; every color readable (≥4.5:1 where possible, flag any below
-    3:1).
-  - **P2 classic DOS/VGA-style:** the familiar bright 16-color set,
-    adjusted only as far as needed to be readable on olive.
-- **Cursor:** block in `--text` vs `--text-bright`. **Selection:**
-  `--panel` + `--text-bright` (same as menus) vs `--bevel-light` +
-  `--text-bright`.
+**2.1 — kitty (live):**
+1. New stow package `kitty/.config/kitty/kitty.conf` (live dir is
+   empty — nothing to back up). Everything from §3 "Locked terminal":
+   field background, `--text` foreground, the P2 palette exactly as
+   rendered, cursor `--text` block + `cursor_text_color background`,
+   blink and selection per a/b, split borders active `--bevel-light` /
+   inactive `--bevel-dark`, 1px, `draw_minimal_borders yes`, bell
+   border `--warning`, padding 4px, `font_size 8.25`,
+   `shell_integration no-cursor`, `url_style straight`. Every hex gets
+   a comment (token name, or `P2 <color>`).
+2. **Tab bar — user feedback on the renders:** the whole strip must be
+   the uniform `--panel` olive (no dark area after the last tab, margins
+   included), and tabs must read as **buttons like waybar's workspace
+   tabs**: inactive raised (`--panel`, `--text`, light top/left, dark
+   bottom/right), active pressed in (`--field`, `--text-bright`,
+   reversed edges). kitty's tab bar is one text row, so find out how
+   close it can get, e.g. `tab_bar_style custom` with a small
+   `tab_bar.py` using kitty's own pixel-drawn edge glyphs (`▏ ▕ ▔ ▁`),
+   `tab_bar_margin_height`/`tab_bar_margin_color`, `tab_bar_align`.
+   Render up to 3 options in a scratch kitty (x3 crops), **show them to
+   the user, let them pick**, then put the pick in the live config. No
+   continuous redraws; keep any Python small and commented.
 
-**2.2 — GTK app theme** (normal app windows: buttons, menus, dialogs;
-feeds the file manager and Firefox later). Checks:
-- Which **file manager** is installed (`pacman -Q` for thunar, nautilus,
-  nemo, pcmanfm(-qt), dolphin, …) — the user uses one. Its toolkit
-  (GTK3 / GTK4+libadwaita / Qt).
-- Which installed apps are GTK3, GTK4, **libadwaita**, or Qt
-  (`pacman -Qi gtk3 gtk4 libadwaita qt6-base` → Required By).
-- Firefox version and whether it follows the system GTK theme now.
-- Current theme settings: `gsettings get org.gnome.desktop.interface
-  gtk-theme` and `color-scheme`, `~/.config/gtk-3.0/settings.ini`,
-  `~/.config/gtk-4.0/`, any `GTK_THEME`; `xdg-desktop-portal*` packages
-  installed (file pickers, dark-mode signal).
-- **libadwaita:** confirm on the installed version that it ignores the
-  `gtk-theme` setting but loads `~/.config/gtk-4.0/gtk.css` on top of
-  its own style (widely used, not officially supported). Say what that
-  means for bevels in libadwaita apps.
+**2.6 — Hyprland window borders (stow `hypr`):**
+3. Stow `hypr` from the repo: back up the live `~/.config/hypr/
+   hyprland.lua` outside the repo first, copy it in, `stow -t ~ hypr`.
+   Carry over `scale = "1"` and the `XF86AudioMute` bind; drop the
+   `nm-applet` line; terminal autostart per e; polkit agent per d.
+4. Borders: no gradient — flat colors per c; border size 1; rounding 0;
+   shadows off; blur off (§2). Leave gaps and animations as they are;
+   list their current values in the report.
 
-Approach options to lay out (cost, what each covers, risks, your lean):
-- **G1 own SITE-9 theme:** a small hand-written GTK3 theme from the §3
-  tokens (`~/.local/share/themes/SITE-9/gtk-3.0/gtk.css`, stowed),
-  plus a `gtk-4.0/gtk.css` override for GTK4/libadwaita apps.
-- **G2 recolor a maintained existing theme** — name candidates and
-  check they're actively maintained and current; say how close to the
-  VOX bevels each can get.
-- **G3 GTK3 only**, GTK4/libadwaita left on Adwaita dark.
-- Optional proof render: a minimal token CSS on one real GTK3 window
-  (the file manager if it's GTK3) showing a raised button, a recessed
-  entry and a list with a selected row. If it needs a package (e.g.
-  `gtk3-demos` for `gtk3-widget-factory`), ask the user first.
+**Test:** `hyprctl configerrors` empty after reload; `hyprctl
+getoption` (or the Lua equivalent) shows the new border values; the
+polkit agent is running (if picked); kitty opens with the new config
+and no errors.
 
-**Not in this round:** file manager specifics (2.3), Firefox (2.4),
-cursor + icons (2.5), Hyprland window borders + wallpaper (2.6).
+**Screenshots** in `~/Pictures/site-9-phase2/`:
+`2.0-bar-trimmed-x3.png` (right half and center of the bar),
+`2.1-kitty-live-x3.png` (tab bar + a split + P2 swatch),
+`2.1-kitty-tabs-<option>-x3.png` (each tab-bar option rendered),
+`2.6-borders-x3.png` (one active and one inactive window, tiled, plus a
+floating window corner).
 
-**Screenshots** in `~/Pictures/site-9-phase2/`: `2.1-kitty-<bg>-<palette>-x3.png`
-for each combination rendered (crop to the test content, nearest-neighbor
-3x), `2.1-kitty-font-x3.png` (font crispness crop), and
-`2.2-gtk-proof-x3.png` if rendered.
+**Then** push to `origin/main` and report (pushed hash, screenshot
+paths, the a–e answers, the P2 hex list, gaps/animation values).
 
-**Then:** push (ride-along commit), and send the plan. End with the
-report block for the ride-along and the checks (pushed hash +
-screenshot paths).
+**Next round (#11), for planning only:** 2.2 GTK theme + 2.3 Dolphin/Qt
+— the user's picks are pending (Phase 2 "Waiting on the user").
 
 ## Phase 1 — Waybar restyle
 
@@ -515,11 +507,39 @@ come later (theme them when they arrive). Terminal stays **kitty**.
   top of 2.2.
 - **2.4 Firefox** — browser UI.
 - **2.5 Cursor + icon theme.**
-- **2.6 Hyprland window borders + wallpaper** — needs `hypr` stowed
-  from the repo (back up the live file; carry over `scale = "1"` and
-  the mute bind; drop the stray `nm-applet` line — `BUILD_SPEC.md` §5).
+- **2.6 Hyprland window borders** — pulled forward to round #10 (user
+  dislikes the gradient border on every window). Stows `hypr` from the
+  repo (back up the live file; carry over `scale = "1"` and the mute
+  bind; drop the stray `nm-applet` line — `BUILD_SPEC.md` §5).
+- **2.7 Wallpaper.**
 
-Round #9 = plan for 2.1 + 2.2 (brief in "Next up").
+**Round #9 plan (2026-10-18) — reviewed by THE OVERSEER.** Pushed
+`50cd9ad` (ride-along: `transition: none` on every waybar node —
+Adwaita also fades sliders, scrollbars and rows; user to check the
+instant tab switch live). Findings in `BUILD_SPEC.md` §4/§6: no GTK4 or
+libadwaita installed, Dolphin is Qt6, Firefox uses its own dark theme,
+no Settings/FileChooser portal, no polkit agent running, sddm
+installed. **User picked kitty `field` + P2** (render
+`2.1-kitty-field-P2-x3.png`), with tab-bar and border feedback — now
+round #10.
+
+**Waiting on the user (for round #11 = 2.2 + 2.3), leans in bold:**
+- **GTK approach:** **G1 own SITE-9 GTK3 theme from the tokens**
+  (proof render showed square raised buttons, recessed entry/list,
+  `--panel` selection; ~300–500 lines to cover every widget) / G2
+  recolor Chicago95 (Win95 bevels, but 2px and grey image assets) / G3
+  = G1 while no GTK4 is installed. G1b (Adwaita-dark + overrides) is
+  ruled out — Adwaita's selectors win.
+- **Install `xdg-desktop-portal-gtk`** (dark-mode signal + GTK file
+  picker): **yes** / no.
+- **Qt for Dolphin:** goes in **2.3 (file manager)**, not 2.2.
+  Approach: **Q1 Kvantum** (SVG theme engine, can draw 1px bevels;
+  needs a SITE-9 Kvantum theme) / Q2 qt6ct + Fusion + QSS stylesheet
+  (QSS takes per-side border colors) / Q3 kdeglobals + Breeze (colors
+  only, Breeze shapes aren't VOX).
+- GTK settings that come with any approach: `gtk-theme`,
+  `color-scheme 'prefer-dark'`, `settings.ini`, GTK font DepartureMono
+  Nerd Font at the 11px size (decimal value to check).
 
 **Background (2026-09-21, superseded 2026-10-09):** the VOX reference
 was first found as a terminal-only idea; the two open questions it
@@ -551,7 +571,8 @@ over from waybar's decisions.
 2026-10-18): a self-built settings surface in the VOX style that takes
 the network actions dropped from the picker (WiFi/networking/Bluetooth
 on-off, connection editing, deleting connections, show password) and
-likely more. Waybar can't build panels, so this phase needs a widget
+likely more — including **system diagnostics: CPU, RAM and uptime**,
+moved off the bar (user, 2026-10-18). Waybar can't build panels, so this phase needs a widget
 toolkit — check what's current and maintained when it's scoped (tool
 freedom, `BUILD_SPEC.md` §4). Until then those actions are only
 reachable via `nmcli`/`nmtui`.
@@ -559,6 +580,18 @@ reachable via `nmcli`/`nmtui`.
 ## Log
 
 _(newest first, short entries)_
+
+- 2026-10-18 — **Round #9 plan reviewed; kitty look picked; round #10
+  briefed.** UNIT-1: plan for 2.1/2.2 with renders, ride-along
+  `50cd9ad` pushed (instant tab switch). User: kitty **field + P2**;
+  kitty's tab bar must be uniform olive with button-like tabs; the
+  gradient window border on every window has to go (2.6 pulled
+  forward); **CPU, RAM and MET off the bar** → settings panel "system
+  diagnostics". New rule: chat-size check every reply + handoff prompt
+  when switching. Round #10 = kitty build + tab-bar options + stow
+  `hypr` + flat borders + bar trim; UNIT-1 asks the user five small
+  picks first. GTK/Qt picks wait for round #11. THE OVERSEER
+  recommends a fresh Overseer chat after this reply.
 
 - 2026-10-18 — **Round #8 approved; Phase 1 closed; Phase 2 scoped;
   round #9 briefed.** UNIT-1 built and pushed the VOX re-skin
