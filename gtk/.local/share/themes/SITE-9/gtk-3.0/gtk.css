@@ -1,0 +1,1019 @@
+/* gtk/.local/share/themes/SITE-9/gtk-3.0/gtk.css
+   SITE-9 GTK3 theme — Half-Life VOX console look, written from scratch
+   from the BUILD_SPEC.md §3 tokens (not a recolor: GTK loads only this
+   file, nothing of Adwaita sits underneath).
+
+   Rules (§2/§3): 1px bevels from per-side border colors, radius 0, no
+   box-shadow / text-shadow / icon-shadow / gradients / transitions.
+   Raised = light top/left, dark bottom/right; recessed = reversed.
+   Hover changes nothing (menus and lists still highlight the row under
+   the pointer — that's selection, not decoration). Keyboard focus is a
+   1px dotted --text box inside the widget. Disabled text is --text-dim.
+   Square check boxes and radio buttons. */
+
+/* ------------------------------------------------------------------
+   Tokens (BUILD_SPEC.md §3 "Locked tokens")
+   ------------------------------------------------------------------ */
+@define-color panel #445435;       /* raised surfaces */
+@define-color field #303f25;       /* recessed surfaces */
+@define-color bevel-light #667359; /* light edge */
+@define-color bevel-dark #1f2719;  /* dark edge */
+@define-color text #cbcfc8;
+@define-color text-bright #ffffff;
+@define-color text-dim #8f9a85;    /* disabled text and placeholders */
+@define-color warning #e6a84f;
+@define-color critical #ff7a5c;
+
+/* GTK's standard color names, for apps and dialogs that read them
+   (Firefox's GTK dialogs, gtk_style_context_lookup_color). */
+@define-color theme_bg_color @panel;
+@define-color theme_fg_color @text;
+@define-color theme_base_color @field;
+@define-color theme_text_color @text;
+@define-color theme_selected_bg_color @panel;
+@define-color theme_selected_fg_color @text-bright;
+@define-color theme_unfocused_bg_color @panel;
+@define-color theme_unfocused_fg_color @text;
+@define-color theme_unfocused_base_color @field;
+@define-color theme_unfocused_text_color @text;
+@define-color theme_unfocused_selected_bg_color @panel;
+@define-color theme_unfocused_selected_fg_color @text-bright;
+@define-color insensitive_bg_color @panel;
+@define-color insensitive_fg_color @text-dim;
+@define-color insensitive_base_color @field;
+@define-color borders @bevel-dark;
+@define-color unfocused_borders @bevel-dark;
+@define-color warning_color @warning;
+@define-color error_color @critical;
+@define-color success_color @text;
+
+/* ------------------------------------------------------------------
+   Base: everything starts flat, square and still
+   ------------------------------------------------------------------ */
+* {
+    background-image: none;
+    box-shadow: none;
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    border-radius: 0;
+    -gtk-outline-radius: 0;
+    transition: none;
+    animation: none;
+    /* Focus marker (pick c): 1px dotted --text box inside the widget. */
+    outline-color: @text;
+    outline-style: dotted;
+    outline-width: 1px;
+    outline-offset: -3px;
+    caret-color: @text;
+}
+
+*:disabled {
+    color: @text-dim;
+    -gtk-icon-effect: dim;
+}
+
+window,
+.background {
+    background-color: @panel;
+    color: @text;
+}
+
+/* Client-side decorations: no shadow, no rounded corners, no resize
+   margin drawn as a shadow. */
+decoration,
+decoration:backdrop {
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    margin: 0;
+}
+
+label selection,
+entry selection,
+textview text selection,
+.view selection,
+*:selected {
+    background-color: @panel;
+    color: @text-bright;
+}
+
+/* Labels sit on --panel, where a --panel selection would vanish. */
+label selection {
+    background-color: @field;
+    color: @text-bright;
+}
+
+.dim-label,
+label.dim-label {
+    /* --text-dim is not used on --panel (2.8:1, §3); dim labels stay
+       readable. */
+    color: @text;
+}
+
+label.error { color: @critical; }
+label.warning { color: @warning; }
+
+*:link,
+button:link,
+button:visited,
+*:link:visited {
+    color: @text-bright;
+}
+
+button:link > label,
+button:visited > label {
+    text-decoration-line: underline;
+}
+
+/* ------------------------------------------------------------------
+   Buttons: raised blocks; pressed/toggled = recessed + --text-bright
+   ------------------------------------------------------------------ */
+button {
+    min-height: 18px;
+    min-width: 16px;
+    padding: 3px 9px;
+    background-color: @panel;
+    color: @text;
+    border: 1px solid;
+    border-color: @bevel-light @bevel-dark @bevel-dark @bevel-light;
+}
+
+button:active,
+button:checked {
+    background-color: @field;
+    color: @text-bright;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+}
+
+button:disabled {
+    color: @text-dim;
+}
+
+button:checked:disabled {
+    color: @text-dim;
+}
+
+button.image-button {
+    padding: 3px 5px;
+}
+
+/* Flat buttons (toolbars, sidebars, header bars): no frame until
+   pressed or toggled. */
+button.flat,
+button.sidebar-button,
+button.titlebutton {
+    background-color: transparent;
+    border-color: transparent;
+}
+
+button.flat:active,
+button.flat:checked,
+button.sidebar-button:active,
+button.titlebutton:active {
+    background-color: @field;
+    color: @text-bright;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+}
+
+button.suggested-action,
+button.destructive-action {
+    /* No accent color (§3): same as any button. */
+    background-color: @panel;
+    color: @text;
+}
+
+button.destructive-action label {
+    color: @text;
+}
+
+/* Font/file/color chooser buttons */
+button.color colorswatch {
+    border: 1px solid @bevel-dark;
+}
+
+button separator {
+    background-color: transparent;
+}
+
+/* Linked button groups (path bar, view switchers): share edges. */
+.linked > button {
+    margin: 0;
+}
+
+/* ------------------------------------------------------------------
+   Entries and spin buttons: recessed fields
+   ------------------------------------------------------------------ */
+entry,
+spinbutton:not(.vertical) {
+    min-height: 18px;
+    padding: 3px 6px;
+    background-color: @field;
+    color: @text;
+    border: 1px solid;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+    /* The caret already marks focus in a text field. */
+    outline-style: none;
+}
+
+entry:disabled,
+spinbutton:disabled {
+    color: @text-dim;
+}
+
+entry.flat,
+entry.flat:focus {
+    border-color: transparent;
+    background-color: transparent;
+}
+
+entry image {
+    color: @text;
+}
+
+entry.error,
+entry.error image {
+    color: @critical;
+}
+
+entry.warning,
+entry.warning image {
+    color: @warning;
+}
+
+/* Progress shown inside an entry: a 2px --text line along the bottom. */
+entry progress {
+    margin: 0 -6px;
+    border: none;
+    border-bottom: 2px solid @text;
+    background-color: transparent;
+}
+
+spinbutton:not(.vertical) {
+    padding: 0;
+}
+
+spinbutton:not(.vertical) entry {
+    min-width: 28px;
+    border: none;
+    background-color: transparent;
+}
+
+spinbutton button,
+spinbutton:not(.vertical) button {
+    min-height: 0;
+    padding: 0 4px;
+    margin: 0;
+}
+
+spinbutton.vertical entry {
+    min-width: 28px;
+    padding: 3px 0;
+}
+
+/* ------------------------------------------------------------------
+   Combo boxes
+   ------------------------------------------------------------------ */
+combobox button.combo {
+    padding: 3px 6px;
+}
+
+combobox arrow,
+button arrow,
+menuitem arrow,
+expander arrow,
+treeview.view.expander {
+    color: @text;
+    min-width: 16px;
+    min-height: 16px;
+}
+
+combobox arrow {
+    -gtk-icon-source: -gtk-icontheme("pan-down-symbolic");
+}
+
+/* ------------------------------------------------------------------
+   Menus, menubars, popovers: recessed --field lists;
+   row under the pointer = --panel + --text-bright
+   ------------------------------------------------------------------ */
+menubar {
+    padding: 0;
+    background-color: @panel;
+    border-bottom: 1px solid @bevel-dark;
+}
+
+menubar > menuitem {
+    padding: 3px 8px;
+    border: 1px solid transparent;
+}
+
+menubar > menuitem:hover {
+    background-color: @field;
+    color: @text-bright;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+}
+
+menu,
+.menu,
+.context-menu {
+    padding: 1px;
+    background-color: @field;
+    color: @text;
+    border: 1px solid;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+}
+
+menu menuitem,
+.menu menuitem,
+.context-menu menuitem {
+    min-height: 16px;
+    padding: 3px 8px;
+}
+
+menu menuitem:hover,
+.menu menuitem:hover,
+.context-menu menuitem:hover {
+    background-color: @panel;
+    color: @text-bright;
+}
+
+menu menuitem:disabled,
+.menu menuitem:disabled {
+    color: @text-dim;
+}
+
+menu menuitem arrow:dir(ltr) {
+    -gtk-icon-source: -gtk-icontheme("pan-end-symbolic");
+    margin-left: 8px;
+}
+
+menu menuitem arrow:dir(rtl) {
+    -gtk-icon-source: -gtk-icontheme("pan-end-symbolic-rtl");
+    margin-right: 8px;
+}
+
+menu > arrow {
+    min-height: 16px;
+    background-color: @field;
+    color: @text;
+}
+
+menu > arrow.top { -gtk-icon-source: -gtk-icontheme("pan-up-symbolic"); }
+menu > arrow.bottom { -gtk-icon-source: -gtk-icontheme("pan-down-symbolic"); }
+
+menu separator,
+.menu separator {
+    margin: 3px 0;
+}
+
+popover,
+popover.background {
+    padding: 2px;
+    background-color: @field;
+    color: @text;
+    border: 1px solid;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+}
+
+popover modelbutton {
+    min-height: 16px;
+    padding: 3px 8px;
+}
+
+popover modelbutton:hover {
+    background-color: @panel;
+    color: @text-bright;
+}
+
+modelbutton.flat arrow.left { -gtk-icon-source: -gtk-icontheme("pan-start-symbolic"); }
+modelbutton.flat arrow.right { -gtk-icon-source: -gtk-icontheme("pan-end-symbolic"); }
+
+/* ------------------------------------------------------------------
+   Notebook tabs: raised; the open tab is pressed in
+   ------------------------------------------------------------------ */
+notebook > header {
+    padding: 2px;
+    background-color: @panel;
+    border: none;
+}
+
+notebook > header > tabs > tab {
+    min-height: 16px;
+    padding: 3px 9px;
+    margin: 0 1px;
+    background-color: @panel;
+    color: @text;
+    border: 1px solid;
+    border-color: @bevel-light @bevel-dark @bevel-dark @bevel-light;
+}
+
+notebook > header > tabs > tab:checked {
+    background-color: @field;
+    color: @text-bright;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+}
+
+notebook > header > tabs > tab button.flat {
+    min-height: 14px;
+    min-width: 14px;
+    padding: 0;
+}
+
+notebook > header > tabs > arrow {
+    color: @text;
+    background-color: @panel;
+}
+
+notebook > header > tabs > arrow.down { -gtk-icon-source: -gtk-icontheme("pan-start-symbolic"); }
+notebook > header > tabs > arrow.up { -gtk-icon-source: -gtk-icontheme("pan-end-symbolic"); }
+
+notebook > stack:not(:only-child) {
+    background-color: @panel;
+}
+
+/* ------------------------------------------------------------------
+   Lists, tree views, icon views, text views: recessed --field;
+   selected row --panel + --text-bright
+   ------------------------------------------------------------------ */
+.view,
+iconview,
+textview text,
+list,
+treeview.view {
+    background-color: @field;
+    color: @text;
+}
+
+.view:selected,
+iconview:selected,
+list row:selected,
+treeview.view:selected,
+flowbox flowboxchild:selected {
+    background-color: @panel;
+    color: @text-bright;
+}
+
+.view:disabled,
+treeview.view:disabled {
+    color: @text-dim;
+}
+
+list row {
+    padding: 1px 0;
+}
+
+/* Tree view column headers: raised buttons. */
+treeview.view header button,
+treeview.view header button:hover {
+    padding: 2px 6px;
+    background-color: @panel;
+    color: @text;
+    border: 1px solid;
+    border-color: @bevel-light @bevel-dark @bevel-dark @bevel-light;
+}
+
+treeview.view header button:active {
+    background-color: @field;
+    color: @text-bright;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+}
+
+treeview.view.expander { -gtk-icon-source: -gtk-icontheme("pan-end-symbolic"); }
+treeview.view.expander:checked { -gtk-icon-source: -gtk-icontheme("pan-down-symbolic"); }
+treeview.view.expander:selected { color: @text-bright; }
+
+treeview.view.separator {
+    min-height: 3px;
+    color: @bevel-dark;
+}
+
+treeview.view.dnd {
+    border: 1px dotted @text;
+}
+
+treeview.view:drop(active) {
+    border: 1px solid @text;
+}
+
+treeview entry,
+treeview entry.flat {
+    border: 1px solid @text;
+}
+
+/* Rubber-band selection: a dotted frame, nothing translucent. */
+rubberband,
+.rubberband {
+    background-color: transparent;
+    border: 1px dotted @text;
+}
+
+/* Scrolled areas and frames with a visible frame: recessed edge. */
+scrolledwindow.frame,
+frame > border,
+.frame {
+    border: 1px solid;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+}
+
+scrolledwindow undershoot,
+scrolledwindow overshoot {
+    background-color: transparent;
+}
+
+scrolledwindow junction {
+    background-color: @panel;
+}
+
+textview border {
+    background-color: @field;
+}
+
+/* ------------------------------------------------------------------
+   Scrollbars: --field track, raised --panel thumb, 12px wide
+   (overlay scrolling is turned off in settings.ini)
+   ------------------------------------------------------------------ */
+scrollbar {
+    background-color: @field;
+    border: none;
+}
+
+scrollbar slider {
+    min-width: 10px;
+    min-height: 10px;
+    margin: 0;
+    background-color: @panel;
+    border: 1px solid;
+    border-color: @bevel-light @bevel-dark @bevel-dark @bevel-light;
+}
+
+scrollbar.vertical slider { min-height: 24px; }
+scrollbar.horizontal slider { min-width: 24px; }
+
+scrollbar button {
+    min-width: 10px;
+    min-height: 10px;
+    padding: 0;
+}
+
+scrollbar.vertical button.down { -gtk-icon-source: -gtk-icontheme("pan-down-symbolic"); }
+scrollbar.vertical button.up { -gtk-icon-source: -gtk-icontheme("pan-up-symbolic"); }
+scrollbar.horizontal button.down { -gtk-icon-source: -gtk-icontheme("pan-end-symbolic"); }
+scrollbar.horizontal button.up { -gtk-icon-source: -gtk-icontheme("pan-start-symbolic"); }
+
+/* If an app forces overlay scrollbars anyway: same full look. */
+scrollbar.overlay-indicator:not(.dragging):not(.hovering) {
+    background-color: @field;
+}
+
+scrollbar.overlay-indicator:not(.dragging):not(.hovering) slider {
+    min-width: 10px;
+    min-height: 10px;
+}
+
+/* ------------------------------------------------------------------
+   Check boxes and radio buttons (pick b): both square — a recessed
+   13px box; check = pixel tick, radio = 5px square, in --text-bright
+   ------------------------------------------------------------------ */
+check,
+radio {
+    min-width: 11px;
+    min-height: 11px;
+    margin: 0 4px;
+    background-color: @field;
+    color: @text-bright;
+    border: 1px solid;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+    -gtk-icon-source: none;
+    outline-style: none;
+}
+
+check:checked {
+    /* 11×11 PNG = the box's content size, drawn 1:1 (tools/make-assets.py). */
+    -gtk-icon-source: url("assets/check.png");
+}
+
+check:indeterminate,
+radio:indeterminate {
+    -gtk-icon-source: none;
+    background-image: image(@text-bright);
+    background-size: 7px 2px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+radio:checked {
+    background-image: image(@text-bright);
+    background-size: 5px 5px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+check:disabled,
+radio:disabled {
+    -gtk-icon-effect: dim;
+}
+
+radio:checked:disabled,
+radio:indeterminate:disabled,
+check:indeterminate:disabled {
+    background-image: image(@text-dim);
+}
+
+/* The focus box goes around the check button's label instead. */
+checkbutton:focus > label,
+radiobutton:focus > label {
+    outline-style: dotted;
+}
+
+/* Check marks inside menus and lists. */
+menu menuitem check,
+menu menuitem radio,
+treeview.view check,
+treeview.view radio {
+    margin: 0 4px 0 0;
+}
+
+/* ------------------------------------------------------------------
+   Switch: recessed track, raised --panel block
+   ------------------------------------------------------------------ */
+switch {
+    min-width: 40px;
+    min-height: 16px;
+    background-color: @field;
+    color: @text;
+    border: 1px solid;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+    font-size: 0;
+}
+
+switch:checked {
+    color: @text-bright;
+}
+
+switch slider {
+    min-width: 18px;
+    min-height: 14px;
+    background-color: @panel;
+    border: 1px solid;
+    border-color: @bevel-light @bevel-dark @bevel-dark @bevel-light;
+}
+
+switch:checked slider {
+    background-color: @text;
+    border-color: @text;
+}
+
+switch:disabled slider {
+    background-color: @panel;
+    border-color: @bevel-dark;
+}
+
+/* ------------------------------------------------------------------
+   Scales and progress bars: recessed trough, --text fill
+   ------------------------------------------------------------------ */
+scale {
+    min-height: 16px;
+    min-width: 16px;
+    padding: 6px;
+}
+
+scale trough {
+    background-color: @field;
+    border: 1px solid;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+}
+
+scale.horizontal trough { min-height: 4px; }
+scale.vertical trough { min-width: 4px; }
+
+scale highlight {
+    background-color: @text;
+}
+
+scale.horizontal highlight { min-height: 4px; }
+scale.vertical highlight { min-width: 4px; }
+
+scale fill {
+    background-color: @bevel-light;
+}
+
+/* The knob: a small raised block. */
+scale slider {
+    min-width: 9px;
+    min-height: 16px;
+    margin: -7px;
+    background-color: @panel;
+    border: 1px solid;
+    border-color: @bevel-light @bevel-dark @bevel-dark @bevel-light;
+}
+
+scale.vertical slider {
+    min-width: 16px;
+    min-height: 9px;
+}
+
+scale:disabled highlight {
+    background-color: @text-dim;
+}
+
+scale marks,
+scale value {
+    color: @text;
+}
+
+scale marks indicator {
+    min-width: 1px;
+    min-height: 4px;
+    background-color: @text;
+}
+
+progressbar trough {
+    min-height: 10px;
+    min-width: 10px;
+    background-color: @field;
+    border: 1px solid;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+}
+
+progressbar progress {
+    min-height: 10px;
+    min-width: 10px;
+    background-color: @text;
+}
+
+progressbar text {
+    color: @text;
+}
+
+levelbar trough {
+    min-height: 6px;
+    min-width: 6px;
+    padding: 1px;
+    background-color: @field;
+    border: 1px solid;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+}
+
+levelbar block {
+    min-height: 4px;
+    min-width: 8px;
+    background-color: @text;
+}
+
+levelbar block.empty { background-color: @bevel-dark; }
+levelbar block.low { background-color: @warning; }
+levelbar block.full,
+levelbar block.high { background-color: @text; }
+
+/* ------------------------------------------------------------------
+   Toolbars, header bars, action bars, search bars: --panel strips.
+   Header bars carry no window buttons (pick a: gtk-decoration-layout
+   is empty in settings.ini).
+   ------------------------------------------------------------------ */
+toolbar,
+.toolbar,
+.inline-toolbar,
+actionbar > revealer > box,
+searchbar > revealer > box {
+    padding: 3px;
+    background-color: @panel;
+}
+
+searchbar > revealer > box {
+    border-bottom: 1px solid @bevel-dark;
+}
+
+actionbar > revealer > box {
+    border-top: 1px solid @bevel-light;
+}
+
+headerbar,
+.titlebar {
+    min-height: 26px;
+    padding: 2px 4px;
+    background-color: @panel;
+    color: @text;
+    border: none;
+    border-bottom: 1px solid @bevel-dark;
+}
+
+headerbar .title,
+.titlebar .title {
+    color: @text-bright;
+}
+
+headerbar .subtitle {
+    color: @text;
+}
+
+headerbar button,
+headerbar entry,
+headerbar spinbutton {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+headerbar separator {
+    background-color: transparent;
+    border: none;
+}
+
+/* ------------------------------------------------------------------
+   Tooltips: like waybar's (raised --field box)
+   ------------------------------------------------------------------ */
+tooltip,
+tooltip.background {
+    padding: 3px 6px;
+    background-color: @field;
+    color: @text;
+    border: 1px solid;
+    border-color: @bevel-light @bevel-dark @bevel-dark @bevel-light;
+}
+
+tooltip label {
+    color: @text;
+}
+
+/* ------------------------------------------------------------------
+   Dialogs and info bars. Flagged states are text color only (§3).
+   ------------------------------------------------------------------ */
+dialog .dialog-action-area,
+messagedialog .dialog-action-area {
+    padding: 6px;
+}
+
+messagedialog .titlebar {
+    border-bottom: none;
+}
+
+messagedialog .dialog-action-box {
+    border-top: 1px solid @bevel-dark;
+}
+
+infobar > revealer > box,
+infobar {
+    padding: 4px;
+    background-color: @field;
+    color: @text;
+    border: none;
+}
+
+infobar.warning label { color: @warning; }
+infobar.error label { color: @critical; }
+
+/* ------------------------------------------------------------------
+   Separators and panes: etched 1px dark + 1px light
+   ------------------------------------------------------------------ */
+separator {
+    min-width: 0;
+    min-height: 0;
+    background-color: transparent;
+}
+
+separator.horizontal {
+    border-top: 1px solid @bevel-dark;
+    border-bottom: 1px solid @bevel-light;
+}
+
+separator.vertical {
+    border-left: 1px solid @bevel-dark;
+    border-right: 1px solid @bevel-light;
+}
+
+paned > separator {
+    min-width: 1px;
+    min-height: 1px;
+    background-color: @bevel-dark;
+    border: none;
+    -gtk-icon-source: none;
+}
+
+paned.wide > separator,
+paned > separator.wide {
+    min-width: 4px;
+    min-height: 4px;
+    background-color: @panel;
+}
+
+/* ------------------------------------------------------------------
+   File chooser and places sidebar
+   ------------------------------------------------------------------ */
+placessidebar,
+placessidebar list,
+stacksidebar list {
+    background-color: @field;
+}
+
+placessidebar row {
+    min-height: 20px;
+    padding: 0 6px;
+}
+
+placessidebar row:selected {
+    background-color: @panel;
+    color: @text-bright;
+}
+
+placessidebar row:selected image,
+placessidebar row:selected label {
+    color: @text-bright;
+}
+
+placessidebar row.sidebar-placeholder-row {
+    background-color: @panel;
+}
+
+placessidebar row.sidebar-new-bookmark-row {
+    color: @text-bright;
+}
+
+filechooser .path-bar button {
+    padding: 3px 6px;
+}
+
+filechooser #pathbarbox {
+    padding: 3px;
+    background-color: @panel;
+    border-bottom: 1px solid @bevel-dark;
+}
+
+filechooser actionbar {
+    background-color: @panel;
+}
+
+/* ------------------------------------------------------------------
+   Expanders, calendar, color chooser, misc
+   ------------------------------------------------------------------ */
+expander title > arrow { -gtk-icon-source: -gtk-icontheme("pan-end-symbolic"); }
+expander title > arrow:checked { -gtk-icon-source: -gtk-icontheme("pan-down-symbolic"); }
+
+calendar {
+    padding: 1px;
+    background-color: @field;
+    color: @text;
+    border: 1px solid;
+    border-color: @bevel-dark @bevel-light @bevel-light @bevel-dark;
+}
+
+calendar:selected {
+    background-color: @panel;
+    color: @text-bright;
+}
+
+calendar.header {
+    border: none;
+    border-bottom: 1px solid @bevel-dark;
+}
+
+calendar.highlight {
+    color: @text-bright;
+}
+
+calendar:indeterminate {
+    color: @text-dim;
+}
+
+colorswatch {
+    border: 1px solid @bevel-dark;
+}
+
+/* Busy spinner: shown only while busy, as a still icon (no animation
+   until Phase 4 decides motion). */
+spinner {
+    background: none;
+    opacity: 0;
+    color: @text;
+    -gtk-icon-source: -gtk-icontheme("process-working-symbolic");
+}
+
+spinner:checked {
+    opacity: 1;
+}
+
+/* Drag-and-drop target highlight: a 1px --text frame. */
+*:drop(active) {
+    box-shadow: none;
+    outline: none;
+    border-color: @text;
+}
+
+/* Text-selection handles (touch only). */
+cursor-handle {
+    background-color: transparent;
+    -gtk-icon-source: none;
+}
+
+/* Overlays such as OSD toolbars: no translucency. */
+.osd,
+toolbar.osd {
+    background-color: @panel;
+    color: @text;
+    border: 1px solid;
+    border-color: @bevel-light @bevel-dark @bevel-dark @bevel-light;
+}
+
+/* Status bar messages and the like. */
+statusbar {
+    padding: 2px 6px;
+    background-color: @panel;
+    border-top: 1px solid @bevel-light;
+}

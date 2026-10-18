@@ -1,5 +1,7 @@
 # Machine-specific / local-only
 *.local
+# …but not XDG folders named .local (stow packages like gtk/.local/share)
+!.local
 .DS_Store
 
 # Never commit secrets, tokens, or keys if any config ever needs one
