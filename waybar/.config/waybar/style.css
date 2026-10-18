@@ -81,9 +81,6 @@ window#waybar {
 
 /* Every module is a recessed field. */
 #clock,
-#custom-met,
-#cpu,
-#memory,
 #volume,
 #network,
 #battery,

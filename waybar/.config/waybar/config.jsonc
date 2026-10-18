@@ -12,62 +12,14 @@
     "margin-right": 0,
 
     "modules-left": ["custom/site", "hyprland/workspaces"],
-    "modules-center": ["clock", "custom/met"],
-    "modules-right": ["cpu", "memory", "group/volume", "network", "battery", "tray"],
+    "modules-center": ["clock"],
+    "modules-right": ["group/volume", "network", "battery", "tray"],
 
     // Static tag: no exec, drawn once, never starts a process.
     "custom/site": {
         "format": "SITE-9",
         "interval": "once",
         "tooltip": false
-    },
-
-    // Mission clock: system uptime as T+DDD:HH:MM. No seconds — they'd
-    // sit stale between 60s updates.
-    "custom/met": {
-        "exec": "awk '{s=int($1); printf \"T+%03d:%02d:%02d\\n\", s/86400, (s%86400)/3600, (s%3600)/60}' /proc/uptime",
-        "interval": 60,
-        "tooltip": false
-    },
-
-    // Percentages use a fmt width spec ({usage:>3}) so readouts keep one
-    // width from 0% to 100%; min-length would pad the whole label instead.
-    "cpu": {
-        "interval": 10,
-        "format": "CPU: {icon} {usage:>3}%",
-        // DOS-fill bar: entry i lights i+1 of 10 cells. Empty cells are
-        // █ in --bevel-dark (#1f2719) inside a pango span.
-        "format-icons": [
-            "█<span color='#1f2719'>█████████</span>",
-            "██<span color='#1f2719'>████████</span>",
-            "███<span color='#1f2719'>███████</span>",
-            "████<span color='#1f2719'>██████</span>",
-            "█████<span color='#1f2719'>█████</span>",
-            "██████<span color='#1f2719'>████</span>",
-            "███████<span color='#1f2719'>███</span>",
-            "████████<span color='#1f2719'>██</span>",
-            "█████████<span color='#1f2719'>█</span>",
-            "██████████"
-        ]
-    },
-
-    "memory": {
-        "interval": 30,
-        "format": "RAM: {icon} {percentage:>3}%",
-        // DOS-fill bar: entry i lights i+1 of 10 cells. Empty cells are
-        // █ in --bevel-dark (#1f2719) inside a pango span.
-        "format-icons": [
-            "█<span color='#1f2719'>█████████</span>",
-            "██<span color='#1f2719'>████████</span>",
-            "███<span color='#1f2719'>███████</span>",
-            "████<span color='#1f2719'>██████</span>",
-            "█████<span color='#1f2719'>█████</span>",
-            "██████<span color='#1f2719'>████</span>",
-            "███████<span color='#1f2719'>███</span>",
-            "████████<span color='#1f2719'>██</span>",
-            "█████████<span color='#1f2719'>█</span>",
-            "██████████"
-        ]
     },
 
     "group/volume": {
@@ -97,6 +49,9 @@
 
     "pulseaudio": {
         // Scroll on VOL: 5% a step, same as the media keys.
+        // Percentages here and on NET/PWR use a fmt width spec
+        // ({volume:>3}) so readouts keep one width from 0% to 100%;
+        // min-length would pad the whole label instead.
         "scroll-step": 5,
         "format": "◄ VOL: {icon} {volume:>3}%",
         "format-muted": "◄ VOL: MUTE",
