@@ -102,13 +102,15 @@ window#waybar {
 
 /* VOL: the field is on the drawer group (group/volume → #volume), so
    the open slider sits inside it. The readout and the slider have no
-   frame of their own. */
+   frame of their own. The field's 10px side padding comes from #volume
+   only (same as NET and PWR); the slider keeps a 10px gap after the
+   readout when open. */
 #pulseaudio {
-    padding: 0 10px;
+    padding: 0;
 }
 
 #pulseaudio-slider {
-    padding: 0 10px 0 0;
+    padding: 0 0 0 10px;
     border: none;
 }
 
