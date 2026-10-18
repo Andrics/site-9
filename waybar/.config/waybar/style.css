@@ -19,6 +19,9 @@
     font-size: 11px;
     min-height: 0;
     border-radius: 0;
+    /* Instant state changes (BUILD_SPEC.md §3): Adwaita fades buttons,
+       scale nodes and rows over 200ms with an eased curve. */
+    transition: none;
 }
 
 window#waybar {
