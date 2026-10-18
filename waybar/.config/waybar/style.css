@@ -19,27 +19,16 @@ window#waybar {
     padding: 0 4px;
 }
 
-/* Tabs use the same corner-tick frame as the modules below: --border
-   ticks by default, --accent ticks and number on the active tab. Hover
-   only lifts the number to --text, and not on the active tab; the ticks
-   stay as they are. */
 #workspaces button {
     padding: 0 10px;
     margin: 4px 2px;
     background: transparent;
     color: #8f8a76;
     border: 1px solid transparent;
-    /* --border */
-    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #3a3626);
-    border-image-slice: 5;
-    border-image-width: 5px;
-    border-image-repeat: stretch;
 }
 
 #workspaces button.active {
     color: #5fae5a;
-    /* --accent */
-    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #5fae5a);
 }
 
 #workspaces button:hover {
@@ -60,11 +49,7 @@ window#waybar {
     /* --accent */
 }
 
-/* Corner-tick frame (BUILD_SPEC.md §3): 9-slice border-image from an 11×11
-   SVG with 5px L-shaped corners and transparent edges. The 1px transparent
-   border keeps the old full-box geometry. Tick color is set by -gtk-recolor,
-   which needs a literal color, so each hex is commented with the palette
-   token it mirrors. Workspace tabs carry the same frame (above). */
+/* Module frames: a 1px border on every module (tabs too). */
 #custom-site,
 #clock,
 #custom-met,
@@ -78,11 +63,6 @@ window#waybar {
     padding: 0 10px;
     margin: 4px 2px;
     border: 1px solid transparent;
-    /* --border */
-    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #3a3626);
-    border-image-slice: 5;
-    border-image-width: 5px;
-    border-image-repeat: stretch;
 }
 
 #clock {
@@ -92,7 +72,7 @@ window#waybar {
 
 /* Volume gauge: 80×4 trough in --border, fill in --text, no knob. Adwaita
    puts a light border, a blue outline and gradients on these nodes, so all
-   of them are cleared here. The scale keeps its tick-frame border. */
+   of them are cleared here. The scale keeps its 1px frame border. */
 #pulseaudio-slider,
 #pulseaudio-slider trough,
 #pulseaudio-slider highlight,
@@ -129,26 +109,18 @@ window#waybar {
 
 #pulseaudio.muted {
     color: #8f8a76;
-    /* --text-dim */
-    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #8f8a76);
 }
 
 #network.disconnected {
     color: #b8452e;
-    /* --critical */
-    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #b8452e);
 }
 
 #battery.warning {
     color: #c98a3c;
-    /* --warning */
-    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #c98a3c);
 }
 
 #battery.critical {
     color: #b8452e;
-    /* --critical */
-    border-image-source: -gtk-recolor(url("frame/tick-symbolic.svg"), success #b8452e);
 }
 
 #tray {
