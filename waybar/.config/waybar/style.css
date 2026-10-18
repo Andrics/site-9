@@ -136,10 +136,9 @@ window#waybar {
     background: @text;
 }
 
-#pulseaudio.muted {
-    color: @text-dim;
-}
-
+/* Flagged states: text color only, the whole readout at once (label,
+   icon, lit gauge cells, value). Backgrounds and bevels don't change.
+   Muted VOL isn't flagged: it stays @text. */
 #network.disconnected {
     color: @critical;
 }

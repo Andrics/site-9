@@ -1,5 +1,5 @@
 // waybar/.config/waybar/config.jsonc
-// Half-Life / Black Mesa readout style — icons + HUD-style text labels.
+// Half-Life VOX console look (BUILD_SPEC.md §3): icons + FIELD: labels.
 {
     "layer": "top",
     "position": "top",
@@ -36,17 +36,17 @@
         "interval": 10,
         "format": "CPU: {icon} {usage:>3}%",
         // DOS-fill bar: entry i lights i+1 of 10 cells. Empty cells are
-        // █ in --border (#3a3626) inside a pango span.
+        // █ in --bevel-dark (#1f2719) inside a pango span.
         "format-icons": [
-            "█<span color='#3a3626'>█████████</span>",
-            "██<span color='#3a3626'>████████</span>",
-            "███<span color='#3a3626'>███████</span>",
-            "████<span color='#3a3626'>██████</span>",
-            "█████<span color='#3a3626'>█████</span>",
-            "██████<span color='#3a3626'>████</span>",
-            "███████<span color='#3a3626'>███</span>",
-            "████████<span color='#3a3626'>██</span>",
-            "█████████<span color='#3a3626'>█</span>",
+            "█<span color='#1f2719'>█████████</span>",
+            "██<span color='#1f2719'>████████</span>",
+            "███<span color='#1f2719'>███████</span>",
+            "████<span color='#1f2719'>██████</span>",
+            "█████<span color='#1f2719'>█████</span>",
+            "██████<span color='#1f2719'>████</span>",
+            "███████<span color='#1f2719'>███</span>",
+            "████████<span color='#1f2719'>██</span>",
+            "█████████<span color='#1f2719'>█</span>",
             "██████████"
         ]
     },
@@ -55,17 +55,17 @@
         "interval": 30,
         "format": "RAM: {icon} {percentage:>3}%",
         // DOS-fill bar: entry i lights i+1 of 10 cells. Empty cells are
-        // █ in --border (#3a3626) inside a pango span.
+        // █ in --bevel-dark (#1f2719) inside a pango span.
         "format-icons": [
-            "█<span color='#3a3626'>█████████</span>",
-            "██<span color='#3a3626'>████████</span>",
-            "███<span color='#3a3626'>███████</span>",
-            "████<span color='#3a3626'>██████</span>",
-            "█████<span color='#3a3626'>█████</span>",
-            "██████<span color='#3a3626'>████</span>",
-            "███████<span color='#3a3626'>███</span>",
-            "████████<span color='#3a3626'>██</span>",
-            "█████████<span color='#3a3626'>█</span>",
+            "█<span color='#1f2719'>█████████</span>",
+            "██<span color='#1f2719'>████████</span>",
+            "███<span color='#1f2719'>███████</span>",
+            "████<span color='#1f2719'>██████</span>",
+            "█████<span color='#1f2719'>█████</span>",
+            "██████<span color='#1f2719'>████</span>",
+            "███████<span color='#1f2719'>███</span>",
+            "████████<span color='#1f2719'>██</span>",
+            "█████████<span color='#1f2719'>█</span>",
             "██████████"
         ]
     },
@@ -101,18 +101,18 @@
         "format": "◄ VOL: {icon} {volume:>3}%",
         "format-muted": "◄ VOL: MUTE",
         // DOS-fill bar: entry i lights i+1 of 10 cells. Empty cells are
-        // █ in --border (#3a3626) inside a pango span.
+        // █ in --bevel-dark (#1f2719) inside a pango span.
         "format-icons": {
             "default": [
-                "█<span color='#3a3626'>█████████</span>",
-                "██<span color='#3a3626'>████████</span>",
-                "███<span color='#3a3626'>███████</span>",
-                "████<span color='#3a3626'>██████</span>",
-                "█████<span color='#3a3626'>█████</span>",
-                "██████<span color='#3a3626'>████</span>",
-                "███████<span color='#3a3626'>███</span>",
-                "████████<span color='#3a3626'>██</span>",
-                "█████████<span color='#3a3626'>█</span>",
+                "█<span color='#1f2719'>█████████</span>",
+                "██<span color='#1f2719'>████████</span>",
+                "███<span color='#1f2719'>███████</span>",
+                "████<span color='#1f2719'>██████</span>",
+                "█████<span color='#1f2719'>█████</span>",
+                "██████<span color='#1f2719'>████</span>",
+                "███████<span color='#1f2719'>███</span>",
+                "████████<span color='#1f2719'>██</span>",
+                "█████████<span color='#1f2719'>█</span>",
                 "██████████"
             ]
         }
@@ -126,11 +126,11 @@
         "format-ethernet": "NET: LINK",
         "format-disconnected": "NET: OFFLINE",
         // Signal steps: entry i lights i+1 of ▂▄▆█. Unlit steps in
-        // --border (#3a3626) inside a pango span.
+        // --bevel-dark (#1f2719) inside a pango span.
         "format-icons": [
-            "▂<span color='#3a3626'>▄▆█</span>",
-            "▂▄<span color='#3a3626'>▆█</span>",
-            "▂▄▆<span color='#3a3626'>█</span>",
+            "▂<span color='#1f2719'>▄▆█</span>",
+            "▂▄<span color='#1f2719'>▆█</span>",
+            "▂▄▆<span color='#1f2719'>█</span>",
             "▂▄▆█"
         ],
         // Off: it would sit over the picker's top row while the pointer
@@ -147,17 +147,17 @@
         "format": "⏻ PWR: {icon} {capacity:>3}%",
         "format-charging": "⏻ CHG: {icon} {capacity:>3}%",
         // DOS-fill bar: entry i lights i+1 of 10 cells. Empty cells are
-        // █ in --border (#3a3626) inside a pango span.
+        // █ in --bevel-dark (#1f2719) inside a pango span.
         "format-icons": [
-            "█<span color='#3a3626'>█████████</span>",
-            "██<span color='#3a3626'>████████</span>",
-            "███<span color='#3a3626'>███████</span>",
-            "████<span color='#3a3626'>██████</span>",
-            "█████<span color='#3a3626'>█████</span>",
-            "██████<span color='#3a3626'>████</span>",
-            "███████<span color='#3a3626'>███</span>",
-            "████████<span color='#3a3626'>██</span>",
-            "█████████<span color='#3a3626'>█</span>",
+            "█<span color='#1f2719'>█████████</span>",
+            "██<span color='#1f2719'>████████</span>",
+            "███<span color='#1f2719'>███████</span>",
+            "████<span color='#1f2719'>██████</span>",
+            "█████<span color='#1f2719'>█████</span>",
+            "██████<span color='#1f2719'>████</span>",
+            "███████<span color='#1f2719'>███</span>",
+            "████████<span color='#1f2719'>██</span>",
+            "█████████<span color='#1f2719'>█</span>",
             "██████████"
         ],
         "states": { "warning": 29, "critical": 14 }
