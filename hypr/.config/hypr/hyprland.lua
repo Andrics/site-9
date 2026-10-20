@@ -117,6 +117,8 @@ hl.config({
         -- as sRGB and shows them as gamma 2.2, BUILD_SPEC.md §6), so
         -- every color Hyprland draws itself is pre-compensated: set
         -- value -> what shows on screen. Recheck after Hyprland updates.
+        -- (Borders, group borders and background_color shift; the
+        -- groupbar doesn't — see below.)
         col = {
             active_border   = "rgb(667458)", -- shows #667359 --bevel-light
             inactive_border = "rgb(192212)", -- shows #1f2719 --bevel-dark
@@ -172,7 +174,8 @@ hl.config({
 
         -- Title strip of a window group: square, flat, opaque tokens,
         -- DepartureMono. Active tab = light indicator + bright title,
-        -- like the borders.
+        -- like the borders. The groupbar is NOT color-shifted (sampled
+        -- round #12: it shows the set hex as is), so plain token hexes.
         groupbar = {
             rounding          = 0,
             gradients         = false,
@@ -181,15 +184,15 @@ hl.config({
             font_family       = "DepartureMono Nerd Font",
             font_size         = 11,
             col = {
-                active          = "rgb(667458)", -- shows --bevel-light
-                inactive        = "rgb(192212)", -- shows --bevel-dark
-                locked_active   = "rgb(667458)", -- shows --bevel-light
-                locked_inactive = "rgb(192212)", -- shows --bevel-dark
+                active          = "rgb(667359)", -- --bevel-light
+                inactive        = "rgb(1f2719)", -- --bevel-dark
+                locked_active   = "rgb(667359)", -- --bevel-light
+                locked_inactive = "rgb(1f2719)", -- --bevel-dark
             },
             text_color                 = "rgb(ffffff)", -- --text-bright
-            text_color_inactive        = "rgb(ccd0c9)", -- shows #cbcfc8 --text
+            text_color_inactive        = "rgb(cbcfc8)", -- --text
             text_color_locked_active   = "rgb(ffffff)", -- --text-bright
-            text_color_locked_inactive = "rgb(ccd0c9)", -- shows --text
+            text_color_locked_inactive = "rgb(cbcfc8)", -- --text
         },
     },
 })
