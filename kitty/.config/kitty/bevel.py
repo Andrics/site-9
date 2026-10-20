@@ -10,13 +10,16 @@
 # (kitty.borders.set_borders_rects, an internal, checked on kitty 0.49.2)
 # and recolors them. Runs only when kitty redraws its borders (resize,
 # split, focus) — nothing continuous. On any error it passes kitty's own
-# rects through unchanged.
+# rects through unchanged and prints one line to kitty's stderr.
+import sys
+
 import kitty.borders as kb
 from kitty.borders import BorderColor
 
 PANEL = 0x445435  # --panel
 
 _orig = kb.set_borders_rects
+_warned = False
 
 
 def _minus(r, b):
@@ -60,10 +63,15 @@ def _recolor(r, boxes):
 def _set_borders_rects(os_window_id, tab_id, rects):
     # One box per pane, from its four border sides; blank rects inside a
     # box are the pane's padding and keep the window background.
+    global _warned
     try:
         new = _bevel(rects)
-    except Exception:
+    except Exception as e:
         new = rects  # kitty internals changed: fall back to its own borders
+        if not _warned:  # once per kitty process, so a broken update shows
+            _warned = True
+            print(f"bevel.py: fallback to kitty's own borders ({type(e).__name__}: {e})",
+                  file=sys.stderr, flush=True)
     _orig(os_window_id, tab_id, new)
 
 
