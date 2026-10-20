@@ -107,12 +107,16 @@ hl.config({
         gaps_out = 20,
 
         -- SITE-9 (BUILD_SPEC.md §3 "Locked window borders"): flat 1px,
-        -- no gradient. Same colors as kitty's split borders.
+        -- no gradient.
         border_size = 1,
 
+        -- Hyprland draws its own colors a few values off (it reads them
+        -- as sRGB and shows them as gamma 2.2, BUILD_SPEC.md §6), so
+        -- every color Hyprland draws itself is pre-compensated: set
+        -- value -> what shows on screen. Recheck after Hyprland updates.
         col = {
-            active_border   = "rgb(667359)", -- --bevel-light
-            inactive_border = "rgb(1f2719)", -- --bevel-dark
+            active_border   = "rgb(667458)", -- shows #667359 --bevel-light
+            inactive_border = "rgb(192212)", -- shows #1f2719 --bevel-dark
         },
 
         -- Set to true to enable resizing windows by clicking and dragging on borders and gaps
@@ -154,12 +158,35 @@ hl.config({
 
     -- Grouped windows: same flat colors as plain window borders
     -- (Hyprland's defaults are translucent yellow/orange gradients).
+    -- Pre-compensated like general.col above.
     group = {
         col = {
-            border_active          = "rgb(667359)", -- --bevel-light
-            border_inactive        = "rgb(1f2719)", -- --bevel-dark
-            border_locked_active   = "rgb(667359)", -- --bevel-light
-            border_locked_inactive = "rgb(1f2719)", -- --bevel-dark
+            border_active          = "rgb(667458)", -- shows --bevel-light
+            border_inactive        = "rgb(192212)", -- shows --bevel-dark
+            border_locked_active   = "rgb(667458)", -- shows --bevel-light
+            border_locked_inactive = "rgb(192212)", -- shows --bevel-dark
+        },
+
+        -- Title strip of a window group: square, flat, opaque tokens,
+        -- DepartureMono. Active tab = light indicator + bright title,
+        -- like the borders.
+        groupbar = {
+            rounding          = 0,
+            gradients         = false,
+            gradient_rounding = 0,
+            blur              = false,
+            font_family       = "DepartureMono Nerd Font",
+            font_size         = 11,
+            col = {
+                active          = "rgb(667458)", -- shows --bevel-light
+                inactive        = "rgb(192212)", -- shows --bevel-dark
+                locked_active   = "rgb(667458)", -- shows --bevel-light
+                locked_inactive = "rgb(192212)", -- shows --bevel-dark
+            },
+            text_color                 = "rgb(ffffff)", -- --text-bright
+            text_color_inactive        = "rgb(ccd0c9)", -- shows #cbcfc8 --text
+            text_color_locked_active   = "rgb(ffffff)", -- --text-bright
+            text_color_locked_inactive = "rgb(ccd0c9)", -- shows --text
         },
     },
 })
