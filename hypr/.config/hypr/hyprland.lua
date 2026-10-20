@@ -54,10 +54,10 @@ hl.exec_cmd("dbus-update-activation-environment --systemd --all")
 -- Qt theme vars for D-Bus/systemd-started apps (BUILD_SPEC.md §6);
 -- --all above already covers them, this names them explicitly.
 hl.exec_cmd("dbus-update-activation-environment --systemd QT_STYLE_OVERRIDE QT_QPA_PLATFORMTHEME")
--- Polkit agent for GUI password prompts. Started directly: its systemd
--- unit waits for graphical-session.target, which this session never
--- reaches (Hyprland isn't started through uwsm).
-hl.exec_cmd("/usr/lib/hyprpolkitagent/hyprpolkitagent")
+-- Polkit agent for GUI password prompts: lxqt-policykit (Qt, takes the
+-- SITE-9 Kvantum theme). Started directly, no systemd unit; its XDG
+-- autostart entry is OnlyShowIn=LXQt, so it doesn't start twice.
+hl.exec_cmd("lxqt-policykit-agent")
 hl.exec_cmd("waybar & hyprpaper")
 end)
 
@@ -417,6 +417,14 @@ hl.window_rule({
 --     no_anim = true,
 -- })
 -- overlayLayerRule:set_enabled(false)
+
+-- Password prompt: float at its own size (tiled, it filled half the screen).
+hl.window_rule({
+    name  = "float-polkit",
+    match = { class = "^lxqt-policykit-agent$" },
+
+    float = true,
+})
 
 -- Hyprland-run windowrule
 hl.window_rule({
