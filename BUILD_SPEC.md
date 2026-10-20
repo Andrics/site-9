@@ -101,7 +101,7 @@ Contrast is against `--field`, where most text sits.
 | `--bevel-dark` | `#1f2719` | dark edge; gauge troughs, unlit NET steps; flat border of single-color tools | — |
 | `--text` | `#cbcfc8` | normal text (the reference's 75% white, flattened) | 7.1:1 |
 | `--text-bright` | `#ffffff` | active/selected item, titles, typed-letter matches | 11.3:1 |
-| `--text-dim` | `#8f9a85` | placeholders only (e.g. `PASSPHRASE`) — **not on `--panel`** (2.8:1) | 3.8:1 |
+| `--text-dim` | `#8f9a85` | placeholders, and disabled controls in apps — **otherwise not on `--panel`** (2.8:1; disabled text may sit there, user 2026-10-18) | 3.8:1 |
 | `--warning` | `#e6a84f` | flagged state | 5.4:1 |
 | `--critical` | `#ff7a5c` | flagged state | 4.4:1 |
 
@@ -254,8 +254,12 @@ Picked on UNIT-1's render `2.1-kitty-field-P2-x3.png`:
   **no blinking** (user, 2026-10-18).
 - **Selection: S1** — `--panel` + `--text-bright`, same as menus (user,
   2026-10-18).
-- **Split borders:** active `--bevel-light`, inactive `--bevel-dark`,
-  1px, `draw_minimal_borders yes`. Bell border `--warning`.
+- **Pane edges:** each pane is a recessed box inside the F3 frame
+  (below): 1px, `--bevel-dark` top/left, `--bevel-light` bottom/right,
+  the same in every pane (static). Focus is shown by Hyprland's window
+  border, not by kitty. Bell border `--warning`. (Until round #11:
+  split borders active `--bevel-light` / inactive `--bevel-dark` with
+  `draw_minimal_borders yes`, which the margin now overrides.)
 - **Padding 4px.** Font DepartureMono Nerd Font **`font_size 8.25`**
   (= 11px at kitty's 96 DPI, scale 1).
 - `shell_integration no-cursor` (keeps the block cursor at the prompt),
@@ -280,19 +284,24 @@ Picked on UNIT-1's render `2.1-kitty-field-P2-x3.png`:
     waybar's buttons. Noted, not changed.
   - **A config reload (ctrl+shift+F5) doesn't apply tab-bar changes**;
     only a newly started kitty shows them.
-- **Window frame — being worked out in round #11** (user, 2026-10-18).
-  The VOX console is an 8px `--panel` frame around a recessed `--field`
-  box; kitty is field edge to edge. UNIT-1 renders options at 8px and
-  the user picks on screen:
-  - F1: kitty draws it — margin in `--panel` around the field, 1px
-    `--bevel-dark` line around the field. Only if kitty can color its
-    margin separately from the text area.
-  - F2: Hyprland draws it — an 8px `--panel` window border on kitty
-    windows only (window rule), kitty draws the 1px line inside.
-  - Variant: tab strip always shown (`tab_bar_min_tabs 1`), so the top
-    reads like the reference's "VOX Console" title row.
-  - Neither tool can draw a two-tone edge, so the inner line is flat
-    `--bevel-dark` (the single-color-tool rule, §3 tokens).
+- **Window frame: F3** (user, 2026-10-18 — picked on screen; built
+  round #11, `8027ba9`). Like the VOX console: an **8px `--panel` frame
+  around a recessed `--field` box**, bevelled like a pressed workspace
+  tab (user: "top/left dark, right/bottom light"). Each split pane gets
+  its own frame and box.
+  - kitty: `window_margin_width 6`, `window_border_width 1px`,
+    `draw_window_borders_for_single_window yes`; kitty's leftover
+    pixels add 0–6px to the frame on some edges (cell rounding).
+  - `kitty/.config/kitty/bevel.py` (a kitty watcher) recolors the
+    border sides and paints the blank areas `--panel`. It wraps
+    kitty's internal `kitty.borders.set_borders_rects` and falls back
+    to kitty's own drawing on any error — **recheck after every kitty
+    update** (internal API, may change).
+  - Tab strip only with 2+ tabs (`tab_bar_min_tabs` stays 2; user
+    declined the always-on strip).
+  - Rejected: F2 (thick Hyprland border + kitty line — the line floats
+    0–6px inside the frame) and F1 (impossible: kitty paints margins in
+    the window's own background, §6).
 
 ### Locked window borders: Hyprland (Phase 2.6 — built round #10, `7ff55e8`)
 
@@ -301,14 +310,20 @@ Picked on UNIT-1's render `2.1-kitty-field-P2-x3.png`:
 - **Flat 1px border: active `--bevel-light`, inactive `--bevel-dark`**
   (user, 2026-10-18 — same as kitty's splits). Rounding 0, shadow off,
   blur off (§2/§3). Set as plain `"rgb(…)"` strings.
-- **Grouped windows** (`group.col.*`) get the same two colors — round
-  #11 ride-along (they still had Hyprland's defaults).
-- **On-screen color shift — fix being tested in round #11.** Hyprland
-  draws the borders a few values off: active `#667259` (want
-  `#667359`), inactive `#242b1f` (want `#1f2719`); kitty's own pixels
-  are exact. The numbers match, to the value, a color read as
-  piecewise sRGB and written out as gamma 2.2 (THE OVERSEER,
-  2026-10-18 — §6). Fix to test: the monitor's `sdr_eotf = "srgb"`.
+- **Grouped windows** (`group.col.*`, incl. locked) use the same two
+  colors (round #11, `b2c32e8`). The **groupbar** (title strip of a
+  window group) still has Hyprland's defaults — rounding 1,
+  translucent off-palette colors, default font — against §2/§3; being
+  decided in round #12 (theme it / turn it off).
+- **On-screen color shift.** Hyprland draws its own colors a few values
+  off: active `#667259` (set `#667359`), inactive `#242b1f` (set
+  `#1f2719`); app surfaces are exact. It's an sRGB → gamma 2.2
+  conversion on Hyprland-drawn colors only (§6). No CM setting fixes
+  borders without shifting every app (tested round #11). Being decided
+  in round #12: **pre-compensated hexes** `#667458` / `#192212` (exact
+  on screen, commented as compensations, recheck on Hyprland updates)
+  or accept the shift. Whatever is picked applies to every color
+  Hyprland draws itself (borders, groupbar, background color).
 - **Gaps and animations stay at Hyprland's stock values for now**
   (gaps `gaps_in 5` / `gaps_out 20`: ask later; animations: Phase 4 —
   current values recorded in `PHASES.md` Phase 4).
@@ -328,23 +343,106 @@ Picked on UNIT-1's render `2.1-kitty-field-P2-x3.png`:
 - Hard rules inside the theme (§2): no `box-shadow`, `text-shadow`,
   `-gtk-icon-shadow`, gradients (`background-image: none`), blur or
   transitions; radius 0; 1px bevels; no off-palette outlines.
-- Settings: `gtk-theme 'SITE-9'`, `color-scheme 'prefer-dark'`, GTK
-  font DepartureMono Nerd Font at 11px (8.25pt, as in kitty — to
-  confirm on a crop), in both gsettings and
-  `~/.config/gtk-3.0/settings.ini`.
-- **`xdg-desktop-portal-gtk` gets installed** (user, 2026-10-18) — adds
-  the Settings portal (dark-mode signal) and the GTK file chooser.
-- Open, asked by UNIT-1 in round #11: GTK title-bar buttons, check/radio
-  shape, keyboard-focus marker, text-cursor blinking.
+- Built round #11 (`gtk/` package: theme in
+  `.local/share/themes/SITE-9/gtk-3.0/`, `settings.ini`).
+- **User picks (round #11):** no title-bar buttons (decoration layout
+  `:`); **check boxes and radio buttons both square** (recessed box,
+  `--text-bright` mark; radio = filled square); **keyboard focus = 1px
+  dotted `--text` box** inside the focused widget; **no text-cursor
+  blink**; **disabled text `--text-dim`** (the one place it may sit on
+  `--panel`).
+- Choices UNIT-1 made, confirmed or changed in round #12: links
+  `--text-bright` underlined; `.dim-label` in `--text` (dim not on
+  panel); entries show no focus box (the caret marks focus); spinner is
+  a still icon until Phase 4; no scrollbar arrows; menubar hover =
+  pressed in. Placeholders `--text-dim` (GTK's named color
+  `placeholder_text_color`).
+- Settings (gsettings + `settings.ini`): `gtk-theme 'SITE-9'`,
+  `color-scheme 'prefer-dark'`, font `DepartureMono Nerd Font 8.25`
+  (= 11px, measured), `cursor-blink false`, `overlay-scrolling false`,
+  `wm.preferences button-layout ':'`. Old values in `PHASES.md`
+  round #11.
+- **`xdg-desktop-portal-gtk` installed** — the Settings portal answers
+  (waybar: "Discovered appearance 'dark'") and Firefox's file chooser
+  is the themed GTK one.
+- Known leftovers: Adwaita's symbolic icons are soft (2.5); GTK3
+  `inset`/`outset`/`groove`/`ridge` frame styles shade colors (seen in
+  the widget factory only).
 
 ### Locked Qt theme: Dolphin (Phase 2.3 — user, 2026-10-18: "all leans")
 
 - **Q1: Kvantum** with a SITE-9 Kvantum theme (SVG + `.kvconfig`) from
   the §3 tokens — it can draw 1px two-tone bevels. Same widget rules
   as GTK above. (Not Q2 qt6ct + Fusion + stylesheet, not Q3
-  kdeglobals colors on Breeze shapes.)
-- Covers every Qt app, so it should also style hyprpolkitagent's
-  password window — to be checked (it may use its own Qt Quick style).
+  kdeglobals colors on Breeze shapes.) Built round #11 (`kvantum/`
+  package; SVG generated by `tools/make-svg.py`). Splitter 4px
+  `--panel`; translucency, blur, shadows and state animations off.
+- Selected with **`QT_STYLE_OVERRIDE=kvantum`** (documented upstream;
+  upstream prefers a config tool like qt6ct — being confirmed in round
+  #12) and **`QT_QPA_PLATFORMTHEME=gtk3`** (gives Qt the GTK font and
+  file dialogs), both set in `hyprland.lua`.
+- **Dolphin colors** come from a named KDE color scheme `SITE-9`
+  (`kde/` package: `kdeglobals` + `SITE-9.colors`), selected in
+  `dolphinrc` (`ColorScheme=SITE-9`; old value BreezeDark, backup
+  `~/.config/dolphinrc.pre-site9.bak`). Sampled: view `--field`, frame
+  `--bevel-dark` top/left, places `--panel`, selected tile `--panel` +
+  white, no Breeze blue. KDE fades the places headers ("Places",
+  "Devices") to `#959d8d` itself — no key reaches it; accepted.
+- **Not covered:** hyprpolkitagent's password window — it's drawn by
+  hyprtoolkit (Hyprland's own toolkit: rounded, dark grey, own
+  animations), not Qt widgets. Being decided in round #12.
+
+### Wallpaper (Phase 2.7 — pulled forward, built in round #12)
+
+- User (2026-10-18): wants a wallpaper that matches, and **Hyprland's
+  splash quotes and default wallpaper gone**. Picked **W1** (a SITE-9
+  wallpaper made from the tokens) and handed the design to THE
+  OVERSEER: "gritty, raw feel of Half-Life … go wild", with two
+  suggestions — the nickname **`andr1cs`** and a **BMRF logo**. The
+  user still picks the final version from UNIT-1's full-screen renders.
+- **Concept — "facility wall"** (THE OVERSEER, mockup shown in chat
+  2026-10-18): the desktop is a riveted wall inside SITE-9.
+  - **Palette: tokens only.** Every pixel is one of the §3 tokens; grit
+    and shading come from **ordered (Bayer) dithering** between them —
+    the 1998 software-renderer look, no blends, no gradients.
+  - **Wall:** `--field` base; large panels (240×180, an 8×6 grid) with
+    1px recessed seams (dark line, light line beside it) and 2×2 rivets
+    near each corner (light pixel top-left, dark bottom-right). A few
+    panels a shade lighter (dithered toward `--panel`) for variety.
+  - **Grime:** dithered `--bevel-dark` soot heavier toward the bottom and
+    left edge, streaks running down from seams, sparse 1px
+    `--bevel-light` scratches. All from a fixed random seed, so the
+    image is reproducible.
+  - **Stencil:** huge `SITE-9` in DepartureMono at a multiple of 11px
+    (~264px), painted in `--bevel-light`, worn away in noisy patches
+    (paint showing the wall through), with a stencil bridge cut through
+    the middle of every letter. Painted before the seams, so seams run
+    over it.
+  - **Pipe:** a bevelled `--panel` pipe running under the bar with dark
+    brackets — it shows in the 20px top gap above every window.
+  - **Hazard band:** 45° `--warning` / `--bevel-dark` stripes along the
+    bottom edge, worn — shows in the 20px bottom gap.
+  - **Signage:** small painted text top-left in `--text-dim`:
+    `◄ TEST CHAMBERS   LEVEL 3 // SECTOR C`.
+  - **Placard** (bottom-right, a raised VOX panel with four screw
+    heads): logo slot, `SITE-9` (`--text-bright`) / `RESEARCH
+    FACILITY`, a seam, `OPERATOR ..... ANDR1CS`, `CLEARANCE .... LEVEL
+    3`, a barcode strip and two unlit-looking status lamps
+    (`--warning`, `--critical` — static).
+  - **Logo:** the user supplies their own logo file, kept **outside the
+    repo** (e.g. `~/.local/share/site-9/logo.png`). The script
+    recolors it to the tokens with the same dither and wear, and
+    places it in the placard slot; without the file the slot shows a
+    plain recessed square.
+  - **Variants to render:** V1 everything above; V2 calmer (no big
+    stencil, lighter grime).
+- **Built by a script, not by hand:** `wallpaper/tools/make-wallpaper.py`
+  (or similar) in the repo, seeded, drawing at 1×, text with
+  antialiasing off, output an indexed PNG holding only token colors.
+  The finished PNG is written **outside the repo**
+  (`~/.local/share/site-9/wallpaper.png`) because it may contain the
+  logo; only the script is committed.
+- Static only (§2); shown by the wallpaper tool picked in round #12.
 
 ### Typography & glyph findings (still valid)
 
@@ -353,6 +451,12 @@ Picked on UNIT-1's render `2.1-kitty-field-P2-x3.png`:
   Package: `otf-departure-mono-nerd` (AUR, Nerd Fonts patch v3.4.0).
 - **Pixel grid:** 550 units per em, 50 per pixel → an **11px grid**.
   Crisp only at multiples of 11px (11, 22, …). Pick sizes on the grid.
+- **Antialiasing off for DepartureMono, in every app** (user,
+  2026-10-18; `fontconfig/` package, round #11 `aa3918f`): a fontconfig
+  rule matching only DepartureMono (other fonts stay antialiased).
+  Reason: Qt drew it half a pixel off horizontally (2-column strokes);
+  hinting didn't help, antialias off did. Effects: Nerd icons (`◄ ⏻`)
+  and `▂▄▆` are now hard-edged; kitty's text pixels didn't change.
 - Only Regular is installed (Nerd Font, Mono and Propo variants).
   Synthetic bold smears (fails the pixel-crisp standard). Double-strike
   was tried and retired (see Locked look rules); in GTK3 its doubled
@@ -360,7 +464,8 @@ Picked on UNIT-1's render `2.1-kitty-field-P2-x3.png`:
 - What the font has: all Box Drawing and Block Elements, all Nerd Font
   MD and FA icons, progress-bar glyphs U+EE00–EE0B (one outlined
   continuous bar). **Not** in the font: `▮ ▯ ▰ ▱ ■ □`.
-- Crispness at 11px: text glyphs fully crisp. `█` is the sharpest bar
+- Crispness at 11px (measured before antialiasing was turned off —
+  soft edges below are now hard): text glyphs fully crisp. `█` is the sharpest bar
   glyph, with a faint ≤10% font-level fringe on its outer edges (left
   as is). `⏻` and `▂▄▆` have soft edges. `▌`, `▏`–`▉` and `┃` land on
   half pixels (soft). `░` is a soft dot texture at every size. Nerd
@@ -438,7 +543,9 @@ now — no audio dependencies, no hooks, until it's an actual phase.
   `#4C7899` border) — off-palette; Phase 3 styles it. The network
   picker sends no notifications.
 - Idle/lock: hypridle + hyprlock — **planned, not installed**.
-- Wallpaper: hyprpaper — not checked yet.
+- Wallpaper: none set — the screen shows Hyprland's default wallpaper
+  and splash quotes (to be removed, round #12). hyprpaper: not checked
+  yet (round #12 checks it against Hyprland's own `background_color`).
 - Screenshot: grim + slurp + swappy (bound to Print) — grim is in use;
   slurp/swappy not checked.
 - Terminal: **kitty 0.49.2** — kept (user, 2026-10-18; foot is no
@@ -448,29 +555,36 @@ now — no audio dependencies, no hooks, until it's an actual phase.
   reach it. No Qt theming set up (no qt6ct, Kvantum, breeze style,
   kdeglobals or `QT_*` variables). Available, maintained: kvantum
   1.1.8 (`extra`), qt6ct 0.11 (`extra`), breeze 6.8.0 (not installed).
-  **Kvantum picked** (user, 2026-10-18) — installed in round #11.
+  **kvantum 1.1.8-1 installed** (round #11) — §3 "Locked Qt theme".
+  qt6ct not installed. Installed Qt platform-theme plugins: gtk3,
+  xdgdesktopportal. plasma-integration not installed (so `kdeglobals`
+  fonts don't apply; the gtk3 platform theme supplies the font).
 - GTK: **GTK3 only — no GTK4, no libadwaita installed** (2026-10-18).
   GTK3 apps: Firefox, swappy, wofi, polkit-gnome, rustdesk-bin, waybar.
-  Settings now: `gtk-theme 'Adwaita'`, `color-scheme 'default'`
-  (light), font Adwaita Sans 11; no `settings.ini`, no `GTK_THEME`.
-  **SITE-9's own GTK3 theme picked** (user, 2026-10-18) — built in
-  round #11 (§3).
+  **SITE-9 GTK3 theme live since round #11** (§3). Before that:
+  `gtk-theme 'Adwaita'`, `color-scheme 'default'`, font Adwaita Sans
+  11, cursor-blink true, overlay-scrolling true, button-layout
+  `appmenu:close`. **gtk3-demos 1:3.24.52-2** installed as the test
+  bench (`gtk3-widget-factory`).
 - Browser: **Firefox 158** — uses its own built-in dark theme
   (`firefox-compact-dark`), not the system theme; a GTK theme only
   reaches its file and print dialogs.
-- Portals: only `xdg-desktop-portal` + `-hyprland` — **no Settings and
-  no FileChooser interface**, so apps get no dark-mode signal (waybar
-  logs "No such interface org.freedesktop.portal.Settings").
-  `xdg-desktop-portal-gtk` 1.15.3 would add both — **picked (user,
-  2026-10-18), installed in round #11**.
+- Portals: `xdg-desktop-portal` + `-hyprland` + **`-gtk` 1.15.3-1
+  (installed round #11)** — Settings (dark-mode signal) and FileChooser
+  now answer.
 - Display manager: **sddm 0.21.0 is installed** (Phase 5's gate).
 - Polkit agent: **hyprpolkitagent 0.2.0 — autostarted since round #10**
   (user's pick, 2026-10-18), launched directly from `hyprland.lua`'s
   autostart, not through its systemd unit (the unit waits for
   `graphical-session.target`, §6). Logged "registered polkit agent for
-  session 2". polkit-gnome is still installed, unused. Its password
-  window is Qt — styled by the Kvantum theme if it takes it (round #11
-  check).
+  session 2". Its password window is **hyprtoolkit**, not Qt widgets —
+  it ignores Kvantum and the GTK theme (round #11). It reads
+  `~/.config/hypr/hyprtoolkit.conf` (colors, two rounding sizes, fonts,
+  icon theme; no bevels). Round #12 decides.
+  **polkit-gnome** (installed, unused): GNOME no longer develops it and
+  Fedora dropped it in F41 — treat as deprecated, don't use. Maintained
+  alternatives: mate-polkit (GTK3), lxqt-policykit (Qt), polkit-kde-agent
+  (KDE).
 - Network: **NetworkManager 1.58.1** (wpa_supplicant backend), `nmcli`
   and `nmtui` present; iwd not installed, systemd-networkd disabled.
 
@@ -515,12 +629,94 @@ live one without asking.
     line and the terminal autostart are gone (user, 2026-10-18).
   - Flat 1px borders, rounding 0, shadow and blur off (`7ff55e8`, §3).
   - Gaps and animations untouched (stock values).
+- **gtk** (`gtk/`, stowed `--no-folding`, round #11): SITE-9 GTK3 theme
+  (`.local/share/themes/SITE-9/gtk-3.0/`) + `.config/gtk-3.0/settings.ini`.
+  `.gitignore` had `*.local`, which also matched `.local/` folders —
+  `!.local` added (`6d23a95`). Commit `d56061c`'s message claims the
+  theme files but only `settings.ini` landed; `6d23a95` adds them.
+- **kvantum** (`kvantum/.config/Kvantum/`, stowed `--no-folding`):
+  `SITE-9/SITE-9.kvconfig`, `SITE-9/SITE-9.svg` (generated by
+  `tools/make-svg.py`), `kvantum.kvconfig`.
+- **kde** (`kde/`): `kdeglobals` (colors + fonts) and `SITE-9.colors`
+  (a symlink to it). Selected in `~/.config/dolphinrc`, which isn't in
+  the repo.
+- **fontconfig** (`fontconfig/`, stowed `--no-folding`): DepartureMono
+  without antialiasing (§3 Typography).
+- **hypr** additions in round #11: group border colors; `QT_STYLE_OVERRIDE`
+  and `QT_QPA_PLATFORMTHEME` env vars.
+- **waybar** in round #11: VOL padding from `#volume` only (`3991e27`);
+  the GTK theme's scale-knob block/margin cleared on the VOL slider
+  (`6bc75c7`).
 - Everything else starts from scratch.
 
 ## 6. Verified tooling facts
 
 Behavior checked against the actual installed versions — not training
 data. Recheck if the package version changes. Newest first.
+
+**Round #11 findings (UNIT-1, 2026-10-18):**
+- **Hyprland color management vs its own colors** (sampled: inactive /
+  active border, kitty field, waybar panel/dark/field/light):
+  - baseline, monitor `sdr_eotf = "srgb"` or `"gamma22"`, and
+    `render.cm_enabled = false` (reload only): no change —
+    borders `#242b1f` / `#667259`, apps exact.
+  - `render.cm_sdr_eotf = "srgb"` or `"default"`: same as baseline.
+  - `render.cm_sdr_eotf = "gamma22"` or `"auto"`: borders exact, **every
+    app shifted** (kitty `303f25`→`2c3d20`, waybar `445435`→`425332`,
+    `1f2719`→`192212`, `667359`→`667458`).
+  - Baseline CM with border hexes **`#667458` / `#192212`**: borders
+    and apps exact.
+  - So THE OVERSEER's sRGB → gamma 2.2 reading of the shift holds, but
+    the per-monitor `sdr_eotf` knob doesn't reach Hyprland-drawn colors.
+    Accepted values: monitor `sdr_eotf`; `render.cm_sdr_eotf`
+    srgb/gamma22/auto/default.
+- **kitty 0.49.2 internals (source):** margins and blank areas are
+  painted in the **window's own background** (the shader's DEFAULT_BG
+  slot follows the window bg, even after OSC 11) — so a margin can't
+  differ from the text area without patching. `draw_window_borders_for_single_window`
+  exists (inactive color when the OS window is unfocused). kitty's
+  leftover pixels sit outside its border box. A watcher can wrap
+  `kitty.borders.set_borders_rects`; border rects with `border_type < 0`
+  are top/left; slot 3 carries its own RGB.
+- **Hyprland window rules** set via `hl.dsp.exec_cmd` accept
+  `border_size` and `border_color` (one color = active only;
+  `"rgb(a) rgb(b)"` sets both).
+- **Hyprland groups:** `group.col.border_{active,inactive,locked_active,locked_inactive}`
+  are `string|HL.Gradient`; defaults were translucent gradients
+  (`66ffff00`, `66777700`, `66775500`, `66ff5500`). Groupbar defaults:
+  enabled, rounding 1, gradients false, gradient_rounding 2,
+  round_only_edges true, font_family empty, font_size 8, height 14,
+  indicator_height 3, col.active `66ffff00`, inactive `66777700`,
+  locked `66ff5500` / `66775500`, text white, blur false.
+- **GTK3:** the theme loads in `gtk3-widget-factory` with no CSS
+  warnings; font `8.25` = 11px (7px advance, two-color text); the
+  placeholder color is the named color `placeholder_text_color`; at 0%
+  volume Adwaita's 2px fill stub is gone (the gauge reads empty). The
+  file chooser runs as class `xdg-desktop-portal-gtk`.
+- **Kvantum 1.1.8:** no docs in the Arch package; upstream V1.1.8
+  `INSTALL.md` / Theme-Config read. `QT_STYLE_OVERRIDE` is documented;
+  upstream prefers a Qt config tool (qt6ct).
+- **Dolphin (KF6) outside Plasma ignores `kdeglobals` colors**: with no
+  scheme set it follows the dark-mode signal to Breeze/BreezeDark, and
+  its own `dolphinrc` had `ColorScheme=BreezeDark`. A named scheme file
+  (`SITE-9.colors`) fixes it.
+- **Qt draws DepartureMono half a pixel off horizontally** (2 columns
+  per stroke). `hintstyle full` and gsettings `font-hinting full` don't
+  help; `antialias=false` does. fontconfig's `50-user.conf` includes
+  `$XDG_CONFIG_HOME/fontconfig/conf.d`.
+- **hyprpolkitagent 0.2.0 = hyprtoolkit 0.6** (own renderer). Config:
+  `~/.config/hypr/hyprtoolkit.conf`; keys seen: background, base,
+  alternate_base, text, bright_text, accent, accent_secondary,
+  rounding_large, rounding_small, font_family, font_family_monospace,
+  h1_size–h3_size, small_font_size, icon_theme. Has opacity/geometry
+  animations.
+- **Session env:** env vars set in `hyprland.lua` don't reach
+  D-Bus/systemd-activated apps by themselves; UNIT-1 pushed the QT_*
+  vars into the activation environment by hand for this session only.
+- **Test input:** Hyprland's `send_shortcut` works for sending keys to
+  test windows. Never to the user's own windows — Space in Firefox's
+  file dialog confirmed it and opened a file in the user's browser tab
+  (round #11 mishap; `AGENTS.md` rule).
 
 **Round #10 findings (UNIT-1, 2026-10-18; math by THE OVERSEER):**
 - **Versions:** kitty 0.49.2, Hyprland 0.56.2, hyprpolkitagent 0.2.0.
@@ -551,8 +747,8 @@ data. Recheck if the package version changes. Newest first.
   and re-encoded with gamma 2.2 — e.g. `0x1f`→`0x24`, `0x27`→`0x2b`,
   `0x19`→`0x1f`, `0x73`→`0x72`; the dark end shifts most. The current
   wiki lists a per-monitor `sdr_eotf` (`default` / `gamma22` / `srgb`;
-  `default` follows `render:cm_sdr_eotf`) — `"srgb"` should make the
-  two ends match. **Unverified on the machine** — round #11 test.
+  `default` follows `render:cm_sdr_eotf`). **Tested round #11: it
+  doesn't reach Hyprland-drawn colors** (see round #11 findings).
 - **hyprpolkitagent's systemd user unit doesn't start here:** it waits
   for `graphical-session.target`, which stays inactive because
   Hyprland isn't launched through uwsm. Starting the binary directly

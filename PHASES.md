@@ -54,7 +54,7 @@ the Project instructions, for every Overseer chat:
 |---|-------|--------|
 | 0 | Waybar — functional baseline (modules/layout) | Done |
 | 1 | Waybar — Half-Life VOX restyle (+ network picker) | Done (2026-10-18) |
-| 2 | System theme (terminal, GTK apps, file manager, Firefox, cursor/icons, window borders/wallpaper) | In progress — 2.1 kitty + 2.6 borders built (round #10); round #11 builds 2.2 GTK + 2.3 Dolphin |
+| 2 | System theme (terminal, GTK apps, file manager, Firefox, cursor/icons, window borders/wallpaper) | In progress — 2.1, 2.2, 2.3, 2.6 built (rounds #10–#11); round #12 builds 2.7 wallpaper + 2.5 cursor/icons; 2.4 Firefox next |
 | 3 | Shell polish (fuzzel/mako/hyprlock) | Not started |
 | 4 | Motion (Hyprland animations/window rules) | Not started |
 | 5 | Login screen (optional — gated on whether a display manager exists) | Not started |
@@ -64,132 +64,134 @@ the Project instructions, for every Overseer chat:
 
 _Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Round #11 build (2026-10-18): 2.2 GTK3 theme + 2.3 Dolphin (Kvantum),
-plus the kitty window frame (2.1 follow-up) and four ride-alongs.** The
-user took every lean: SITE-9's own GTK3 theme (G1), install
-`xdg-desktop-portal-gtk`, Kvantum for Qt (Q1), and frame options to pick
-on screen. Spec: `BUILD_SPEC.md` §3 "Locked terminal", "Locked window
-borders", "Locked app theme: GTK3", "Locked Qt theme: Dolphin". Check
-every key against the installed docs/stubs (kitty `conf.html` and
-source, `/usr/share/hypr/stubs/hl.meta.lua`, Kvantum's installed docs),
-not memory. One commit per step. If a piece can't be done as written,
-stop that piece and report options; carry on with the rest.
+**Round #12 build (2026-10-18): 2.7 wallpaper (pulled forward — user
+asked) + 2.5 cursor and icon theme, plus round #11 follow-ups.** Spec:
+`BUILD_SPEC.md` §3 (tokens, "Locked window borders", "Wallpaper"), §2
+(static only). Check every key and package against the installed
+docs/stubs and the package database, not memory; for every theme or
+tool you consider, check it's current and maintained (latest release,
+Arch/AUR package, recent upstream activity). One commit per step; check
+`git show --stat` after each so the message matches what landed. If a
+piece can't be done as written, stop that piece, report options, carry
+on with the rest. Follow the new `AGENTS.md` rules on the user's
+windows and on killing processes.
 
 0. **Docs sync** — `git diff`, read the removed lines, commit
    `docs: sync from Overseer (2026-10-18)`.
 
-**Ask the user first** (THE OVERSEER's leans in bold; record the
-answers in the report):
-- a. Title-bar buttons on GTK apps that draw their own title bar:
-  **none** (Hyprland closes windows by key) / close button only.
-- b. Check boxes and radio buttons: **both square** — recessed box,
-  mark in `--text-bright`, radio = small filled square / radio stays
-  round (the only round shape on screen).
-- c. Keyboard-focus marker: **1px dotted `--text` box inside the
-  focused widget** (Win95-style, no glow) / none.
-- d. Text-cursor blinking in apps: **off, same as kitty** / on.
-- e. Disabled controls: **text in `--text-dim`** (2.8:1 on `--panel` —
-  meant to recede; contrast rules exempt disabled controls; §3 gains
-  this one exception) / `--bevel-light` text (fainter, more Win95).
-- f. Test bench: **install `gtk3-demos`** (`gtk3-widget-factory` shows
-  every GTK3 widget; removable afterwards) / test on the real apps only.
+**Already answered — user, 2026-10-18: "all leans"** (don't re-ask;
+the leans in bold are the picks):
+- a. Hyprland's own colors: **pre-compensated hexes** (`#667458` for
+  `--bevel-light`, `#192212` for `--bevel-dark`, each commented as a
+  compensation; exact on screen; recheck on Hyprland updates) / accept
+  the small shift.
+- b. Password window: **switch the agent to mate-polkit** (GTK3,
+  maintained by MATE, takes the SITE-9 GTK theme with bevels) — if its
+  dependencies are clean (no `libappindicator`); else lxqt-policykit
+  (Qt, takes Kvantum) / colors-only `hyprtoolkit.conf` on
+  hyprpolkitagent (flat, no bevels) / leave it. polkit-gnome is out:
+  dead upstream.
+- c. After b: **uninstall the unused agents** (polkit-gnome, and
+  hyprpolkitagent if replaced — only if nothing else depends on it) /
+  keep them installed.
+- d. Groupbar (title strip on grouped windows): **theme it** — rounding
+  0, gradients off, opaque token colors (per a), DepartureMono 11px /
+  turn it off.
+- e. Qt style selection: **keep `QT_STYLE_OVERRIDE` + gtk3 platform
+  theme** (documented, no new package) / switch to qt6ct (Kvantum
+  upstream's preference, one more package).
+- f. Your own theme choices from round #11 (links `--text-bright`
+  underlined, `.dim-label` in `--text`, no focus box on entries, still
+  spinner until Phase 4, no scrollbar arrows, menubar hover = pressed
+  in, 4px Kvantum splitter): **keep all** / change some.
+- g. Wallpaper: **W1 — a SITE-9 wallpaper made from the tokens.** The
+  user gave the design to THE OVERSEER: the "facility wall" concept in
+  `BUILD_SPEC.md` §3 "Wallpaper" (mockup was shown to the user). The
+  user still picks between your renders.
+
+Still asked in-round, on screen: wallpaper variant (V1/V2), icon theme,
+cursor theme and size.
 
 **Ride-alongs:**
-- R1. **VOL padding** (user): the VOL field has ~15px inside each edge,
-  NET and PWR ~7px (measured on `2.0-bar-trimmed-x3.png`). Likely
-  padding on both `#volume` and `#pulseaudio` (or the group's
-  spacing) — find it, make VOL match NET/PWR on both edges (measure),
-  slider still inside the field when open.
-- R2. **Border color shift:** check `hl.meta.lua` for the monitor's
-  `sdr_eotf` (and `render.cm_sdr_eotf`); set `sdr_eotf = "srgb"` on
-  eDP-1. Re-sample Hyprland's active/inactive borders, a kitty field
-  pixel, and a waybar field + bevel. Keep it only if all are exact;
-  otherwise revert and report what each setting gives.
-- R3. **Group borders:** `group.col.*` (active, inactive, locked
-  variants — names from `hl.meta.lua`) → same flat colors as window
-  borders. Report the groupbar's defaults (rounding, gradients, colors,
-  font) against §2/§3; change nothing there.
-- R4. Confirm `~/.config/hypr` is a real directory (stow linked the
-  file, didn't fold the folder), so `hyprland.lua.pre-stow.bak` stays
-  out of the repo.
+- R1. **Splash quotes and default wallpaper off** (user): find the
+  `misc` keys in `hl.meta.lua` (splash rendering, Hyprland logo,
+  forced default wallpaper) and turn them off. Set `misc`'s
+  background color to `--bevel-dark` (per a) until the wallpaper is
+  live.
+- R2. Border colors per a (window, group, and anything else Hyprland
+  draws in a token color); groupbar per d.
+- R3. Polkit per b and c: check the package (`pacman -Si`: version,
+  dependencies), install, autostart it the way hyprpolkitagent is
+  started now (directly from the autostart, no systemd unit), check it
+  registers, test with `pkexec
+  true` in a test kitty and cancel.
+- R4. **Qt env for D-Bus-started apps:** env vars in `hyprland.lua`
+  don't reach D-Bus/systemd-activated apps on their own (§6). Add
+  `dbus-update-activation-environment --systemd QT_STYLE_OVERRIDE
+  QT_QPA_PLATFORMTHEME` (check the flag in its `--help`) to the
+  autostart, after the env lines. Verified at the user's next normal
+  login (don't log out yourself — it ends your session).
+- R5. **F3 frame robustness:** confirm `bevel.py` only runs on layout
+  changes (not every frame), and make its fallback print one line to
+  kitty's stderr when it triggers, so a kitty update that breaks it is
+  visible.
 
-**2.1 follow-up — kitty window frame:**
-1. Find out from kitty's installed source (its borders code under
-   `/usr/lib/kitty`) and `conf.html` whether kitty can paint its margin
-   in a different color from the text area (F1). Check in
-   `hl.meta.lua` that window rules can set a per-window border size and
-   color (F2), and whether kitty draws its own border around a single
-   window and in an unfocused window.
-2. In a scratch kitty (live config untouched), render at 8px: F1 (if
-   possible), F2, and the better of the two with `tab_bar_min_tabs 1`
-   (tab strip always shown). Show an active and an inactive window,
-   one with a split. **Show the user, let them pick**, then put the pick
-   live (kitty and/or hypr commit).
+**2.7 — wallpaper:**
+1. Tool: compare hyprpaper (current version, config format — §1 says
+   still hyprlang, check) with Hyprland's own background color (enough
+   for W2). Must use no CPU when idle (§2); report its memory use.
+2. Write the generator for the "facility wall" (`BUILD_SPEC.md` §3
+   "Wallpaper" — every layer, in order). Small, commented, seeded;
+   tokens only, ordered dithering for grit; text at multiples of 11px
+   with antialiasing off; indexed PNG output to
+   `~/.local/share/site-9/wallpaper.png` (outside the repo). Check the
+   imaging tool is current (e.g. Pillow; with ImageMagick use `magick`,
+   not the deprecated `convert`). Check: the PNG holds only token
+   colors (count them).
+   - **Logo:** ask the user to put their logo file outside the repo
+     (e.g. `~/.local/share/site-9/logo.png`); the script recolors and
+     places it. Never commit it or a PNG that contains it.
+   - Render **V1 and V2**, show each **full screen** (temporary, revert
+     after), let the user pick, then put the pick live. Sample the
+     wallpaper on screen — it goes through color management too;
+     compensate like a if it shifts.
+   - Mind the gaps: the 20px top/bottom/side gaps around windows are
+     what's visible most of the time — check the pipe and hazard band
+     read there with a window open.
 
-**2.2 — GTK3 theme (G1):**
-3. Install `xdg-desktop-portal-gtk` (and `gtk3-demos` per f). Check:
-   the Settings portal answers (waybar's "No such interface
-   org.freedesktop.portal.Settings" line is gone) and the GTK file
-   chooser opens (e.g. Firefox → Open File).
-4. New stow package `gtk/`:
-   `gtk/.local/share/themes/SITE-9/gtk-3.0/gtk.css`, written from
-   scratch from the §3 tokens (`@define-color`, commented by widget
-   group). Cover what GTK3 apps here use: window background, labels,
-   buttons (normal, pressed, toggled, disabled per e), entries, spin
-   buttons, combo boxes and popovers, menus and menubars, notebook
-   tabs, lists and tree views (rows, headers, selection), scrollbars,
-   check/radio per b, scales and progress bars, toolbars and header
-   bars per a, tooltips, dialogs, info bars, the file chooser. Hover
-   changes nothing (same as the bar's tabs). Focus per c. No
-   `box-shadow`, `text-shadow`, `-gtk-icon-shadow`, gradients,
-   transitions; radius 0.
-5. Settings: gsettings `gtk-theme 'SITE-9'`, `color-scheme
-   'prefer-dark'`, `font-name` DepartureMono Nerd Font at 11px,
-   `cursor-blink` per d; the same in `gtk/.config/gtk-3.0/settings.ini`
-   (plus `gtk-decoration-layout` per a). Confirm the 11px em on a crop
-   (8.25pt, or Pango's `px` size if that's cleaner).
-6. Waybar sits on top of the GTK theme: after the switch, compare the
-   bar's pixels with `2.0-bar-trimmed-x3.png` (fix anything that
-   changed in waybar's own CSS), log clean.
+**2.5 — cursor + icon theme:**
+3. Scout **up to 3 icon themes and up to 3 cursor themes** that fit
+   the VOX look (sharp, retro/pixel, Win95-era feel, or recolorable to
+   the tokens), each current and maintained, from `extra` or AUR. For
+   cursors, check whether Hyprland uses hyprcursor or XCursor for each
+   and what the current setup is. Render: an icon sheet in Dolphin and
+   the GTK file chooser; cursors at ×3 (arrow, text, hand, busy).
+   **Show the user, let them pick** (also cursor size — integer, on the
+   pick's native sizes).
+4. Install the picks; set them everywhere they're read (gsettings +
+   `settings.ini`, the Qt side, Hyprland's cursor env/config,
+   hyprtoolkit if it reads an icon theme). No animated cursor while
+   idle (a busy cursor animates only while busy — OK).
 
-**2.3 — Dolphin (Kvantum, Q1):**
-7. Install `kvantum`. From its installed docs, use the current,
-   documented way to select it outside Plasma (e.g.
-   `QT_STYLE_OVERRIDE`, qt6ct, or other) — report which and why. Env
-   vars go in `hyprland.lua` via the Lua env API from `hl.meta.lua`.
-8. New stow package `kvantum/.config/Kvantum/`: `SITE-9/SITE-9.kvconfig`
-   + `SITE-9/SITE-9.svg` + `kvantum.kvconfig` selecting it. Same
-   widget rules as 2.2; hexes commented with token names; 1px bevels,
-   radius 0. Everything off that §2 bans: translucency, blur, menu and
-   tooltip shadows, state animations.
-9. If Dolphin still shows non-token colors (views, selection, places
-   panel) because KDE apps read `kdeglobals`, add a SITE-9 color scheme
-   from the tokens as stow package `kde/.config/kdeglobals` — colors and
-   fonts only (11px).
-10. Check hyprpolkitagent's password window (e.g. `pkexec true`, then
-    cancel). If it ignores Kvantum (its own Qt Quick style), report
-    options — don't force it.
+**Test:** `hyprctl configerrors` empty; no splash text or default
+wallpaper; wallpaper and border pixels on token values; new polkit
+window themed (if switched); waybar log clean, 1920×30; Dolphin and
+the GTK file chooser show the new icons; cursor the same over a GTK
+app, Dolphin, kitty and the bar.
 
-**Test:** `hyprctl configerrors` empty; waybar log clean, 1920×30;
-Settings portal present; sampled GTK and Dolphin pixels on token values
-(button, field, bevels, selection, tab); no rounded corners, shadows or
-blends beyond GTK's known 1px bevel-corner blend (§6) in any crop;
-Firefox's file dialog themed; kitty unchanged except the frame.
-
-**Screenshots** in `~/Pictures/site-9-phase2/` — **name each file by its
-real scale** (`-x3`, `-x6`):
-`2-fix-vol-padding-x3.png` (right side of the bar, slider closed and
-open), `2.6-borders-eotf-x6.png`, `2.1-frame-<option>-x3.png` (each
-option), `2.2-gtk-widgets-x3.png` (buttons, entry, list with
-selection, tabs, check/radio, menu), `2.2-gtk-filechooser-x3.png`,
-`2.3-dolphin-x3.png` (toolbar, places panel, list with a selected row),
-`2.3-polkit-x3.png` (if it takes the theme).
+**Screenshots** in `~/Pictures/site-9-phase2/` (name by real scale):
+`2.7-wallpaper-<option>-x1.png` (each option, full screen),
+`2.7-wallpaper-detail-x3.png` (placard and a stencil edge),
+`2.5-icons-<option>-x3.png`, `2.5-cursor-<option>-x3.png`,
+`2-fix-polkit-x3.png`, `2-fix-groupbar-x3.png` (if themed),
+`2.6-borders-comp-x6.png` (if a = compensate).
 
 **Then** push to `origin/main` and report (pushed hash, screenshot
-paths, the a–f answers, the frame pick, how Kvantum is selected).
+paths, the a–g answers and the picks).
 
-**Next round (#12), for planning only:** 2.4 Firefox + 2.5 cursor and
-icon theme.
+**Next round (#13), for planning only:** 2.4 Firefox (userChrome vs a
+theme manifest — check what Firefox 158 still supports) paired with
+Phase 3's first sub-phase once the user scopes Phase 3.
 
 ## Phase 1 — Waybar restyle
 
@@ -551,17 +553,18 @@ come later (theme them when they arrive). Terminal stays **kitty**.
 
 **Sub-phases:**
 - **2.1 Terminal** — kitty: colors, font on the 11px grid, padding.
-  Built round #10; the window frame follows in round #11.
+  Built round #10; F3 window frame in round #11.
 - **2.2 GTK app theme** — buttons, menus, dialogs for GTK3 (and GTK4 /
-  libadwaita as far as it goes).
+  libadwaita as far as it goes). Built round #11.
 - **2.3 File manager** — whichever the user uses; app-specific bits on
-  top of 2.2.
+  top of 2.2. Dolphin via Kvantum, built round #11; polkit window open.
 - **2.4 Firefox** — browser UI.
 - **2.5 Cursor + icon theme.**
 - **2.6 Hyprland window borders** — pulled forward to round #10 (user
   dislikes the gradient border on every window) and built there, with
-  `hypr` stowed. Open: the color-shift fix (round #11, R2).
-- **2.7 Wallpaper.**
+  `hypr` stowed. Open: the color-shift pick (round #12, a).
+- **2.7 Wallpaper** — pulled forward to round #12 (user asked, with the
+  splash quotes removed), paired with 2.5. 2.4 Firefox moves to #13.
 
 **Round #9 plan (2026-10-18) — reviewed by THE OVERSEER.** Pushed
 `50cd9ad` (ride-along: `transition: none` on every waybar node —
@@ -572,6 +575,39 @@ no Settings/FileChooser portal, no polkit agent running, sddm
 installed. **User picked kitty `field` + P2** (render
 `2.1-kitty-field-P2-x3.png`), with tab-bar and border feedback — now
 round #10.
+
+**Round #11 (2.2 GTK + 2.3 Dolphin + kitty frame + R1–R4) — built,
+tested, pushed (`24b6bd5`, 2026-10-18).** Approved by THE OVERSEER.
+User: "I'm enjoying this so far! It's all coming together nicely."
+Commits: 4b457f2 docs sync (removed lines checked); b2c32e8 group
+borders (R3); 3991e27 VOL padding from `#volume` only (R1 — ink-to-edge
+21/20 → 11/10, NET/PWR 10/10); 8027ba9 kitty F3 frame (`bevel.py`);
+d56061c `settings.ini` (message wrongly claims the theme too);
+6d23a95 theme files + `.gitignore` `!.local`; 6bc75c7 VOL slider knob
+cleared; c5e49eb placeholders `--text-dim`; fef87e4 Kvantum theme;
+0ce6c98 `kdeglobals` + `SITE-9.colors`; aa3918f DepartureMono
+antialias off; 24b6bd5 QT_* env. Installed: xdg-desktop-portal-gtk
+1.15.3-1, gtk3-demos 1:3.24.52-2, kvantum 1.1.8-1. Outside the repo:
+gsettings (gtk-theme Adwaita → SITE-9, color-scheme default →
+prefer-dark, font Adwaita Sans 11 → DepartureMono Nerd Font 8.25,
+cursor-blink true → false, overlay-scrolling true → false,
+button-layout `appmenu:close` → `:`); `dolphinrc` ColorScheme
+BreezeDark → SITE-9 (backup kept). R4: `~/.config/hypr` is a real dir,
+the backup is outside the repo.
+- **User's picks in round #11:** a none · b both square · c dotted
+  focus · d no blink · e disabled `--text-dim` · f gtk3-demos; frame
+  **F3** (F2 rejected: "borders need to be the same as a clicked
+  workspace button"), no always-on tab strip; DepartureMono antialias
+  off everywhere.
+- **R2 result:** `sdr_eotf` doesn't reach Hyprland-drawn colors;
+  pre-compensated hexes do (§6). Pick in round #12.
+- **Mishaps (reverted, now `AGENTS.md` rules):** Space sent to
+  Firefox's file dialog opened a screenshot in the user's claude.ai
+  tab (UNIT-1 went Back); `pkill -f` stopped hyprpolkitagent for a few
+  seconds (restarted). UNIT-1 also switched the user's workspace
+  several times for screenshots.
+- **User after round #11:** wants a matching wallpaper and Hyprland's
+  splash quotes gone → round #12.
 
 **Round #10 (2.1 kitty + 2.6 borders + bar trim) — built, tested,
 pushed (`7ff55e8`, 2026-10-18).** Approved by THE OVERSEER. Commits:
@@ -668,6 +704,22 @@ reachable via `nmcli`/`nmtui`.
 ## Log
 
 _(newest first, short entries)_
+
+- 2026-10-18 — **Round #11 approved; round #12 briefed; Overseer handoff
+  recommended.** UNIT-1 built and pushed round #11 (`24b6bd5`, 12
+  commits): SITE-9 GTK3 theme, Kvantum + KDE color scheme for Dolphin,
+  kitty F3 frame (8px `--panel` + recessed bevel per pane, user's own
+  pick over F2), VOL padding fixed, group borders, DepartureMono
+  without antialiasing (user's pick, fixes Qt's half-pixel offset).
+  `sdr_eotf` didn't fix the border shift — pre-compensated hexes do.
+  hyprpolkitagent's window is hyprtoolkit, unthemed. Two mishaps on the
+  user's windows → new `AGENTS.md` rules. User: happy with progress;
+  wants a wallpaper and the splash quotes gone. Round #12 = 2.7
+  wallpaper + 2.5 cursor/icons + follow-ups. User: "all leans" on a–g
+  and handed the wallpaper design to THE OVERSEER (suggested
+  `andr1cs` and their logo) → "facility wall" concept, mockup shown in
+  chat, spec in `BUILD_SPEC.md` §3. THE OVERSEER checked: polkit-gnome
+  is dead upstream (out).
 
 - 2026-10-18 — **Round #10 approved; round #11 briefed.** New Overseer
   chat, picked up from the 2026-10-18 handoff (Project docs matched

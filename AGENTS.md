@@ -133,6 +133,21 @@ them at once**:
   `1.1-net-picker-x3.png`); ride-along fixes that belong to no
   sub-phase get `<phase>-fix-` (e.g. `1-fix-tab-hover-x3.png`). Don't
   commit them to the repo.
+- **Hands off the user's own windows** (from 2026-10-18). Send keys,
+  clicks or shortcuts only to test windows you started yourself —
+  never to the user's browser, chats, editors or file dialogs they
+  opened. (Round #11: a Space sent to Firefox's file dialog opened a
+  file in the user's claude.ai tab.) Do screenshot work on a spare
+  workspace, and say before you switch the user's view.
+- **Kill precisely.** Find the PID first (`pgrep -a <name>`) and kill
+  that PID, or use `pkill -x <exact name>`. Never `pkill -f` with a
+  pattern that can match other processes (round #11 stopped the polkit
+  agent this way).
+- **Changes outside the repo** (app settings files, gsettings, D-Bus
+  env): back the file up first and list every old → new value in the
+  report.
+- **Commit messages match what landed** — check `git show --stat` after
+  each commit.
 - **Ask before big or destructive changes** — anything that would be
   annoying to undo (repartitioning config structure, removing a working
   tool in favor of another, touching files outside this repo's scope).
