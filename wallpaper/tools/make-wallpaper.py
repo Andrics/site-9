@@ -37,8 +37,10 @@ PANEL, FIELD, LIGHT, DARK, TEXT, BRIGHT, DIM, WARN, CRIT = range(9)
 
 # Screen layout (measured, hyprland.lua): bar y 0-29, windows 20px in from
 # every edge below it, so the gaps that show around windows are
-# y 30-49 (top), y 1060-1079 (bottom), x 0-19 and 1900-1919.
-TOP_GAP, BOTTOM_GAP = (30, 50), (1060, 1080)
+# y 30-49 (top), y 1060-1079 (bottom), x 0-19 and 1900-1919. The pipe
+# sits in the top gap; the bottom gap shows plain wall (the hazard band
+# from the concept was dropped — user, 2026-10-20: too distracting).
+TOP_GAP = (30, 50)
 PANEL_W, PANEL_H = 240, 180  # wall panels: an 8x6 grid
 
 
@@ -286,22 +288,6 @@ def pipe(cv, rng):
         cv.rect(x + 1, y0 - 1, x + 2, y1 + 1, DARK)
 
 
-def hazard(cv, rng):
-    """45-degree --warning / --bevel-dark stripes along the bottom edge
-    (shows in the 20px bottom gap), worn."""
-    y0, y1 = BOTTOM_GAP
-    cv.rect(0, y0, W, y0 + 1, DARK)
-    cv.rect(0, y0 + 1, W, y0 + 2, LIGHT)
-    wear = fbm(rng, (40, 11, 3), (3, 2, 1))
-    for y in range(y0 + 2, y1):
-        for x in range(W):
-            stripe = ((x + y) // 14) % 2 == 0
-            if stripe and wear(x, y) + (BAYER[y & 7][x & 7] - 0.5) * 0.15 > 0.32:
-                cv.set(x, y, WARN)
-            else:
-                cv.set(x, y, DARK)
-
-
 def signage(cv, rng):
     """Small painted text, top left, --text-dim."""
     mask = text_mask("◄ TEST CHAMBERS   LEVEL 3 // SECTOR C", 2)
@@ -420,7 +406,6 @@ def main():
     rivets(cv)
     scratches(cv, rng, 90 if v1 else 40)
     pipe(cv, rng)
-    hazard(cv, rng)
     signage(cv, rng)
     placard(cv, rng, logo)
 
