@@ -50,10 +50,9 @@ local menu        = "hyprlauncher"
 -- Or execute your favorite apps at launch like this:
 --
 hl.on("hyprland.start", function () 
+-- Pushes every env var set below (QT_*, XCURSOR_*) to D-Bus/systemd-
+-- started apps: hyprland.start fires after the hl.env lines are applied.
 hl.exec_cmd("dbus-update-activation-environment --systemd --all")
--- Qt theme vars for D-Bus/systemd-started apps (BUILD_SPEC.md §6);
--- --all above already covers them, this names them explicitly.
-hl.exec_cmd("dbus-update-activation-environment --systemd QT_STYLE_OVERRIDE QT_QPA_PLATFORMTHEME")
 -- Polkit agent for GUI password prompts: lxqt-policykit (Qt, takes the
 -- SITE-9 Kvantum theme). Started directly, no systemd unit; its XDG
 -- autostart entry is OnlyShowIn=LXQt, so it doesn't start twice.
