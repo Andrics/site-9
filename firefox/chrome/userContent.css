@@ -1,0 +1,12 @@
+/* firefox/chrome/userContent.css — SITE-9 (BUILD_SPEC.md §3 "Firefox").
+ * Only Firefox's own new-tab, home and blank pages: their background
+ * becomes --field (#303f25). Websites are untouched. Firefox 158.0.1;
+ * recheck after updates. */
+
+@-moz-document url("about:newtab"), url("about:home"), url("about:blank") {
+  :root, body {
+    --newtab-background-color: #303f25 !important; /* --field */
+    --background-color-canvas: #303f25 !important; /* --field */
+    background-color: #303f25 !important; /* --field */
+  }
+}

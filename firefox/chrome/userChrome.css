@@ -1,0 +1,494 @@
+/* firefox/chrome/userChrome.css — SITE-9 VOX look for Firefox's own UI
+ * (BUILD_SPEC.md §3 "Firefox", Phase 2.4). Websites are untouched.
+ *
+ * Written against Firefox 158.0.1 with the "Nova" design
+ * (browser.nova.enabled, the 158 default). Firefox's internal markup and
+ * variables change between versions: recheck after every update.
+ *
+ * Firefox's own variables live in CSS @layers, so these unlayered rules
+ * win; the built-in themes (e.g. Dark) set colors inline on the root,
+ * so token overrides carry !important.
+ *
+ * Tokens (BUILD_SPEC.md §3 "Locked tokens"):
+ *   --panel #445435        raised surfaces: toolbars, tabs, buttons
+ *   --field #303f25        recessed: URL bar, menus, selected tab
+ *   --bevel-light #667359  light edge
+ *   --bevel-dark #1f2719   dark edge; flat popup edge
+ *   --text #cbcfc8   --text-bright #ffffff   --text-dim #8f9a85
+ *   --warning #e6a84f   --critical #ff7a5c
+ * Raised = light top/left, dark bottom/right; recessed = the reverse.
+ * 1px bevels, radius 0; no shadows, gradients, blur or motion (§2).
+ */
+
+:root {
+  --s9-panel: #445435;
+  --s9-field: #303f25;
+  --s9-light: #667359;
+  --s9-dark: #1f2719;
+  --s9-text: #cbcfc8;
+  --s9-bright: #ffffff;
+  --s9-dim: #8f9a85;
+  --s9-warning: #e6a84f;
+  --s9-critical: #ff7a5c;
+  --s9-raised: var(--s9-light) var(--s9-dark) var(--s9-dark) var(--s9-light);
+  --s9-recessed: var(--s9-dark) var(--s9-light) var(--s9-light) var(--s9-dark);
+  /* DepartureMono's pixel grid is 11px */
+  --s9-font: "DepartureMono Nerd Font";
+}
+
+/* ------------------------------------------------------------------
+   Base: square, still, no shadows, one font
+   ------------------------------------------------------------------ */
+*, *::before, *::after {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  transition: none !important;
+  animation: none !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+}
+
+:root, menupopup, panel, tooltip, #urlbar, .urlbar-input, input, button,
+menu, menuitem, label, description, toolbarbutton {
+  font-family: var(--s9-font) !important;
+  font-size: 11px !important;
+  font-weight: normal !important;
+}
+
+/* ------------------------------------------------------------------
+   Firefox's color variables -> tokens
+   ------------------------------------------------------------------ */
+:root {
+  /* toolbars and tab strip */
+  --toolbox-background-color: var(--s9-panel) !important;
+  --toolbox-background-color-inactive: var(--s9-panel) !important;
+  --toolbox-text-color: var(--s9-text) !important;
+  --toolbox-text-color-inactive: var(--s9-text) !important;
+  --toolbar-bgcolor: var(--s9-panel) !important;
+  --toolbar-color: var(--s9-text) !important;
+  --tabpanel-background-color: var(--s9-field) !important;
+  --chrome-content-separator-color: var(--s9-dark) !important;
+  --toolbarseparator-color: var(--s9-dark) !important;
+  /* URL and search fields */
+  --toolbar-field-background-color: var(--s9-field) !important;
+  --toolbar-field-background-color-focus: var(--s9-field) !important;
+  --toolbar-field-color: var(--s9-text) !important;
+  --toolbar-field-focus-color: var(--s9-bright) !important;
+  --toolbar-field-border-color: transparent !important;
+  --toolbar-field-border-color-focus: transparent !important;
+  --urlbar-background-overhang-open: 0px !important;
+  --urlbar-input-growth-open-inline: 0px !important;
+  --urlbar-input-growth-open-block: 0px !important;
+  /* menus and panels: like the picker */
+  --panel-background-color: var(--s9-field) !important;
+  --panel-text-color: var(--s9-text) !important;
+  --panel-border-color: var(--s9-dark) !important;
+  --arrowpanel-background: var(--s9-field) !important;
+  --arrowpanel-color: var(--s9-text) !important;
+  --arrowpanel-border-color: var(--s9-dark) !important;
+  --menu-background-color: var(--s9-field) !important;
+  --menu-color: var(--s9-text) !important;
+  --menu-border-color: var(--s9-dark) !important;
+  --menuitem-hover-background-color: var(--s9-panel) !important;
+  --menu-disabled-color: var(--s9-dim) !important;
+  --urlbarview-background-color-hover: var(--s9-panel) !important;
+  --urlbarview-background-color-selected: var(--s9-panel) !important;
+  --urlbarView-highlight-background: var(--s9-panel) !important;
+  --urlbarView-highlight-color: var(--s9-bright) !important;
+  /* buttons */
+  --toolbarbutton-hover-background: transparent !important;
+  --toolbarbutton-active-background: var(--s9-field) !important;
+  --toolbarbutton-background-color-hover: transparent !important;
+  --toolbarbutton-background-color-active: var(--s9-field) !important;
+  --button-background-color: var(--s9-panel) !important;
+  --button-background-color-hover: var(--s9-panel) !important;
+  --button-background-color-active: var(--s9-field) !important;
+  --button-text-color: var(--s9-text) !important;
+  /* tabs */
+  --tab-background-color: var(--s9-panel) !important;
+  --tab-background-color-hover: var(--s9-panel) !important;
+  --tab-background-color-selected: var(--s9-field) !important;
+  --tab-selected-bgcolor: var(--s9-field) !important;
+  --tab-selected-textcolor: var(--s9-bright) !important;
+  --tab-border-color-accent: transparent !important;
+  --tab-box-shadow-selected: none !important;
+  --focus-outline-color: var(--s9-text) !important;
+  /* links and accents in chrome */
+  --link-color: var(--s9-bright) !important;
+  --color-accent-primary: var(--s9-text) !important;
+}
+
+/* ------------------------------------------------------------------
+   Toolbars: --panel, a dark line under the toolbox
+   ------------------------------------------------------------------ */
+#navigator-toolbox {
+  background: var(--s9-panel) !important;
+  border-bottom: 1px solid var(--s9-dark) !important;
+}
+#TabsToolbar, #nav-bar, #PersonalToolbar, #toolbar-menubar {
+  background: var(--s9-panel) !important;
+  color: var(--s9-text) !important;
+  border: 0 !important;
+}
+
+/* ------------------------------------------------------------------
+   Tabs: raised blocks; the selected tab is pressed in
+   ------------------------------------------------------------------ */
+.tab-background {
+  background: var(--s9-panel) !important;
+  border: 1px solid !important;
+  border-color: var(--s9-raised) !important;
+  outline: none !important;
+}
+.tabbrowser-tab:is([selected], [multiselected]) .tab-background {
+  background: var(--s9-field) !important;
+  border-color: var(--s9-recessed) !important;
+}
+.tabbrowser-tab {
+  color: var(--s9-text) !important;
+}
+.tabbrowser-tab:is([selected], [multiselected]),
+.tabbrowser-tab:is([selected], [multiselected]) .tab-label {
+  color: var(--s9-bright) !important;
+}
+.tabbrowser-tab:not([selected], [multiselected]) .tab-label {
+  color: var(--s9-text) !important;
+}
+/* Long titles are cut, not faded out */
+.tab-label-container {
+  mask-image: none !important;
+}
+
+/* ------------------------------------------------------------------
+   Toolbar buttons: flat; pressed in while pressed, open or checked
+   ------------------------------------------------------------------ */
+toolbarbutton .toolbarbutton-icon,
+toolbarbutton .toolbarbutton-text,
+toolbarbutton .toolbarbutton-badge-stack,
+#tabs-newtab-button .toolbarbutton-icon,
+.tab-close-button,
+.urlbar-page-action, .identity-box-button, #tracking-protection-icon-container {
+  border: 1px solid transparent !important;
+  background-color: transparent !important;
+}
+toolbarbutton:is(:hover:active, [open], [checked]) > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack),
+.tab-close-button:hover:active,
+:is(.urlbar-page-action, .identity-box-button, #tracking-protection-icon-container):is(:hover:active, [open]) {
+  background-color: var(--s9-field) !important;
+  border-color: var(--s9-recessed) !important;
+}
+
+/* ------------------------------------------------------------------
+   URL bar and search fields: recessed --field
+   ------------------------------------------------------------------ */
+.urlbar-background, #searchbar {
+  background: var(--s9-field) !important;
+  border: 1px solid !important;
+  border-color: var(--s9-recessed) !important;
+  outline: none !important;
+}
+.urlbar, .urlbar-input, #urlbar-input {
+  color: var(--s9-text) !important;
+}
+.urlbar[focused] .urlbar-input {
+  color: var(--s9-bright) !important;
+}
+.urlbar-input::placeholder {
+  color: var(--s9-dim) !important;
+  opacity: 1 !important;
+}
+.urlbar-input::selection, input::selection {
+  background-color: var(--s9-panel) !important;
+  color: var(--s9-bright) !important;
+}
+/* The results list opens inside the same field; rows like the picker */
+.urlbarView-row[selected], .urlbarView-row:hover {
+  background-color: var(--s9-panel) !important;
+  color: var(--s9-bright) !important;
+}
+
+/* ------------------------------------------------------------------
+   Menus, panels, tooltips: --field, flat --bevel-dark edge,
+   selected row --panel + --text-bright (like the network picker)
+   ------------------------------------------------------------------ */
+menupopup, panel {
+  --panel-border-radius: 0px !important;
+  --panel-shadow-margin: 0px !important;
+  --panel-shadow: none !important;
+  appearance: none !important;
+}
+menupopup::part(content), panel::part(content),
+.panel-arrowcontent, .menupopup-arrowscrollbox {
+  background: var(--s9-field) !important;
+  color: var(--s9-text) !important;
+  border: 1px solid var(--s9-dark) !important;
+}
+menu, menuitem, .subviewbutton, .urlbarView-row {
+  appearance: none !important;
+  color: var(--s9-text) !important;
+}
+menu:is([_moz-menuactive], [open]), menuitem[_moz-menuactive],
+.subviewbutton:not([disabled]):hover, .subviewbutton:not([disabled]):focus-visible {
+  background-color: var(--s9-panel) !important;
+  color: var(--s9-bright) !important;
+}
+menu[disabled], menuitem[disabled], .subviewbutton[disabled] {
+  color: var(--s9-dim) !important;
+}
+menuseparator, toolbarseparator {
+  appearance: none !important;
+  border-top: 1px solid var(--s9-dark) !important;
+  border-bottom: 0 !important;
+  padding: 0 !important;
+  margin-block: 2px !important;
+}
+tooltip {
+  appearance: none !important;
+  background: var(--s9-field) !important;
+  color: var(--s9-text) !important;
+  border: 1px solid var(--s9-dark) !important;
+}
+
+/* ------------------------------------------------------------------
+   Nova extras: window gradient, content tint, faded icons
+   ------------------------------------------------------------------ */
+body {
+  background-image: none !important;
+}
+#browser {
+  background-color: transparent !important;
+}
+:root {
+  --toolbarbutton-icon-fill: var(--s9-text) !important;
+  --toolbarbutton-icon-fill-attention: var(--s9-bright) !important;
+  --urlbar-icon-fill-opacity: 1 !important;
+}
+/* Disabled buttons: --text-dim, not 40% opacity (that blends colors) */
+toolbarbutton[disabled] {
+  opacity: 1 !important;
+  fill: var(--s9-dim) !important;
+  color: var(--s9-dim) !important;
+}
+toolbarbutton[disabled] > * {
+  opacity: 1 !important;
+}
+
+/* ------------------------------------------------------------------
+   moz-button (Firefox's web-component buttons). Its box sits in a
+   shadow root, and Firefox 158 ignores ::part() from userChrome (a
+   user-origin sheet; tested), so the inner box goes transparent through
+   its inherited variables and the host element carries the bevel.
+   Raised; pressed in while held or open.
+   ------------------------------------------------------------------ */
+moz-button {
+  --button-background-color: transparent !important;
+  --button-background-color-hover: transparent !important;
+  --button-background-color-active: transparent !important;
+  --button-background-color-selected: transparent !important;
+  --button-background-color-disabled: transparent !important;
+  --button-background-color-ghost: transparent !important;
+  --button-background-color-ghost-hover: transparent !important;
+  --button-background-color-ghost-active: transparent !important;
+  --button-background-color-ghost-selected: transparent !important;
+  --button-background-color-ghost-disabled: transparent !important;
+  --button-background-color-muted: transparent !important;
+  --button-background-color-muted-hover: transparent !important;
+  --button-background-color-muted-active: transparent !important;
+  --button-background-color-muted-selected: transparent !important;
+  --button-background-color-muted-disabled: transparent !important;
+  --button-background-color-primary: transparent !important;
+  --button-background-color-primary-hover: transparent !important;
+  --button-background-color-primary-active: transparent !important;
+  --button-background-color-primary-selected: transparent !important;
+  --button-background-color-primary-disabled: transparent !important;
+  --button-background-color-destructive: transparent !important;
+  --button-background-color-destructive-hover: transparent !important;
+  --button-background-color-destructive-active: transparent !important;
+  --button-background-color-destructive-selected: transparent !important;
+  --button-background-color-destructive-disabled: transparent !important;
+  --button-background-color-menu: transparent !important;
+  --button-background-color-menu-hover: transparent !important;
+  --button-background-color-menu-active: transparent !important;
+  --button-background-color-menu-selected: transparent !important;
+  --button-background-color-menu-disabled: transparent !important;
+  --button-background-color-toolbar: transparent !important;
+  --button-background-color-toolbar-hover: transparent !important;
+  --button-background-color-toolbar-active: transparent !important;
+  --button-background-color-toolbar-selected: transparent !important;
+  --button-background-color-toolbar-disabled: transparent !important;
+  --button-border-color: transparent !important;
+  --button-border-color-active: transparent !important;
+  --button-border-color-destructive: transparent !important;
+  --button-border-color-destructive-active: transparent !important;
+  --button-border-color-destructive-disabled: transparent !important;
+  --button-border-color-destructive-hover: transparent !important;
+  --button-border-color-destructive-selected: transparent !important;
+  --button-border-color-disabled: transparent !important;
+  --button-border-color-ghost: transparent !important;
+  --button-border-color-ghost-active: transparent !important;
+  --button-border-color-ghost-disabled: transparent !important;
+  --button-border-color-ghost-hover: transparent !important;
+  --button-border-color-ghost-selected: transparent !important;
+  --button-border-color-hover: transparent !important;
+  --button-border-color-menu: transparent !important;
+  --button-border-color-menu-active: transparent !important;
+  --button-border-color-menu-disabled: transparent !important;
+  --button-border-color-menu-hover: transparent !important;
+  --button-border-color-menu-selected: transparent !important;
+  --button-border-color-muted: transparent !important;
+  --button-border-color-muted-active: transparent !important;
+  --button-border-color-muted-disabled: transparent !important;
+  --button-border-color-muted-hover: transparent !important;
+  --button-border-color-muted-selected: transparent !important;
+  --button-border-color-primary: transparent !important;
+  --button-border-color-primary-active: transparent !important;
+  --button-border-color-primary-disabled: transparent !important;
+  --button-border-color-primary-hover: transparent !important;
+  --button-border-color-primary-selected: transparent !important;
+  --button-border-color-selected: transparent !important;
+  --button-border-color-toolbar: transparent !important;
+  --button-border-color-toolbar-active: transparent !important;
+  --button-border-color-toolbar-disabled: transparent !important;
+  --button-border-color-toolbar-hover: transparent !important;
+  --button-border-color-toolbar-selected: transparent !important;
+  --button-text-color: var(--s9-text) !important;
+  --button-text-color-hover: var(--s9-text) !important;
+  --button-text-color-active: var(--s9-text) !important;
+  --button-text-color-selected: var(--s9-text) !important;
+  --button-text-color-disabled: var(--s9-dim) !important;
+  --button-text-color-ghost: var(--s9-text) !important;
+  --button-text-color-ghost-hover: var(--s9-text) !important;
+  --button-text-color-ghost-active: var(--s9-text) !important;
+  --button-text-color-ghost-selected: var(--s9-text) !important;
+  --button-text-color-ghost-disabled: var(--s9-dim) !important;
+  --button-text-color-muted: var(--s9-text) !important;
+  --button-text-color-muted-hover: var(--s9-text) !important;
+  --button-text-color-muted-active: var(--s9-text) !important;
+  --button-text-color-muted-selected: var(--s9-text) !important;
+  --button-text-color-muted-disabled: var(--s9-dim) !important;
+  --button-text-color-primary: var(--s9-text) !important;
+  --button-text-color-primary-hover: var(--s9-text) !important;
+  --button-text-color-primary-active: var(--s9-text) !important;
+  --button-text-color-primary-selected: var(--s9-text) !important;
+  --button-text-color-primary-disabled: var(--s9-dim) !important;
+  --button-text-color-destructive: var(--s9-text) !important;
+  --button-text-color-destructive-hover: var(--s9-text) !important;
+  --button-text-color-destructive-active: var(--s9-text) !important;
+  --button-text-color-destructive-selected: var(--s9-text) !important;
+  --button-text-color-destructive-disabled: var(--s9-dim) !important;
+  --button-text-color-menu: var(--s9-text) !important;
+  --button-text-color-menu-hover: var(--s9-text) !important;
+  --button-text-color-menu-active: var(--s9-text) !important;
+  --button-text-color-menu-selected: var(--s9-text) !important;
+  --button-text-color-menu-disabled: var(--s9-dim) !important;
+  --button-text-color-toolbar: var(--s9-text) !important;
+  --button-text-color-toolbar-hover: var(--s9-text) !important;
+  --button-text-color-toolbar-active: var(--s9-text) !important;
+  --button-text-color-toolbar-selected: var(--s9-text) !important;
+  --button-text-color-toolbar-disabled: var(--s9-dim) !important;
+  --button-split-separator-background-color: var(--s9-dark) !important;
+  --focus-outline: none !important;
+  background: var(--s9-panel) !important;
+  border: 1px solid !important;
+  border-color: var(--s9-raised) !important;
+}
+moz-button:is(:active, [open], [aria-expanded="true"]) {
+  background: var(--s9-field) !important;
+  border-color: var(--s9-recessed) !important;
+  --button-text-color: var(--s9-bright) !important;
+}
+/* Inside the URL bar (search-mode switcher): flat, like toolbar buttons */
+.urlbar-input-container moz-button {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+.urlbar-input-container moz-button:is(:active, [open], [aria-expanded="true"]) {
+  background: var(--s9-field) !important;
+  border-color: var(--s9-recessed) !important;
+}
+
+/* ------------------------------------------------------------------
+   Pixel grid: DepartureMono's normal line height at 11px is 18.7px,
+   which puts labels on half pixels (blurred edges). 14px keeps text
+   and the edges around it on whole pixels.
+   ------------------------------------------------------------------ */
+label, description, .tab-text, .tab-label, menu, menuitem, menubar,
+.subviewbutton, .toolbarbutton-text, .urlbar-input, input {
+  line-height: 14px !important;
+}
+
+/* Menu rows: flat; --panel + --text-bright only under the pointer */
+.subviewbutton {
+  background-color: transparent !important;
+}
+/* Sync promo box in the main menu: recessed, not purple */
+#appMenu-fxa-sign-in-promo {
+  background: var(--s9-field) !important;
+  color: var(--s9-text) !important;
+}
+#appMenu-fxa-sign-in-promo * {
+  color: var(--s9-text) !important;
+}
+
+/* "New feature" badge dot: a small --text-bright square, not blue */
+.toolbarbutton-badge.feature-callout {
+  background-image: none !important;
+  background-color: var(--s9-bright) !important;
+  min-width: 6px !important;
+  min-height: 6px !important;
+  max-width: 6px !important;
+  max-height: 6px !important;
+}
+/* Menubar (Alt): 3px + 14px + 3px, whole pixels */
+menubar > menu {
+  padding-block: 3px !important;
+}
+/* Sync promo: whole-pixel spacing (Firefox uses em: 0.75em = 8.25px) */
+#appMenu-fxa-sign-in-promo {
+  margin: 0 8px 8px !important;
+  padding: 10px !important;
+  gap: 6px !important;
+}
+.fxa-menu-sign-in-promo-text {
+  gap: 0 !important;
+}
+.fxa-menu-sign-in-promo-link {
+  line-height: 14px !important;
+}
+/* Separators: a seam (dark line over light line), not 25% currentColor */
+menuseparator::before, toolbarseparator::before {
+  border-top-color: var(--s9-light) !important;
+}
+
+/* ------------------------------------------------------------------
+   URL bar results: Firefox 158 shows them in a popover (.urlbarView)
+   below the field. Style it like the menus: --field, flat --bevel-dark
+   edge, selected row --panel + --text-bright. The field itself keeps
+   its size when open (no breakout).
+   ------------------------------------------------------------------ */
+.urlbar[open] > .urlbar-background, .urlbar[breakout-extend] > .urlbar-background {
+  inset: 0 !important;
+}
+.urlbarView {
+  background: var(--s9-field) !important;
+  color: var(--s9-text) !important;
+  border: 1px solid var(--s9-dark) !important;
+}
+.urlbarView *, .urlbarView *::before, .urlbarView *::after {
+  font-size: 11px !important;
+}
+.urlbarView-url, .urlbarView-title-separator, .urlbarView-group-aboveHeader,
+.urlbarView-row-label, .urlbarView-action {
+  color: var(--s9-dim) !important;
+}
+.urlbarView-row[selected] :is(.urlbarView-url, .urlbarView-action, .urlbarView-title) {
+  color: var(--s9-bright) !important;
+}
+/* "Switch to Tab" chips: raised blocks */
+.urlbarView-action.urlbarView-switchToTab, .urlbarView-action-btn {
+  background: var(--s9-panel) !important;
+  border: 1px solid !important;
+  border-color: var(--s9-raised) !important;
+  color: var(--s9-text) !important;
+}
