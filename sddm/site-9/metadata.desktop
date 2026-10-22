@@ -1,0 +1,12 @@
+[SddmGreeterTheme]
+Name=SITE-9
+Description=SITE-9 VOX login (BUILD_SPEC.md §3 "Login screen")
+Type=sddm-theme
+Version=0.1
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=site-9
+Theme-API=2.0
+# Qt6 greeter (sddm-greeter-qt6). Checked in SDDM 0.21.0: the daemon reads
+# SddmGreeterTheme/QtVersion; the Qt5 greeter's libraries aren't installed.
+QtVersion=6
