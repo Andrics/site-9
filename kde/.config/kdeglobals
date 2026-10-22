@@ -25,6 +25,10 @@ activeForeground=255,255,255
 inactiveBackground=68,84,53
 inactiveForeground=203,207,200
 
+# Icons: SITE-9 (Chicago95 remapped, icons/tools/make-icons.py)
+[Icons]
+Theme=SITE-9
+
 [KDE]
 widgetStyle=kvantum
 contrast=0
