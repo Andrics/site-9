@@ -68,8 +68,11 @@ end)
 
 -- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Environment-variables/
 
-hl.env("XCURSOR_SIZE", "24")
-hl.env("HYPRCURSOR_SIZE", "24")
+-- Cursor: Chicago95 white (pick 2.5), XCursor only, 32px is its one size.
+-- No hyprcursor theme is installed, so Hyprland uses this XCursor theme.
+hl.env("XCURSOR_THEME", "Chicago95_Cursor_White")
+hl.env("XCURSOR_SIZE", "32")
+hl.env("HYPRCURSOR_SIZE", "32")
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
 
