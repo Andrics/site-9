@@ -7,8 +7,11 @@ them, no blends or gradients. Seeded, so the same arguments give the same
 image.
 
     make-wallpaper.py [--variant V1|V2] [--seed N] [--logo PATH] [--out PATH]
+                      [--no-placard]
 
 V1: everything. V2: calmer — no big stencil, lighter grime.
+--no-placard: the wall without the placard (and so without the logo) —
+the login screen's background (BUILD_SPEC.md §3 "Login screen").
 Logo (optional, never in the repo): recolored to the tokens and placed in
 the placard; without it the slot is a plain recessed square.
 Output: an indexed PNG holding only token colors, written outside the
@@ -388,12 +391,14 @@ def main():
     ap.add_argument("--seed", type=int, default=9)
     ap.add_argument("--logo", default=os.path.expanduser("~/.local/share/site-9/logo.png"))
     ap.add_argument("--out", default=os.path.expanduser("~/.local/share/site-9/wallpaper.png"))
+    ap.add_argument("--no-placard", action="store_true",
+                    help="leave out the placard (login screen background)")
     a = ap.parse_args()
 
     v1 = a.variant == "V1"
     rng = random.Random(a.seed)
-    logo = a.logo if os.path.isfile(a.logo) else None
-    if not logo:
+    logo = a.logo if os.path.isfile(a.logo) and not a.no_placard else None
+    if not logo and not a.no_placard:
         print(f"no logo at {a.logo}: plain slot", file=sys.stderr)
 
     cv = Canvas(W, H, FIELD)
@@ -407,7 +412,8 @@ def main():
     scratches(cv, rng, 90 if v1 else 40)
     pipe(cv, rng)
     signage(cv, rng)
-    placard(cv, rng, logo)
+    if not a.no_placard:
+        placard(cv, rng, logo)
 
     img = Image.frombytes("P", (W, H), bytes(cv.px))
     pal = []
@@ -417,7 +423,8 @@ def main():
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     img.save(a.out, optimize=True)
     used = sorted({c for _, c in img.getcolors()})
-    print(f"{a.out}: {a.variant}, seed {a.seed}, colors used: "
+    print(f"{a.out}: {a.variant}, seed {a.seed}"
+          + (", no placard" if a.no_placard else "") + ", colors used: "
           + ", ".join(TOKENS[i][0] for i in used))
 
 
