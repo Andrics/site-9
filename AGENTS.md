@@ -143,6 +143,20 @@ them at once**:
   that PID, or use `pkill -x <exact name>`. Never `pkill -f` with a
   pattern that can match other processes (round #11 stopped the polkit
   agent this way).
+- **Check what a PID owns before killing it** (from 2026-10-22). One
+  process can own several windows — kitty can serve many OS windows
+  from one process. Before killing, list `hyprctl -j clients` and
+  confirm every window with that `pid` is one you started. If not,
+  close only your window (by its address). Start test kitties as their
+  own process (no `--single-instance`, not from the user's kitty).
+  (Round #12: the user's workspace-2 kitty closed during testing.)
+- **`sudo` and AUR installs are the user's** (from 2026-10-22). `!`
+  commands can't answer the sudo password or yay's menus. Give the user
+  the exact command to run in their own terminal, say what it will
+  show and what to answer, then check the result yourself.
+- **Files outside `$HOME`** (e.g. `/etc`, `/usr/share`): keep the
+  source in the repo, have the user install it with the exact `sudo`
+  command, back up what's there first, and give recovery steps.
 - **Changes outside the repo** (app settings files, gsettings, D-Bus
   env): back the file up first and list every old → new value in the
   report.
@@ -166,7 +180,12 @@ site-9/
 ├── fuzzel/.config/fuzzel/   → stow -t ~ fuzzel
 ├── kitty/.config/kitty/     → stow -t ~ kitty
 ├── hypr/.config/hypr/       → stow -t ~ hypr
-└── (future packages follow the same pattern: gtk/, kvantum/, mako/, etc.)
+├── gtk/ kvantum/ fontconfig/ → stow -t ~ --no-folding <pkg>
+├── kde/                     (kdeglobals + SITE-9.colors)
+├── wallpaper/tools/ icons/tools/  (generators; output lives outside the repo)
+├── sddm/site-9/             (round #13; installed by the user to
+│                             /usr/share/sddm/themes/, not stowed)
+└── (future packages follow the same pattern: firefox/, mako/, etc.)
 ```
 
 The repo lives at `~/Development/site-9`, so always pass `-t ~` —

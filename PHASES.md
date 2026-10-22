@@ -54,144 +54,161 @@ the Project instructions, for every Overseer chat:
 |---|-------|--------|
 | 0 | Waybar — functional baseline (modules/layout) | Done |
 | 1 | Waybar — Half-Life VOX restyle (+ network picker) | Done (2026-10-18) |
-| 2 | System theme (terminal, GTK apps, file manager, Firefox, cursor/icons, window borders/wallpaper) | In progress — 2.1, 2.2, 2.3, 2.6 built (rounds #10–#11); round #12 builds 2.7 wallpaper + 2.5 cursor/icons; 2.4 Firefox next |
-| 3 | Shell polish (fuzzel/mako/hyprlock) | Not started |
+| 2 | System theme (terminal, GTK apps, file manager, Firefox, cursor/icons, window borders/wallpaper) | In progress — all built (rounds #10–#12) except 2.4 Firefox, which is round #13 |
+| 3 | Shell polish (fuzzel/mako/hyprlock) | Not started — next to scope (round #14) |
 | 4 | Motion (Hyprland animations/window rules) | Not started |
-| 5 | Login screen (optional — gated on whether a display manager exists) | Not started |
+| 5 | Login screen | Pulled forward — 5.1 SDDM theme in round #13 (scope: login screen only) |
 | 6 | Sidebar (+ SITE-9 settings panel) | Not started |
 
 ## Next up for UNIT-1
 
 _Written by THE OVERSEER; replaced whenever there's a new task._
 
-**Round #12 build (2026-10-18): 2.7 wallpaper (pulled forward — user
-asked) + 2.5 cursor and icon theme, plus round #11 follow-ups.** Spec:
-`BUILD_SPEC.md` §3 (tokens, "Locked window borders", "Wallpaper"), §2
-(static only). Check every key and package against the installed
-docs/stubs and the package database, not memory; for every theme or
-tool you consider, check it's current and maintained (latest release,
-Arch/AUR package, recent upstream activity). One commit per step; check
-`git show --stat` after each so the message matches what landed. If a
-piece can't be done as written, stop that piece, report options, carry
-on with the rest. Follow the new `AGENTS.md` rules on the user's
-windows and on killing processes.
+**Round #13 build (2026-10-22): 2.4 Firefox + 5.1 login screen** (Phase 5
+pulled forward — user asked; Phase 2 closes with 2.4). Spec:
+`BUILD_SPEC.md` §3 (tokens, look rules, "Firefox", "Login screen"), §2.
+Check every key, pref, QML type and package against the installed
+files and the package database, not memory. One commit per step;
+`git show --stat` after each. If a piece can't be done as written, stop
+that piece, report options, carry on with the rest. `AGENTS.md` rules on
+the user's windows, killing processes (new: check what a PID owns
+first) and `sudo`/AUR commands (new: the user runs them) apply.
 
-0. **Docs sync** — `git diff`, read the removed lines, commit
-   `docs: sync from Overseer (2026-10-18)`.
+0. **Docs sync** — `git diff` (BUILD_SPEC, PHASES, AGENTS **and
+   README**), read the removed lines, commit
+   `docs: sync from Overseer (2026-10-22)`.
 
-**Already answered — user, 2026-10-18: "all leans"** (don't re-ask;
-the leans in bold are the picks):
-- a. Hyprland's own colors: **pre-compensated hexes** (`#667458` for
-  `--bevel-light`, `#192212` for `--bevel-dark`, each commented as a
-  compensation; exact on screen; recheck on Hyprland updates) / accept
-  the small shift.
-- b. Password window: **switch the agent to mate-polkit** (GTK3,
-  maintained by MATE, takes the SITE-9 GTK theme with bevels) — if its
-  dependencies are clean (no `libappindicator`); else lxqt-policykit
-  (Qt, takes Kvantum) / colors-only `hyprtoolkit.conf` on
-  hyprpolkitagent (flat, no bevels) / leave it. polkit-gnome is out:
-  dead upstream.
-- c. After b: **uninstall the unused agents** (polkit-gnome, and
-  hyprpolkitagent if replaced — only if nothing else depends on it) /
-  keep them installed.
-- d. Groupbar (title strip on grouped windows): **theme it** — rounding
-  0, gradients off, opaque token colors (per a), DepartureMono 11px /
-  turn it off.
-- e. Qt style selection: **keep `QT_STYLE_OVERRIDE` + gtk3 platform
-  theme** (documented, no new package) / switch to qt6ct (Kvantum
-  upstream's preference, one more package).
-- f. Your own theme choices from round #11 (links `--text-bright`
-  underlined, `.dim-label` in `--text`, no focus box on entries, still
-  spinner until Phase 4, no scrollbar arrows, menubar hover = pressed
-  in, 4px Kvantum splitter): **keep all** / change some.
-- g. Wallpaper: **W1 — a SITE-9 wallpaper made from the tokens.** The
-  user gave the design to THE OVERSEER: the "facility wall" concept in
-  `BUILD_SPEC.md` §3 "Wallpaper" (mockup was shown to the user). The
-  user still picks between your renders.
+**Already answered — user, 2026-10-22: "all leans"** (don't re-ask):
+- a. Login program: **SDDM (installed) + a SITE-9 SDDM theme** — not
+  greetd + ReGreet.
+- b. Look: **P1 "access terminal"** (`BUILD_SPEC.md` §3 "Login
+  screen"); render P2 (DOS-style full-screen prompt) beside it, the
+  user picks on screen.
+- c. Phase 5 scope: **login screen only** for now (no boot menu or
+  boot splash).
+- d. Firefox: **userChrome.css** (+ userContent.css for new-tab and
+  blank pages only); websites untouched. Not a theme manifest.
+- e. Dolphin's faded hidden files: **accepted** as they are.
 
-Still asked in-round, on screen: wallpaper variant (V1/V2), icon theme,
-cursor theme and size.
+**Report gaps from round #12** (read-only, answer in the report):
+- G1. Resend these four lines in full — they were cut off in the
+  relay: the "socket-activated and …" line (polkit-agent-helper-1);
+  the cursor package line ("ships Chicagoicago95_Emerald…"); the
+  groupbar line ("…thin indicator … over"); the screenshots note on
+  the V1/V2 renders ("These … band was removed").
+- G2. hyprpaper: version, config format (still hyprlang?), memory use
+  (RSS), idle CPU over ~60 s, and why it was picked over Hyprland's
+  background color.
+- G3. Why lxqt-policykit instead of mate-polkit (the lean)?
+- G4. Is 32 one of Chicago95_Cursor_White's native sizes? List them.
+- G5. The user's workspace-2 kitty closed during your tests. For each
+  PID you killed, what was it (`args`)? Could one kitty process have
+  served the user's window too (kitty can run several OS windows from
+  one process — e.g. `--single-instance`, or a window opened from an
+  existing kitty)? Check how your test kitties were started.
+- G6. Where does the `dbus-update-activation-environment … --all`
+  come from that makes R4 redundant? If it runs **after** the env
+  lines, drop R4's line (ride-along commit); otherwise keep it.
+- G7. The "a few pixels 1 off the tokens" (`e5a84f`, `cacfc7`): which
+  surfaces exactly? Is the leftover root `polkit-agent-helper-1` gone?
+- G8. Confirm the user removed polkit-gnome, hyprpolkitagent and
+  hyprland-qt-support (`pacman -Q`), and lxqt-policykit still
+  registers after that.
 
-**Ride-alongs:**
-- R1. **Splash quotes and default wallpaper off** (user): find the
-  `misc` keys in `hl.meta.lua` (splash rendering, Hyprland logo,
-  forced default wallpaper) and turn them off. Set `misc`'s
-  background color to `--bevel-dark` (per a) until the wallpaper is
-  live.
-- R2. Border colors per a (window, group, and anything else Hyprland
-  draws in a token color); groupbar per d.
-- R3. Polkit per b and c: check the package (`pacman -Si`: version,
-  dependencies), install, autostart it the way hyprpolkitagent is
-  started now (directly from the autostart, no systemd unit), check it
-  registers, test with `pkexec
-  true` in a test kitty and cancel.
-- R4. **Qt env for D-Bus-started apps:** env vars in `hyprland.lua`
-  don't reach D-Bus/systemd-activated apps on their own (§6). Add
-  `dbus-update-activation-environment --systemd QT_STYLE_OVERRIDE
-  QT_QPA_PLATFORMTHEME` (check the flag in its `--help`) to the
-  autostart, after the env lines. Verified at the user's next normal
-  login (don't log out yourself — it ends your session).
-- R5. **F3 frame robustness:** confirm `bevel.py` only runs on layout
-  changes (not every frame), and make its fallback print one line to
-  kitty's stderr when it triggers, so a kitty update that breaks it is
-  visible.
+**2.4 — Firefox (userChrome.css):**
+1. Checks: installed Firefox version; the pref
+   `toolkit.legacyUserProfileCustomizations.stylesheets` exists and
+   works in this version; the user's profile path; Firefox's own CSS
+   for the parts we restyle (from `omni.ja` / `browser/omni.ja`, not
+   memory — selectors change between versions). Note what Firefox
+   draws with `box-shadow`, gradients, radius and transitions.
+2. **Build and test in a scratch profile** (`firefox --new-instance
+   --profile <scratch dir>` on a spare workspace) — **never restart or
+   close the user's own Firefox**. The user restarts theirs when the
+   pick is live.
+3. Write `userChrome.css` from the tokens — small, commented, every
+   hex naming its token:
+   - Tab strip and toolbars `--panel`; tabs raised, **selected tab
+     pressed in** (`--field`, `--text-bright`) like waybar's tabs;
+     URL bar and search fields recessed `--field`; popups and menus
+     like the picker (`--field`, selected row `--panel` +
+     `--text-bright`, flat `--bevel-dark` edge).
+   - 1px bevels, radius 0; **no `box-shadow`, gradients, blur or
+     transitions/animations** anywhere in the chrome (§2/§3);
+     DepartureMono Nerd Font 11px.
+   - **userContent.css:** new-tab, home and blank pages in `--field`
+     only. Websites stay as they are.
+   - The pref goes in the profile's `user.js` (commented). Repo layout:
+     a `firefox/` package plus a short install step that links
+     `chrome/` and `user.js` into the profile (the profile dir name is
+     random, so stow alone can't target it) — propose the exact method
+     in the report if stow can't do it.
+4. Render on screen (scratch profile), **user picks**: Firefox
+   density **normal vs compact** (check how compact mode is enabled
+   in this version) and anything you had to choose that §3 doesn't
+   cover.
+5. Put the pick in the user's profile (back up the profile's
+   `prefs.js`/`user.js` first); tell the user to restart Firefox
+   themselves.
 
-**2.7 — wallpaper:**
-1. Tool: compare hyprpaper (current version, config format — §1 says
-   still hyprlang, check) with Hyprland's own background color (enough
-   for W2). Must use no CPU when idle (§2); report its memory use.
-2. Write the generator for the "facility wall" (`BUILD_SPEC.md` §3
-   "Wallpaper" — every layer, in order). Small, commented, seeded;
-   tokens only, ordered dithering for grit; text at multiples of 11px
-   with antialiasing off; indexed PNG output to
-   `~/.local/share/site-9/wallpaper.png` (outside the repo). Check the
-   imaging tool is current (e.g. Pillow; with ImageMagick use `magick`,
-   not the deprecated `convert`). Check: the PNG holds only token
-   colors (count them).
-   - **Logo:** ask the user to put their logo file outside the repo
-     (e.g. `~/.local/share/site-9/logo.png`); the script recolors and
-     places it. Never commit it or a PNG that contains it.
-   - Render **V1 and V2**, show each **full screen** (temporary, revert
-     after), let the user pick, then put the pick live. Sample the
-     wallpaper on screen — it goes through color management too;
-     compensate like a if it shifts.
-   - Mind the gaps: the 20px top/bottom/side gaps around windows are
-     what's visible most of the time — check the pipe and hazard band
-     read there with a window open.
+**5.1 — Login screen (SDDM theme):**
+6. Checks: `systemctl is-enabled sddm` / `status`, what shows at boot
+   (journal), `/etc/sddm.conf` and `/etc/sddm.conf.d/*`, current
+   theme, greeter binary (`sddm-greeter-qt6`?), display server for the
+   greeter (X11 or Wayland) and whether `xorg-server` is installed,
+   which session file starts Hyprland (`/usr/share/wayland-sessions/`).
+   **`BUILD_SPEC.md` §4 says Hyprland is "started by hand" — correct
+   it if SDDM starts it.** Also: the theme API available (QML imports
+   SDDM provides, `metadata.desktop` `QtVersion=6`), and how the
+   `sddm` user's fonts render — **our antialias-off fontconfig rule is
+   per-user and won't reach the greeter**; report options (QML text
+   render settings, or a system-wide copy of the rule — ask before
+   writing anything under `/etc`). If SDDM isn't what's on screen at
+   boot, stop the switch-on part (step 9) and report.
+7. Write the theme in the repo (`sddm/site-9/`: `Main.qml`,
+   `metadata.desktop`, `theme.conf`): P1 per §3. Every color a token,
+   1px bevels as separate edge rectangles, radius 0, **no
+   animations/transitions**, static text cursor (no blink), clock
+   `HH:MM` updated once a minute. Background: the facility wall
+   **without the placard** — add a flag to `make-wallpaper.py` (e.g.
+   `--no-placard`); the PNG goes into the installed theme dir only,
+   **never into the repo** (it contains the logo).
+8. **Preview without logging out:** `sddm-greeter-qt6 --test-mode
+   --theme <repo theme dir>` (check the flag) as a floating window on
+   a spare workspace. Render **P1 and P2**, plus P1's states: normal,
+   `ACCESS DENIED`, `CAPS LOCK ON` (fake the states in test mode if
+   needed). **User picks on screen** (also: password mask character,
+   whether to show the session selector).
+9. **Switch-on, only after the preview passes:** give the user the
+   exact `sudo` commands to run **in their own terminal** — copy the
+   theme to `/usr/share/sddm/themes/site-9/` and write
+   `/etc/sddm.conf.d/site-9.conf` (`[Theme] Current=site-9`, plus
+   `CursorTheme=Chicago95_Cursor_White`, `CursorSize=32` if the keys
+   exist in 0.21.0). Back up any existing SDDM config first. Preview
+   once more from the installed path. **Don't log out or restart
+   SDDM** — the user checks it at their next reboot. Put the recovery
+   steps in your report (text login on Ctrl+Alt+F2 → remove the conf
+   file → `sudo systemctl restart sddm`).
 
-**2.5 — cursor + icon theme:**
-3. Scout **up to 3 icon themes and up to 3 cursor themes** that fit
-   the VOX look (sharp, retro/pixel, Win95-era feel, or recolorable to
-   the tokens), each current and maintained, from `extra` or AUR. For
-   cursors, check whether Hyprland uses hyprcursor or XCursor for each
-   and what the current setup is. Render: an icon sheet in Dolphin and
-   the GTK file chooser; cursors at ×3 (arrow, text, hand, busy).
-   **Show the user, let them pick** (also cursor size — integer, on the
-   pick's native sizes).
-4. Install the picks; set them everywhere they're read (gsettings +
-   `settings.ini`, the Qt side, Hyprland's cursor env/config,
-   hyprtoolkit if it reads an icon theme). No animated cursor while
-   idle (a busy cursor animates only while busy — OK).
+**Test:** Firefox chrome pixels on token values, no shadow / radius /
+fade anywhere (hover a tab, open a menu); scratch profile removed after;
+SDDM preview pixels on token values (no 1-off — no Hyprland CM in the
+greeter), DepartureMono crisp, nothing animating while idle;
+`hyprctl configerrors` empty; waybar log clean, 1920×30.
 
-**Test:** `hyprctl configerrors` empty; no splash text or default
-wallpaper; wallpaper and border pixels on token values; new polkit
-window themed (if switched); waybar log clean, 1920×30; Dolphin and
-the GTK file chooser show the new icons; cursor the same over a GTK
-app, Dolphin, kitty and the bar.
-
-**Screenshots** in `~/Pictures/site-9-phase2/` (name by real scale):
-`2.7-wallpaper-<option>-x1.png` (each option, full screen),
-`2.7-wallpaper-detail-x3.png` (placard and a stencil edge),
-`2.5-icons-<option>-x3.png`, `2.5-cursor-<option>-x3.png`,
-`2-fix-polkit-x3.png`, `2-fix-groupbar-x3.png` (if themed),
-`2.6-borders-comp-x6.png` (if a = compensate).
+**Screenshots:** `~/Pictures/site-9-phase2/2.4-firefox-<option>-x3.png`
+(tab strip + URL bar crop), `2.4-firefox-menu-x3.png`;
+`~/Pictures/site-9-phase5/5.1-login-P1-x1.png`, `5.1-login-P2-x1.png`,
+`5.1-login-panel-x3.png`, `5.1-login-denied-x3.png`,
+`5.1-login-caps-x3.png`.
 
 **Then** push to `origin/main` and report (pushed hash, screenshot
-paths, the a–g answers and the picks).
+paths, G1–G8, the picks, the exact switch-on commands given to the
+user).
 
-**Next round (#13), for planning only:** 2.4 Firefox (userChrome vs a
-theme manifest — check what Firefox 158 still supports) paired with
-Phase 3's first sub-phase once the user scopes Phase 3.
+**Next round (#14), for planning only:** Phase 3 (shell polish: mako,
+hyprlock, launcher) once the user scopes it — hyprlock should match
+the login panel. Phase 4 (motion) after.
 
 ## Phase 1 — Waybar restyle
 
@@ -558,13 +575,17 @@ come later (theme them when they arrive). Terminal stays **kitty**.
   libadwaita as far as it goes). Built round #11.
 - **2.3 File manager** — whichever the user uses; app-specific bits on
   top of 2.2. Dolphin via Kvantum, built round #11; polkit window open.
-- **2.4 Firefox** — browser UI.
-- **2.5 Cursor + icon theme.**
+- **2.4 Firefox** — browser UI. userChrome.css (user, 2026-10-22);
+  round #13.
+- **2.5 Cursor + icon theme.** Built round #12: SITE-9 icons (C2),
+  Chicago95_Cursor_White 32px.
 - **2.6 Hyprland window borders** — pulled forward to round #10 (user
   dislikes the gradient border on every window) and built there, with
-  `hypr` stowed. Open: the color-shift pick (round #12, a).
+  `hypr` stowed. Color shift fixed with pre-compensated hexes (round
+  #12).
 - **2.7 Wallpaper** — pulled forward to round #12 (user asked, with the
-  splash quotes removed), paired with 2.5. 2.4 Firefox moves to #13.
+  splash quotes removed), paired with 2.5. Built: V1 without the hazard
+  band, shown by hyprpaper.
 
 **Round #9 plan (2026-10-18) — reviewed by THE OVERSEER.** Pushed
 `50cd9ad` (ride-along: `transition: none` on every waybar node —
@@ -575,6 +596,52 @@ no Settings/FileChooser portal, no polkit agent running, sddm
 installed. **User picked kitty `field` + P2** (render
 `2.1-kitty-field-P2-x3.png`), with tab-bar and border feedback — now
 round #10.
+
+**Round #12 (2.7 wallpaper + 2.5 cursor/icons + R1–R5) — built,
+tested, pushed (`d9e8bab`, 2026-10-22).** Approved by THE OVERSEER.
+User: "Beautiful stuff!" Commits: a984dea docs sync; 2a8a77b no
+default wallpaper/logo/splash, `background_color` `--bevel-dark`
+(pre-compensated); 8012c69 compensated border/group colors, groupbar
+square/flat/token/DepartureMono; e603da6 `bevel.py` fallback prints
+one stderr line; 2b75318 QT_* pushed to the D-Bus/systemd activation
+env at start; 2199394 `make-wallpaper.py`; 1255bd7 `hyprpaper.conf`;
+575ff8d groupbar back to plain hexes (not shifted); 56d73ad hazard
+band dropped; 2a7e179 hyprpaper shows `wallpaper.png` (V1); 42542ad
+lxqt-policykit, its dialog floats; 546c052 `make-icons.py`; b634f2e
+SVGs misnamed `.png` remapped by content; 7e08e4c GTK/KDE icon theme
+SITE-9, GTK cursor 32px; d9e8bab Hyprland cursor env 32px.
+- **User's picks:** wallpaper **V1 without the hazard band**; icons
+  **C2** (Chicago95 remapped to the tokens); cursor
+  **Chicago95_Cursor_White 32px**; Dolphin icon view **48px**. a–g were
+  "all leans" (except b: lxqt-policykit, not mate-polkit — reason
+  asked in round #13, G3).
+- **Outside the repo** (backups in `~/.local/share/site-9/backup/`):
+  gsettings `icon-theme` Adwaita → SITE-9, `cursor-theme` default →
+  Chicago95_Cursor_White, `cursor-size` 24 → 32; `dolphinrc`
+  `[IconsMode]` IconSize unset (32) → 48, PreviewSize unset (64) → 48
+  (via `kwriteconfig6`); activation env XCURSOR_SIZE / HYPRCURSOR_SIZE
+  24 → 32, XCURSOR_THEME unset → Chicago95_Cursor_White;
+  `~/.local/share/icons/SITE-9` (3386 png, 596 svg, 11759 links);
+  `~/.local/share/site-9/wallpaper.png` (the logo file there is the
+  user's). hyprpolkitagent stopped, lxqt-policykit started.
+- **Pick c (user, 2026-10-22):** `sudo pacman -Rns polkit-gnome
+  hyprpolkitagent` — also removes hyprland-qt-support (only
+  hyprpolkitagent needed it). UNIT-1 confirms in round #13 (G8).
+- **After the user's 08:24 reboot:** lxqt-policykit autostarts,
+  hyprpolkitagent doesn't; hyprpaper shows the wallpaper; QT_* in the
+  systemd env; `hyprctl configerrors` empty.
+- **Unexplained:** the user's workspace-2 kitty closed during testing
+  (UNIT-1 killed only its own test kitties, by PID — asked in round
+  #13, G5; new `AGENTS.md` rule); a polkit window flashed on workspace
+  1 and closed by itself. A root `polkit-agent-helper-1` from the
+  cancelled test was still running.
+- **Accepted:** Dolphin draws hidden files faded (off-token colors) —
+  user, 2026-10-22. A few Qt/GTK pixels 1 off the tokens (`e5a84f`,
+  `cacfc7`) — where exactly asked in round #13 (G7).
+- **Report gaps** (asked in round #13, G1–G4): four lines cut off in
+  the relay; hyprpaper version/memory/idle CPU not reported; why
+  lxqt-policykit; cursor native sizes.
+- Phase 2 left: **2.4 Firefox** (round #13).
 
 **Round #11 (2.2 GTK + 2.3 Dolphin + kitty frame + R1–R4) — built,
 tested, pushed (`24b6bd5`, 2026-10-18).** Approved by THE OVERSEER.
@@ -683,8 +750,25 @@ are also against §3. Left alone on purpose until this phase; also set
 `misc.vfr = true` explicitly here (§2).
 
 ## Phase 5 — Login screen
-Gated: confirm a display manager is actually installed/wanted before
-scoping this at all — user may be starting Hyprland by hand from a TTY.
+**Pulled forward (user, 2026-10-22: "the ugly default one is getting on
+my nerves").** The gate is met: sddm 0.21.0 is installed (round #9);
+round #13 confirms it's what shows at boot.
+
+**Scope (user, 2026-10-22):** login screen only — **5.1 SDDM theme**.
+No boot menu or boot splash for now (could be a 5.2 later, if asked).
+
+**Picks (user, 2026-10-22: "all leans"):**
+- **SDDM + a SITE-9 SDDM theme** (QML). Not greetd + ReGreet: that
+  would switch the login system and add GTK4 just for this screen.
+- **Look P1 "access terminal"** (`BUILD_SPEC.md` §3 "Login screen"),
+  P2 rendered beside it; final pick on UNIT-1's renders.
+
+**THE OVERSEER's checks (2026-10-22):** SDDM's latest stable release is
+still 0.21.0 (Feb 2024) — slow upstream. KDE moved Plasma to its own
+SDDM fork, **Plasma Login Manager** (first in Plasma 6.6), which **does
+not take custom QML themes** — no use here. greetd + **ReGreet 0.5.0**
+(Arch `extra`, built 2026-07; GTK4, custom CSS, runs under cage or a
+compositor) is the maintained alternative if SDDM ever stalls.
 
 ## Phase 6 — Sidebar (+ SITE-9 settings panel)
 Not scoped. Ask what "sidebar" should actually cover — content, trigger,
@@ -704,6 +788,24 @@ reachable via `nmcli`/`nmtui`.
 ## Log
 
 _(newest first, short entries)_
+
+- 2026-10-22 — **Round #12 approved; login screen pulled forward;
+  round #13 briefed.** New Overseer chat, picked up from the 2026-10-18
+  docs. UNIT-1 built and pushed round #12 (`d9e8bab`, 15 commits):
+  facility-wall wallpaper V1 (hazard band dropped) on hyprpaper,
+  SITE-9 icon set (Chicago95 remapped to the tokens, C2),
+  Chicago95_Cursor_White 32px, Dolphin icons 48px, lxqt-policykit
+  (floating, Kvantum-themed), compensated borders, themed groupbar,
+  splash/logo/default wallpaper off. Picks in Phase 2 → round #12.
+  User removed the old polkit agents (pick c). Report gaps (cut-off
+  lines, hyprpaper numbers, the closed workspace-2 kitty) go into
+  round #13. User asked for the login screen → Phase 5 pulled forward;
+  THE OVERSEER checked SDDM, Plasma Login Manager, greetd/ReGreet and
+  Firefox userChrome. User: "all leans" — SDDM + SITE-9 theme, P1
+  access-terminal look, login screen only, Firefox via userChrome.css,
+  hidden-file fade accepted, README Status rewritten. Round #13 = 2.4
+  Firefox + 5.1 login. New `AGENTS.md` rules: check what a PID owns
+  before killing; the user runs `sudo` and AUR installs.
 
 - 2026-10-18 — **Round #11 approved; round #12 briefed; Overseer handoff
   recommended.** UNIT-1 built and pushed round #11 (`24b6bd5`, 12
