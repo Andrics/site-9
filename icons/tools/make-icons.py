@@ -20,7 +20,7 @@ import re
 import shutil
 import subprocess
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 # Win95 palette -> SITE-9 token
 W95 = {
@@ -59,7 +59,16 @@ def token(v):
 
 
 def png(src, dst):
-    img = Image.open(src).convert("RGBA")
+    try:
+        img = Image.open(src).convert("RGBA")
+    except UnidentifiedImageError:
+        # upstream has a few SVGs named .png; remap by content
+        with open(src, "rb") as f:
+            head = f.read(512)
+        if b"<svg" in head:
+            return svg(src, dst)
+        shutil.copy2(src, dst)
+        return
     px = img.load()
     for y in range(img.height):
         for x in range(img.width):
